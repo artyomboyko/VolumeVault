@@ -9,6 +9,15 @@ toc: false
   <img src="/assets/img/volumevault/logo.png" alt="VolumeVault" width="420">
 </p>
 
+<p align="center">
+  <a href="https://github.com/Darkdragon14/VolumeVault/stargazers">
+    <img src="https://img.shields.io/github/stars/Darkdragon14/VolumeVault?style=flat&label=stars" alt="VolumeVault GitHub stars">
+  </a>
+  <a href="https://github.com/Darkdragon14/VolumeVault/releases">
+    <img src="https://img.shields.io/github/v/release/Darkdragon14/VolumeVault?style=flat&label=release" alt="VolumeVault latest release">
+  </a>
+</p>
+
 # Docker Volume Backups With Safer Restores
 
 VolumeVault is a self-hosted Laravel application for managing Docker volume backups and safe restores to storage backends supported by [`offen/docker-volume-backup`](https://github.com/offen/docker-volume-backup).
