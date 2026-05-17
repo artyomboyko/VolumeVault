@@ -50,6 +50,8 @@ When VolumeVault runs behind a reverse proxy such as Pangolin, Caddy, Traefik, o
 
 Use the reverse proxy container IP or Docker network CIDR for `TRUSTED_PROXIES`:
 
+Replace `proxy_network` with the Docker network name shared by VolumeVault and your reverse proxy container.
+
 ```yaml
 services:
   volumevault:
