@@ -55,7 +55,7 @@ services:
   volumevault:
     image: ghcr.io/darkdragon14/volumevault:latest
     networks:
-      - pangolin
+      - proxy_network
     volumes:
       - volumevault_data:/app/storage
       - /var/run/docker.sock:/var/run/docker.sock
@@ -69,7 +69,7 @@ services:
 You can inspect the Docker network subnet with:
 
 ```bash
-docker network inspect pangolin
+docker network inspect proxy_network
 ```
 
 `TRUSTED_PROXIES="*"` is also supported for simple homelab setups where proxy IPs change, but using the proxy IP or network CIDR is stricter. If `TRUSTED_PROXIES` is empty, VolumeVault does not trust forwarded proxy headers.
