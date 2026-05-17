@@ -44,6 +44,36 @@ The recommended setup runs one container. At startup it prepares storage, runs d
 
 Production defaults are built into VolumeVault. Add environment variables only when you need to override them, for example `APP_URL`, `APP_TIMEZONE`, or SMTP settings.
 
+## Reverse Proxy And HTTPS Termination
+
+When VolumeVault runs behind a reverse proxy such as Pangolin, Caddy, Traefik, or nginx, TLS is usually terminated by the proxy and the container receives plain HTTP traffic on port `8080`. In that setup, configure Laravel to trust your proxy so generated URLs, redirects, and Vite assets use the original HTTPS scheme.
+
+Use the reverse proxy container IP or Docker network CIDR for `TRUSTED_PROXIES`:
+
+```yaml
+services:
+  volumevault:
+    image: ghcr.io/darkdragon14/volumevault:latest
+    networks:
+      - pangolin
+    volumes:
+      - volumevault_data:/app/storage
+      - /var/run/docker.sock:/var/run/docker.sock
+    environment:
+      APP_KEY: base64:paste-generated-key-here
+      APP_URL: https://volumevault.example.com
+      TRUSTED_PROXIES: 172.18.0.0/16
+    restart: unless-stopped
+```
+
+You can inspect the Docker network subnet with:
+
+```bash
+docker network inspect pangolin
+```
+
+`TRUSTED_PROXIES="*"` is also supported for simple homelab setups where proxy IPs change, but using the proxy IP or network CIDR is stricter. If `TRUSTED_PROXIES` is empty, VolumeVault does not trust forwarded proxy headers.
+
 ## Large Installation Compose
 
 For larger installations, you can split the migration, web app, queue worker, and scheduler into separate services while keeping the same image and storage volume:
@@ -108,6 +138,7 @@ The container listens on port `8080`. You can expose any host port by changing t
 - `APP_DEBUG`: defaults to `false`.
 - `APP_TIMEZONE`: timezone used to interpret backup schedules and display backup job dates, defaults to `UTC`. Use an IANA timezone such as `Europe/Paris`.
 - `APP_URL`: public URL, defaults to `http://localhost:8080`.
+- `TRUSTED_PROXIES`: reverse proxy IP, CIDR, comma-separated list, or `*` when running behind HTTPS termination. Leave empty when exposing VolumeVault directly.
 - `DB_CONNECTION`: defaults to `sqlite`.
 - `DB_DATABASE`: defaults to `/app/storage/database/database.sqlite` inside the Docker image.
 - `QUEUE_CONNECTION`: defaults to `database`.
