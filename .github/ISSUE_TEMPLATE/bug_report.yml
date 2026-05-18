@@ -76,14 +76,12 @@ body:
     id: reproduce
     attributes:
       label: Steps to reproduce
-      description: Provide a minimal reproduction path.
+      description: Optional, but very helpful when the issue can be reproduced with a specific flow.
       placeholder: |
         1. Go to ...
         2. Click on ...
         3. Configure ...
         4. See error ...
-    validations:
-      required: true
 
   - type: textarea
     id: logs
