@@ -1,0 +1,67 @@
+name: Feature request
+description: Suggest an improvement or a new capability for VolumeVault
+title: "[Feature]: "
+labels: ["enhancement"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for suggesting an improvement for VolumeVault.
+
+        Please explain the use case first. It helps decide whether the feature belongs in VolumeVault itself, in the documentation, or in the underlying backup engine.
+
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: Before opening this request
+      options:
+        - label: I checked the documentation and existing issues.
+          required: true
+        - label: This request is about VolumeVault itself, not only offen/docker-volume-backup behavior.
+          required: true
+
+  - type: dropdown
+    id: area
+    attributes:
+      label: Area
+      options:
+        - Backup jobs
+        - Restore workflow
+        - Destinations / storage
+        - Notifications
+        - API / automation
+        - UI / UX
+        - Docker / deployment
+        - Documentation
+        - Other
+    validations:
+      required: true
+
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem or use case
+      description: What problem are you trying to solve?
+      placeholder: "As a user, I want to ... because ..."
+    validations:
+      required: true
+
+  - type: textarea
+    id: solution
+    attributes:
+      label: Proposed solution
+      description: Describe the behavior or UI you would like to see.
+    validations:
+      required: true
+
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives considered
+      description: Have you tried another workaround or a different approach?
+
+  - type: textarea
+    id: extra
+    attributes:
+      label: Additional context
+      description: Add screenshots, examples, links, or related projects if useful.
