@@ -1,0 +1,106 @@
+name: Bug report
+description: Report a reproducible problem with VolumeVault
+title: "[Bug]: "
+labels: ["bug"]
+assignees: ["Darkdragon14"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for taking the time to report a bug.
+
+        Please provide enough details to reproduce the issue. Do not share secrets such as `APP_KEY`, backup destination credentials, webhook URLs, tokens, or private hostnames.
+
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: Before opening this issue
+      options:
+        - label: I checked the documentation and existing issues.
+          required: true
+        - label: I removed or masked sensitive data from logs and configuration.
+          required: true
+
+  - type: input
+    id: version
+    attributes:
+      label: VolumeVault version
+      description: Version, release tag, image tag, or commit SHA.
+      placeholder: "v1.0.0, latest, main, or commit SHA"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: installation-type
+    attributes:
+      label: Installation type
+      options:
+        - Docker Compose
+        - Docker run
+        - Local development
+        - Other
+    validations:
+      required: true
+
+  - type: textarea
+    id: environment
+    attributes:
+      label: Environment
+      description: Describe where VolumeVault is running.
+      placeholder: |
+        - Host OS:
+        - Docker version:
+        - Reverse proxy, if any:
+        - Browser, if UI-related:
+    validations:
+      required: true
+
+  - type: textarea
+    id: problem
+    attributes:
+      label: What happened?
+      description: Describe the problem and the actual behavior.
+      placeholder: "Tell us what you were trying to do and what happened instead."
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected behavior
+      description: What did you expect to happen?
+    validations:
+      required: true
+
+  - type: textarea
+    id: reproduce
+    attributes:
+      label: Steps to reproduce
+      description: Provide a minimal reproduction path.
+      placeholder: |
+        1. Go to ...
+        2. Click on ...
+        3. Configure ...
+        4. See error ...
+    validations:
+      required: true
+
+  - type: textarea
+    id: logs
+    attributes:
+      label: Logs or error output
+      description: Paste relevant logs, stack traces, browser console output, or container logs. Mask secrets first.
+      render: shell
+
+  - type: textarea
+    id: compose
+    attributes:
+      label: Relevant configuration
+      description: Paste only the relevant part of your Docker Compose, environment variables, or reverse proxy config. Mask secrets first.
+      render: yaml
+
+  - type: textarea
+    id: additional-context
+    attributes:
+      label: Additional context
+      description: Add screenshots, related issues, or anything else that may help.

@@ -1,0 +1,72 @@
+name: Question / support
+description: Ask a setup or usage question when documentation was not enough
+title: "[Question]: "
+labels: ["question"]
+assignees: ["Darkdragon14"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Use this template for setup or usage questions that may need maintainer help.
+
+        Please do not share secrets such as `APP_KEY`, destination credentials, webhook URLs, tokens, or private hostnames.
+
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: Before opening this question
+      options:
+        - label: I checked the documentation and existing issues.
+          required: true
+        - label: I removed or masked sensitive data from logs and configuration.
+          required: true
+
+  - type: input
+    id: version
+    attributes:
+      label: VolumeVault version
+      description: Version, release tag, image tag, or commit SHA.
+      placeholder: "v1.0.0, latest, main, or commit SHA"
+
+  - type: dropdown
+    id: topic
+    attributes:
+      label: Topic
+      options:
+        - Installation
+        - Reverse proxy / HTTPS
+        - Backup jobs
+        - Restore workflow
+        - Destinations / storage
+        - Notifications
+        - API / automation
+        - Other
+    validations:
+      required: true
+
+  - type: textarea
+    id: question
+    attributes:
+      label: Question
+      description: What are you trying to understand or configure?
+    validations:
+      required: true
+
+  - type: textarea
+    id: context
+    attributes:
+      label: Current setup
+      description: Describe your setup and include relevant config snippets if needed. Mask secrets first.
+      render: yaml
+
+  - type: textarea
+    id: tried
+    attributes:
+      label: What have you tried?
+      description: Mention documentation sections, commands, or config changes already tested.
+
+  - type: textarea
+    id: logs
+    attributes:
+      label: Logs or screenshots
+      description: Add logs, screenshots, or browser console output if relevant. Mask secrets first.
