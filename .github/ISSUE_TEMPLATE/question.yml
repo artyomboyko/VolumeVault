@@ -2,6 +2,7 @@ name: Question / support
 description: Ask a setup or usage question when documentation was not enough
 title: "[Question]: "
 labels: ["question"]
+assignees: ["Darkdragon14"]
 body:
   - type: markdown
     attributes:
