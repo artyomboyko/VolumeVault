@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: VolumeVault documentation
+    url: https://darkdragon14.github.io/VolumeVault/
+    about: Please check the documentation before opening a setup or usage question.
+  - name: GitHub Discussions
+    url: https://github.com/Darkdragon14/VolumeVault/discussions
+    about: Use discussions for general ideas, questions, and community help when it is not a clear bug or feature request.
