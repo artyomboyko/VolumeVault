@@ -2,6 +2,7 @@ name: Bug report
 description: Report a reproducible problem with VolumeVault
 title: "[Bug]: "
 labels: ["bug"]
+assignees: ["Darkdragon14"]
 body:
   - type: markdown
     attributes:
