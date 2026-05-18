@@ -51,9 +51,7 @@ body:
     id: solution
     attributes:
       label: Proposed solution
-      description: Describe the behavior or UI you would like to see.
-    validations:
-      required: true
+      description: Optional, but useful if you already have an idea of the behavior or UI you would like to see.
 
   - type: textarea
     id: alternatives
