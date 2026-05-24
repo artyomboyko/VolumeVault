@@ -12,6 +12,7 @@ use App\Models\BackupJob;
 use App\Models\BackupRun;
 use App\Models\DockerVolume;
 use App\Services\Logging\AppendRunLog;
+use App\Services\BackupDestinations\ListBackupObjects;
 use App\Services\Notifications\SendShoutrrrNotification;
 use App\Services\Scheduling\BackupScheduleCalculator;
 use RuntimeException;
@@ -26,6 +27,7 @@ class RunBackup
         private readonly StartDockerContainers $startDockerContainers,
         private readonly RunBackupContainer $runBackupContainer,
         private readonly AppendRunLog $appendRunLog,
+        private readonly ListBackupObjects $listBackupObjects,
         private readonly SendShoutrrrNotification $sendShoutrrrNotification,
         private readonly BackupScheduleCalculator $scheduleCalculator,
     ) {}
@@ -92,6 +94,7 @@ class RunBackup
                 'next_run_at' => $this->scheduleCalculator->nextRunAt($job->schedule_type, $job->schedule_config ?? [], $finishedAt),
             ])->save();
 
+            $this->recordBackupArchiveMetadata($run->fresh(['job.destination']));
             $this->sendNotifications($run->fresh(['job.destination']));
         } catch (Throwable $exception) {
             $message = str($exception->getMessage() ?: 'Backup failed.')->limit(1000)->toString();
@@ -127,6 +130,44 @@ class RunBackup
                 }
             }
         }
+    }
+
+    private function recordBackupArchiveMetadata(BackupRun $run): void
+    {
+        $expectedFilename = $this->runBackupContainer->backupFilename($run);
+
+        try {
+            $object = collect($this->listBackupObjects->handle($run->job->destination))
+                ->first(fn (array $object): bool => $this->matchesExpectedBackupObject($object, $expectedFilename));
+        } catch (Throwable) {
+            $this->appendRunLog->handle($run, 'Backup archive size could not be detected.');
+
+            return;
+        }
+
+        if (! $object) {
+            $this->appendRunLog->handle($run, 'Backup archive size could not be detected.');
+
+            return;
+        }
+
+        $run->forceFill([
+            'backup_key' => (string) ($object['key'] ?? $object['display_name'] ?? $expectedFilename),
+            'backup_size_bytes' => array_key_exists('size', $object) ? (int) $object['size'] : null,
+        ])->save();
+    }
+
+    private function matchesExpectedBackupObject(array $object, string $expectedFilename): bool
+    {
+        foreach (['key', 'display_name'] as $field) {
+            $value = (string) ($object[$field] ?? '');
+
+            if ($value === $expectedFilename || str_ends_with($value, '/'.$expectedFilename)) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     private function sendNotifications(BackupRun $run): void

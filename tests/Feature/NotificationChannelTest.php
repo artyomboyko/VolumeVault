@@ -146,6 +146,39 @@ class NotificationChannelTest extends TestCase
         app(SendShoutrrrNotification::class)->sendBackupRunFinished($run);
     }
 
+    public function test_default_backup_notification_includes_size_when_available(): void
+    {
+        [$job] = $this->createJobs();
+        $run = BackupRun::create([
+            'backup_job_id' => $job->id,
+            'status' => BackupRun::STATUS_SUCCESS,
+            'trigger' => BackupRun::TRIGGER_MANUAL,
+            'duration_seconds' => 3,
+            'backup_size_bytes' => 2048,
+        ]);
+
+        NotificationChannel::create([
+            'name' => 'All',
+            'service' => NotificationChannel::SERVICE_ADVANCED,
+            'url' => 'ntfy://ntfy.sh/all',
+            'notification_level' => NotificationChannel::LEVEL_INFO,
+            'scope' => NotificationChannel::SCOPE_ALL,
+        ]);
+
+        $dockerProcess = Mockery::mock(DockerProcess::class);
+        $dockerProcess->shouldReceive('run')
+            ->once()
+            ->with(
+                Mockery::on(fn (array $command) => in_array("Job: Nightly\nVolume: app_data\nDestination: S3\nStatus: success\nTrigger: manual\nDuration: 3s\nBackup size: 2 KB", $command, true)),
+                60,
+                Mockery::any(),
+            )
+            ->andReturn(new DockerProcessResult([], 0, 'ok', ''));
+        $this->app->instance(DockerProcess::class, $dockerProcess);
+
+        app(SendShoutrrrNotification::class)->sendBackupRunFinished($run);
+    }
+
     public function test_discord_notifications_disable_line_splitting_and_use_title_flag(): void
     {
         [$job] = $this->createJobs();
@@ -190,6 +223,7 @@ class NotificationChannelTest extends TestCase
             'trigger' => BackupRun::TRIGGER_MANUAL,
             'error_message' => 'Boom',
             'duration_seconds' => 9,
+            'backup_size_bytes' => 1536,
         ]);
 
         NotificationChannel::create([
@@ -199,7 +233,7 @@ class NotificationChannelTest extends TestCase
             'notification_level' => NotificationChannel::LEVEL_ERROR,
             'scope' => NotificationChannel::SCOPE_ALL,
             'title_template' => 'Backup {{ status }}: {{ job }}',
-            'body_template' => "{{ volume }} to {{ destination }} in {{ duration }}\n{{ error }}",
+            'body_template' => "{{ volume }} to {{ destination }} in {{ duration }} / {{ backup_size }}\n{{ error }}",
         ]);
 
         $dockerProcess = Mockery::mock(DockerProcess::class);
@@ -207,7 +241,7 @@ class NotificationChannelTest extends TestCase
             ->once()
             ->with(
                 Mockery::on(fn (array $command) => in_array('Backup failed: Nightly', $command, true)
-                    && in_array("app_data to S3 in 9s\nBoom", $command, true)),
+                    && in_array("app_data to S3 in 9s / 1.5 KB\nBoom", $command, true)),
                 60,
                 Mockery::any(),
             )

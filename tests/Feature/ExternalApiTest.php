@@ -19,6 +19,8 @@ class ExternalApiTest extends TestCase
             ->assertOk()
             ->assertJsonPath('openapi', '3.1.0')
             ->assertJsonPath('components.schemas.BackupJobRequest.properties.backup_exclude_regexp.maxLength', 1000)
+            ->assertJsonPath('components.schemas.DockerVolume.properties.backup_state.enum.0', 'backed_up')
+            ->assertJsonPath('components.schemas.BackupRun.properties.backup_size_bytes.type.0', 'integer')
             ->assertJsonPath('components.securitySchemes.bearerAuth.scheme', 'bearer');
     }
 
@@ -47,7 +49,9 @@ class ExternalApiTest extends TestCase
         $this->withToken($token)
             ->getJson('/api/v1/volumes')
             ->assertOk()
-            ->assertJsonPath('data.0.name', 'app-data');
+            ->assertJsonPath('data.0.name', 'app-data')
+            ->assertJsonPath('data.0.backup_state', 'unprotected')
+            ->assertJsonPath('data.0.related_jobs_count', 0);
     }
 
     public function test_read_only_token_cannot_write(): void

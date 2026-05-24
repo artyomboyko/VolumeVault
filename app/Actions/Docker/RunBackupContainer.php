@@ -68,7 +68,7 @@ class RunBackupContainer
         // offen/docker-volume-backup controls destinations and archive behavior through env vars.
         // Check offen/docker-volume-backup documentation if an environment variable changes.
         $environment = [
-            'BACKUP_FILENAME' => 'volumevault-'.$safeVolume.'-run-'.$run->id.'.tar.gz',
+            'BACKUP_FILENAME' => $this->backupFilename($run),
             'BACKUP_SOURCES' => '/backup',
             'EXEC_FORWARD_OUTPUT' => 'true',
         ];
@@ -239,6 +239,11 @@ class RunBackupContainer
             'AWS_ENDPOINT' => $path ? $host.'/'.$path : $host,
             'AWS_ENDPOINT_PROTO' => $parts['scheme'] ?? 'https',
         ]);
+    }
+
+    public function backupFilename(BackupRun $run): string
+    {
+        return 'volumevault-'.$this->safeMountName($run->job->volume_name).'-run-'.$run->id.'.tar.gz';
     }
 
     private function safeMountName(string $volumeName): string

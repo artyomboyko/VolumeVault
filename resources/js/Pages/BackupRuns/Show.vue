@@ -3,6 +3,7 @@ import StatusBadge from '@/Components/StatusBadge.vue';
 import AppLayout from '@/Layouts/AppLayout.vue';
 import { Head, Link } from '@inertiajs/vue3';
 import { useI18n } from '@/i18n';
+import { formatBytes } from '@/Composables/useFormatBytes';
 
 defineProps<{ run: any }>();
 
@@ -20,10 +21,12 @@ const { t, formatDate } = useI18n();
             <dl class="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
                 <div class="min-w-0"><dt class="text-xs uppercase text-slate-400">{{ t('Job') }}</dt><dd class="mt-1 break-words text-white">{{ run.job.name }}</dd></div>
                 <div><dt class="text-xs uppercase text-slate-400">{{ t('Status') }}</dt><dd class="mt-1"><StatusBadge :status="run.status" /></dd></div>
-                <div><dt class="text-xs uppercase text-slate-400">{{ t('Trigger') }}</dt><dd class="mt-1 text-white">{{ run.trigger }}</dd></div>
+                <div><dt class="text-xs uppercase text-slate-400">{{ t('Trigger') }}</dt><dd class="mt-1 text-white">{{ t(run.trigger) }}</dd></div>
                 <div><dt class="text-xs uppercase text-slate-400">{{ t('Duration') }}</dt><dd class="mt-1 text-white">{{ run.duration_seconds ?? '-' }}s</dd></div>
                 <div><dt class="text-xs uppercase text-slate-400">{{ t('Started') }}</dt><dd class="mt-1 text-white">{{ formatDate(run.started_at) }}</dd></div>
                 <div><dt class="text-xs uppercase text-slate-400">{{ t('Finished') }}</dt><dd class="mt-1 text-white">{{ formatDate(run.finished_at) }}</dd></div>
+                <div><dt class="text-xs uppercase text-slate-400">{{ t('Backup size') }}</dt><dd class="mt-1 text-white">{{ formatBytes(run.backup_size_bytes, t('Unknown')) }}</dd></div>
+                <div class="min-w-0"><dt class="text-xs uppercase text-slate-400">{{ t('Backup archive') }}</dt><dd class="mt-1 break-all text-white">{{ run.backup_key || '-' }}</dd></div>
                 <div class="min-w-0 sm:col-span-2"><dt class="text-xs uppercase text-slate-400">{{ t('Container') }}</dt><dd class="mt-1 break-all text-white">{{ run.docker_container_id || '-' }}</dd></div>
             </dl>
             <p v-if="run.error_message" class="mt-5 break-words rounded-xl bg-rose-400/10 p-3 text-sm text-rose-100">{{ run.error_message }}</p>

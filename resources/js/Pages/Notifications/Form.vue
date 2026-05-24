@@ -14,7 +14,7 @@ const props = defineProps<{
 const editing = computed(() => Boolean(props.channel));
 const { t } = useI18n();
 const useCustomMessage = ref(Boolean(props.channel?.title_template || props.channel?.body_template));
-const templateTokens = '{{ job }}, {{ volume }}, {{ destination }}, {{ status }}, {{ trigger }}, {{ duration }}, {{ error }}';
+const templateTokens = '{{ job }}, {{ volume }}, {{ destination }}, {{ status }}, {{ trigger }}, {{ duration }}, {{ backup_size }}, {{ error }}';
 const titleTemplatePlaceholder = 'VolumeVault: {{ status }} backup for {{ job }}';
 const bodyTemplatePlaceholder = 'Job: {{ job }}\nVolume: {{ volume }}\nDestination: {{ destination }}\nStatus: {{ status }}\nDuration: {{ duration }}';
 const form = useForm({

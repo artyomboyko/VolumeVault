@@ -3,6 +3,7 @@ import AppLayout from '@/Layouts/AppLayout.vue';
 import { Head, Link, useForm } from '@inertiajs/vue3';
 import { computed, ref } from 'vue';
 import { useI18n } from '@/i18n';
+import { formatBytes } from '@/Composables/useFormatBytes';
 
 const props = defineProps<{
     job: any;
@@ -21,12 +22,6 @@ const form = useForm({
 });
 
 const selectedBackup = computed(() => props.backups.find((backup) => backup.key === form.selected_backup_key));
-const formatSize = (bytes?: number) => {
-    if (!bytes) return '0 B';
-    const units = ['B', 'KB', 'MB', 'GB', 'TB'];
-    const index = Math.min(Math.floor(Math.log(bytes) / Math.log(1024)), units.length - 1);
-    return `${(bytes / Math.pow(1024, index)).toFixed(1)} ${units[index]}`;
-};
 const submit = () => form.post(`/backup-jobs/${props.job.id}/restore`);
 </script>
 
@@ -53,7 +48,7 @@ const submit = () => form.post(`/backup-jobs/${props.job.id}/restore`);
                     <input v-model="form.selected_backup_key" type="radio" :value="backup.key" class="mt-1 text-sky-400">
                     <span class="min-w-0 flex-1">
                         <span class="block break-all font-medium text-white">{{ backup.display_name || backup.key }}</span>
-                        <span class="mt-1 block text-xs text-slate-400">{{ formatDate(backup.last_modified) }} / {{ formatSize(backup.size) }}</span>
+                        <span class="mt-1 block text-xs text-slate-400">{{ formatDate(backup.last_modified) }} / {{ formatBytes(backup.size) }}</span>
                     </span>
                 </label>
             </div>

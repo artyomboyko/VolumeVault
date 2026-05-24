@@ -4,24 +4,22 @@ namespace App\Http\Controllers\Api\V1;
 
 use App\Actions\Docker\SyncDockerVolumes;
 use App\Http\Controllers\Controller;
-use App\Models\BackupJob;
 use App\Models\DockerVolume;
+use App\Services\Volumes\VolumeBackupSummaries;
 use Illuminate\Http\JsonResponse;
 use Throwable;
 
 class VolumeController extends Controller
 {
-    public function index(): JsonResponse
+    public function index(VolumeBackupSummaries $volumeBackupSummaries): JsonResponse
     {
+        $volumes = DockerVolume::query()
+            ->orderByDesc('exists')
+            ->orderBy('name')
+            ->get();
+
         return response()->json([
-            'data' => DockerVolume::query()
-                ->orderByDesc('exists')
-                ->orderBy('name')
-                ->get()
-                ->map(fn (DockerVolume $volume) => [
-                    ...$volume->toArray(),
-                    'related_jobs_count' => BackupJob::where('volume_name', $volume->name)->count(),
-                ]),
+            'data' => $volumeBackupSummaries->forVolumes($volumes),
         ]);
     }
 

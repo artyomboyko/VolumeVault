@@ -41,6 +41,13 @@ const destroyJob = (id: number) => confirm(t('Delete this backup job and its run
 const runNow = (id: number) => router.post(`/backup-jobs/${id}/run`);
 const pause = (id: number) => router.post(`/backup-jobs/${id}/pause`);
 const resume = (id: number) => router.post(`/backup-jobs/${id}/resume`);
+const viewJob = (id: number) => router.visit(`/backup-jobs/${id}`);
+const onJobKeydown = (event: KeyboardEvent, id: number) => {
+    if (event.key === 'Enter' || event.key === ' ') {
+        event.preventDefault();
+        viewJob(id);
+    }
+};
 </script>
 
 <template>
@@ -107,7 +114,7 @@ const resume = (id: number) => router.post(`/backup-jobs/${id}/resume`);
         <div class="card overflow-hidden">
             <div v-if="jobs.length">
                 <div v-if="filteredJobs.length" class="divide-y divide-white/10 md:hidden">
-                    <article v-for="job in filteredJobs" :key="job.id" class="space-y-4 p-4">
+                    <article v-for="job in filteredJobs" :key="job.id" class="space-y-4 p-4 cursor-pointer transition hover:bg-white/[0.03]" role="link" tabindex="0" @click="viewJob(job.id)" @keydown="onJobKeydown($event, job.id)">
                         <div class="flex items-start justify-between gap-3">
                             <div class="min-w-0">
                                 <h2 class="break-words font-semibold text-white">{{ job.name }}</h2>
@@ -123,12 +130,11 @@ const resume = (id: number) => router.post(`/backup-jobs/${id}/resume`);
                                 <div><dt class="text-xs uppercase text-slate-500">{{ t('Next run') }}</dt><dd class="mt-1 text-slate-200">{{ formatDate(job.next_run_at) }}</dd></div>
                             </div>
                         </dl>
-                        <div class="flex flex-wrap gap-2">
+                        <div class="flex flex-wrap gap-2" @click.stop @keydown.stop>
                             <ActionIcon v-if="can.runDockerActions" :label="t('Run now')" icon="play" :disabled="job.status !== 'active'" @click="runNow(job.id)" />
                             <ActionIcon v-if="can.runDockerActions && (job.status === 'paused' || job.status === 'error')" :label="t('Resume')" icon="play" @click="resume(job.id)" />
                             <ActionIcon v-else-if="can.runDockerActions" :label="t('Pause')" icon="pause" :disabled="job.status === 'running'" @click="pause(job.id)" />
                             <ActionIcon v-if="can.runDockerActions" :label="t('Restore')" icon="restore" :href="`/backup-jobs/${job.id}/restore`" />
-                            <ActionIcon :label="t('View')" icon="eye" :href="`/backup-jobs/${job.id}`" />
                             <ActionIcon v-if="can.runDockerActions" :label="t('Edit')" icon="edit" :href="`/backup-jobs/${job.id}/edit`" />
                             <ActionIcon v-if="can.runDockerActions" :label="t('Delete')" icon="delete" variant="danger" @click="destroyJob(job.id)" />
                         </div>
@@ -149,7 +155,7 @@ const resume = (id: number) => router.post(`/backup-jobs/${id}/resume`);
                         </tr>
                     </thead>
                     <tbody class="divide-y divide-white/10">
-                        <tr v-for="job in filteredJobs" :key="job.id" class="hover:bg-white/[0.03]">
+                        <tr v-for="job in filteredJobs" :key="job.id" class="cursor-pointer hover:bg-white/[0.03]" role="link" tabindex="0" @click="viewJob(job.id)" @keydown="onJobKeydown($event, job.id)">
                             <td class="px-4 py-3 font-medium text-white">{{ job.name }}</td>
                             <td class="px-4 py-3 text-slate-300">{{ job.volume_name }}</td>
                             <td class="px-4 py-3 text-slate-300">{{ job.destination?.name || t('Missing') }}</td>
@@ -158,12 +164,11 @@ const resume = (id: number) => router.post(`/backup-jobs/${id}/resume`);
                             <td class="px-4 py-3 text-slate-300">{{ formatDate(job.last_run_at) }}</td>
                             <td class="px-4 py-3 text-slate-300">{{ formatDate(job.next_run_at) }}</td>
                             <td class="px-4 py-3">
-                                <div class="flex md:min-w-52 flex-wrap gap-2">
+                                <div class="flex md:min-w-52 flex-wrap gap-2" @click.stop @keydown.stop>
                                     <ActionIcon v-if="can.runDockerActions" :label="t('Run now')" icon="play" :disabled="job.status !== 'active'" @click="runNow(job.id)" />
                                     <ActionIcon v-if="can.runDockerActions && (job.status === 'paused' || job.status === 'error')" :label="t('Resume')" icon="play" @click="resume(job.id)" />
                                     <ActionIcon v-else-if="can.runDockerActions" :label="t('Pause')" icon="pause" :disabled="job.status === 'running'" @click="pause(job.id)" />
                                     <ActionIcon v-if="can.runDockerActions" :label="t('Restore')" icon="restore" :href="`/backup-jobs/${job.id}/restore`" />
-                                    <ActionIcon :label="t('View')" icon="eye" :href="`/backup-jobs/${job.id}`" />
                                     <ActionIcon v-if="can.runDockerActions" :label="t('Edit')" icon="edit" :href="`/backup-jobs/${job.id}/edit`" />
                                     <ActionIcon v-if="can.runDockerActions" :label="t('Delete')" icon="delete" variant="danger" @click="destroyJob(job.id)" />
                                 </div>

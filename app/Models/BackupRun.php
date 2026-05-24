@@ -34,6 +34,8 @@ class BackupRun extends Model
         'logs',
         'error_message',
         'docker_container_id',
+        'backup_key',
+        'backup_size_bytes',
     ];
 
     protected function casts(): array
@@ -42,6 +44,7 @@ class BackupRun extends Model
             'started_at' => 'datetime',
             'finished_at' => 'datetime',
             'duration_seconds' => 'integer',
+            'backup_size_bytes' => 'integer',
         ];
     }
 
