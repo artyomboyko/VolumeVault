@@ -61,7 +61,7 @@ const resume = (id: number) => router.post(`/backup-jobs/${id}/resume`);
                             <Link :href="`/backup-runs/${run.id}`" class="text-sm text-sky-300 hover:text-sky-200">{{ t('View logs') }}</Link>
                         </div>
                         <dl class="grid grid-cols-2 gap-3 text-sm">
-                            <div><dt class="text-xs uppercase text-slate-500">{{ t('Trigger') }}</dt><dd class="mt-1 text-slate-200">{{ run.trigger }}</dd></div>
+                            <div><dt class="text-xs uppercase text-slate-500">{{ t('Trigger') }}</dt><dd class="mt-1 text-slate-200">{{ t(run.trigger) }}</dd></div>
                             <div><dt class="text-xs uppercase text-slate-500">{{ t('Duration') }}</dt><dd class="mt-1 text-slate-200">{{ run.duration_seconds ?? '-' }}s</dd></div>
                             <div><dt class="text-xs uppercase text-slate-500">{{ t('Size') }}</dt><dd class="mt-1 text-slate-200">{{ formatBytes(run.backup_size_bytes, t('Unknown')) }}</dd></div>
                             <div class="col-span-2"><dt class="text-xs uppercase text-slate-500">{{ t('Started') }}</dt><dd class="mt-1 text-slate-200">{{ formatDate(run.started_at) }}</dd></div>
@@ -76,7 +76,7 @@ const resume = (id: number) => router.post(`/backup-jobs/${id}/resume`);
                     <tbody class="divide-y divide-white/10">
                         <tr v-for="run in runs" :key="run.id">
                             <td class="px-4 py-3"><StatusBadge :status="run.status" /></td>
-                            <td class="px-4 py-3 text-slate-300">{{ run.trigger }}</td>
+                            <td class="px-4 py-3 text-slate-300">{{ t(run.trigger) }}</td>
                             <td class="px-4 py-3 text-slate-300">{{ formatDate(run.started_at) }}</td>
                             <td class="px-4 py-3 text-slate-300">{{ run.duration_seconds ?? '-' }}s</td>
                             <td class="px-4 py-3 text-slate-300">{{ formatBytes(run.backup_size_bytes, t('Unknown')) }}</td>

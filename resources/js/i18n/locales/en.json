@@ -267,6 +267,8 @@
   "paused": "paused",
   "queued": "queued",
   "running": "running",
+  "scheduled": "scheduled",
+  "manual": "manual",
   "error": "error",
   "failed": "failed",
   "cancelled": "cancelled",

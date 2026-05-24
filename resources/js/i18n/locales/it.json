@@ -267,6 +267,8 @@
   "paused": "in pausa",
   "queued": "in coda",
   "running": "in esecuzione",
+  "scheduled": "scheduled",
+  "manual": "manual",
   "error": "errore",
   "failed": "fallito",
   "cancelled": "annullato",

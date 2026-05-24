@@ -267,6 +267,8 @@
   "paused": "пауза",
   "queued": "в очереди",
   "running": "выполняется",
+  "scheduled": "scheduled",
+  "manual": "manual",
   "error": "ошибка",
   "failed": "сбой",
   "cancelled": "отменено",

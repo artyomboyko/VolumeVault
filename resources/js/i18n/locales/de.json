@@ -267,6 +267,8 @@
   "paused": "pausiert",
   "queued": "wartend",
   "running": "laufend",
+  "scheduled": "scheduled",
+  "manual": "manual",
   "error": "fehler",
   "failed": "fehlgeschlagen",
   "cancelled": "abgebrochen",

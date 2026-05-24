@@ -267,6 +267,8 @@
   "paused": "pozastaveno",
   "queued": "ve fronte",
   "running": "bezi",
+  "scheduled": "scheduled",
+  "manual": "manual",
   "error": "chyba",
   "failed": "selhalo",
   "cancelled": "zruseno",

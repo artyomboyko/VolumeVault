@@ -267,6 +267,8 @@
   "paused": "gepauzeerd",
   "queued": "in wachtrij",
   "running": "actief",
+  "scheduled": "scheduled",
+  "manual": "manual",
   "error": "fout",
   "failed": "mislukt",
   "cancelled": "geannuleerd",

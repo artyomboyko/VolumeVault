@@ -267,6 +267,8 @@
   "paused": "en pause",
   "queued": "en file",
   "running": "en cours",
+  "scheduled": "planifiee",
+  "manual": "manuelle",
   "error": "erreur",
   "failed": "echec",
   "cancelled": "annule",

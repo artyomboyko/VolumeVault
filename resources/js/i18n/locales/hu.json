@@ -267,6 +267,8 @@
   "paused": "szunetel",
   "queued": "sorban",
   "running": "fut",
+  "scheduled": "scheduled",
+  "manual": "manual",
   "error": "hiba",
   "failed": "sikertelen",
   "cancelled": "torolve",
