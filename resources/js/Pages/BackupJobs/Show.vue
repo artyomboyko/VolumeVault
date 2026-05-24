@@ -3,8 +3,9 @@ import StatusBadge from '@/Components/StatusBadge.vue';
 import AppLayout from '@/Layouts/AppLayout.vue';
 import { Head, Link, router, usePage } from '@inertiajs/vue3';
 import { useI18n } from '@/i18n';
+import { formatBytes } from '@/Composables/useFormatBytes';
 
-defineProps<{ job: any; runs: any[] }>();
+defineProps<{ job: any; lastSuccessfulBackup?: any | null; runs: any[] }>();
 
 const page = usePage();
 const can = page.props.can as { runDockerActions?: boolean };
@@ -38,6 +39,7 @@ const resume = (id: number) => router.post(`/backup-jobs/${id}/resume`);
                     <div><dt class="text-xs uppercase text-slate-400">{{ t('Excluded files') }}</dt><dd class="mt-1 break-all font-mono text-sm text-white">{{ job.backup_exclude_regexp || t('None') }}</dd></div>
                     <div><dt class="text-xs uppercase text-slate-400">{{ t('Last run') }}</dt><dd class="mt-1 text-white">{{ formatDate(job.last_run_at) }}</dd></div>
                     <div><dt class="text-xs uppercase text-slate-400">{{ t('Next run') }}</dt><dd class="mt-1 text-white">{{ formatDate(job.next_run_at) }}</dd></div>
+                    <div><dt class="text-xs uppercase text-slate-400">{{ t('Last backup size') }}</dt><dd class="mt-1 text-white">{{ formatBytes(lastSuccessfulBackup?.backup_size_bytes, t('Unknown')) }}</dd></div>
                 </dl>
             </section>
             <section class="card p-4 sm:p-5">
@@ -61,6 +63,7 @@ const resume = (id: number) => router.post(`/backup-jobs/${id}/resume`);
                         <dl class="grid grid-cols-2 gap-3 text-sm">
                             <div><dt class="text-xs uppercase text-slate-500">{{ t('Trigger') }}</dt><dd class="mt-1 text-slate-200">{{ run.trigger }}</dd></div>
                             <div><dt class="text-xs uppercase text-slate-500">{{ t('Duration') }}</dt><dd class="mt-1 text-slate-200">{{ run.duration_seconds ?? '-' }}s</dd></div>
+                            <div><dt class="text-xs uppercase text-slate-500">{{ t('Size') }}</dt><dd class="mt-1 text-slate-200">{{ formatBytes(run.backup_size_bytes, t('Unknown')) }}</dd></div>
                             <div class="col-span-2"><dt class="text-xs uppercase text-slate-500">{{ t('Started') }}</dt><dd class="mt-1 text-slate-200">{{ formatDate(run.started_at) }}</dd></div>
                         </dl>
                     </article>
@@ -68,7 +71,7 @@ const resume = (id: number) => router.post(`/backup-jobs/${id}/resume`);
                 <div class="hidden overflow-x-auto md:block">
                 <table class="min-w-full divide-y divide-white/10 text-sm">
                     <thead class="bg-white/5 text-left text-xs uppercase tracking-wide text-slate-400">
-                        <tr><th class="px-4 py-3">{{ t('Status') }}</th><th class="px-4 py-3">{{ t('Trigger') }}</th><th class="px-4 py-3">{{ t('Started') }}</th><th class="px-4 py-3">{{ t('Duration') }}</th><th class="px-4 py-3">{{ t('Logs') }}</th></tr>
+                        <tr><th class="px-4 py-3">{{ t('Status') }}</th><th class="px-4 py-3">{{ t('Trigger') }}</th><th class="px-4 py-3">{{ t('Started') }}</th><th class="px-4 py-3">{{ t('Duration') }}</th><th class="px-4 py-3">{{ t('Size') }}</th><th class="px-4 py-3">{{ t('Logs') }}</th></tr>
                     </thead>
                     <tbody class="divide-y divide-white/10">
                         <tr v-for="run in runs" :key="run.id">
@@ -76,6 +79,7 @@ const resume = (id: number) => router.post(`/backup-jobs/${id}/resume`);
                             <td class="px-4 py-3 text-slate-300">{{ run.trigger }}</td>
                             <td class="px-4 py-3 text-slate-300">{{ formatDate(run.started_at) }}</td>
                             <td class="px-4 py-3 text-slate-300">{{ run.duration_seconds ?? '-' }}s</td>
+                            <td class="px-4 py-3 text-slate-300">{{ formatBytes(run.backup_size_bytes, t('Unknown')) }}</td>
                             <td class="px-4 py-3"><Link :href="`/backup-runs/${run.id}`" class="text-sky-300 hover:text-sky-200">{{ t('View logs') }}</Link></td>
                         </tr>
                     </tbody>

@@ -32,6 +32,7 @@ const headerRef = ref<HTMLElement | null>(null);
 const primaryNav = computed(() => [
     { label: t('Dashboard'), href: '/dashboard' },
     { label: t('Volumes'), href: '/volumes' },
+    { label: t('Stacks'), href: '/stacks' },
     { label: t('Backup jobs'), href: '/backup-jobs' },
 ]);
 

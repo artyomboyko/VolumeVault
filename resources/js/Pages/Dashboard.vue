@@ -3,6 +3,7 @@ import StatusBadge from '@/Components/StatusBadge.vue';
 import AppLayout from '@/Layouts/AppLayout.vue';
 import { Head, Link } from '@inertiajs/vue3';
 import { useI18n } from '@/i18n';
+import { formatBytes } from '@/Composables/useFormatBytes';
 
 defineProps<{
     stats: Record<string, any>;
@@ -12,15 +13,40 @@ defineProps<{
 }>();
 
 const { t, formatDate } = useI18n();
+
+const statLabels: Record<string, string> = {
+    total_volumes: 'Total volumes',
+    existing_volumes: 'Existing volumes',
+    missing_volumes: 'Missing volumes',
+    backed_up_volumes: 'Backed up volumes',
+    configured_volumes: 'Pending backup volumes',
+    unprotected_volumes: 'Unprotected volumes',
+    total_jobs: 'Total jobs',
+    active_jobs: 'Active jobs',
+    paused_jobs: 'Paused jobs',
+    error_jobs: 'Error jobs',
+    last_backup_run_status: 'Last backup run status',
+    last_successful_backup_size: 'Last successful backup size',
+    next_scheduled_backup: 'Next scheduled backup',
+};
+
+const statLabel = (key: string) => t(statLabels[key] || key.replaceAll('_', ' '));
+const statValue = (key: string, value: any) => {
+    if (key.includes('scheduled')) return formatDate(value);
+    if (key.includes('size')) return formatBytes(value, t('Unknown'));
+    if (key.includes('status')) return value ? t(String(value)) : t('None');
+
+    return value ?? t('None');
+};
 </script>
 
 <template>
     <Head :title="t('Dashboard')" />
     <AppLayout :title="t('Dashboard')">
         <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-            <div v-for="(value, key) in stats" :key="key" class="card p-5">
-                <p class="text-xs font-semibold uppercase tracking-wide text-slate-400">{{ String(key).replaceAll('_', ' ') }}</p>
-                <p class="mt-3 break-words text-2xl font-bold text-white">{{ key.includes('scheduled') ? formatDate(value) : (value ?? t('None')) }}</p>
+            <div v-for="(value, key) in stats" :key="key" class="card p-5" :class="{ hidden: key === 'last_successful_backup_size' }">
+                <p class="text-xs font-semibold uppercase tracking-wide text-slate-400">{{ statLabel(String(key)) }}</p>
+                <p class="mt-3 break-words text-2xl font-bold text-white">{{ statValue(String(key), value) }}</p>
             </div>
         </div>
 
@@ -33,8 +59,8 @@ const { t, formatDate } = useI18n();
                 <div v-if="recentBackupRuns.length" class="space-y-3">
                     <Link v-for="run in recentBackupRuns" :key="run.id" :href="`/backup-runs/${run.id}`" class="flex flex-col gap-2 rounded-xl bg-white/5 px-4 py-3 hover:bg-white/10 sm:flex-row sm:items-center sm:justify-between">
                         <div class="min-w-0">
-                              <p class="break-words font-medium">{{ run.job?.name || t('Backup run #{id}', { id: run.id }) }}</p>
-                            <p class="text-xs text-slate-400">{{ formatDate(run.started_at || run.created_at) }}</p>
+                            <p class="break-words font-medium">{{ run.job?.name || t('Backup run #{id}', { id: run.id }) }}</p>
+                            <p class="text-xs text-slate-400">{{ formatDate(run.started_at || run.created_at) }} <span v-if="run.backup_size_bytes">/ {{ formatBytes(run.backup_size_bytes) }}</span></p>
                         </div>
                         <StatusBadge :status="run.status" />
                     </Link>

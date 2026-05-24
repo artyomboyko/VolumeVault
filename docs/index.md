@@ -23,12 +23,13 @@ It provides a guided web UI around scheduled backups, encrypted destinations, no
 ## Highlights
 
 - Discover Docker volumes through the Docker CLI and keep missing volumes visible only while backup jobs still reference them.
+- Review backup coverage by volume or Docker Compose/Swarm stack, including the latest known backup size when available.
 - Configure AWS S3, Cloudflare R2, custom S3-compatible storage, WebDAV, SSH/SFTP, Azure Blob Storage, Dropbox, Google Drive, and local filesystem destinations.
 - Store destination credentials and notification URLs encrypted at rest with Laravel `Crypt`.
 - Create hourly, daily, weekly, or cron-based backup schedules.
 - Run manual backups, pause or resume jobs, inspect logs, and view backup and restore history.
 - Restore selected archives into new Docker volumes by default.
-- Configure Shoutrrr notification channels globally or per backup job.
+- Configure Shoutrrr notification channels globally or per backup job, with backup size available in messages when it is known.
 - Create API tokens for integrations, automation scripts, dashboards, and AI agents.
 - Export encrypted installation saves and import them during onboarding.
 

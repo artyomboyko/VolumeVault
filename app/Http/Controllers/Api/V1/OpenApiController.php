@@ -116,6 +116,37 @@ class OpenApiController extends Controller
     private function schemas(): array
     {
         return [
+            'DockerVolume' => [
+                'type' => 'object',
+                'properties' => [
+                    'id' => ['type' => 'integer'],
+                    'name' => ['type' => 'string'],
+                    'driver' => ['type' => ['string', 'null']],
+                    'mountpoint' => ['type' => ['string', 'null']],
+                    'exists' => ['type' => 'boolean'],
+                    'stack_name' => ['type' => ['string', 'null']],
+                    'related_jobs_count' => ['type' => 'integer'],
+                    'backup_state' => ['type' => 'string', 'enum' => ['backed_up', 'configured', 'unprotected']],
+                    'last_backup_run_id' => ['type' => ['integer', 'null']],
+                    'last_backup_at' => ['type' => ['string', 'null'], 'format' => 'date-time'],
+                    'last_backup_key' => ['type' => ['string', 'null']],
+                    'last_backup_size_bytes' => ['type' => ['integer', 'null']],
+                ],
+            ],
+            'BackupRun' => [
+                'type' => 'object',
+                'properties' => [
+                    'id' => ['type' => 'integer'],
+                    'backup_job_id' => ['type' => 'integer'],
+                    'status' => ['type' => 'string', 'enum' => ['queued', 'running', 'success', 'failed', 'cancelled']],
+                    'trigger' => ['type' => 'string', 'enum' => ['scheduled', 'manual']],
+                    'started_at' => ['type' => ['string', 'null'], 'format' => 'date-time'],
+                    'finished_at' => ['type' => ['string', 'null'], 'format' => 'date-time'],
+                    'duration_seconds' => ['type' => ['integer', 'null']],
+                    'backup_key' => ['type' => ['string', 'null']],
+                    'backup_size_bytes' => ['type' => ['integer', 'null']],
+                ],
+            ],
             'BackupJobRequest' => [
                 'type' => 'object',
                 'required' => ['name', 'volume_name', 'backup_destination_id', 'schedule_type'],

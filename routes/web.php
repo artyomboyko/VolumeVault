@@ -13,6 +13,7 @@ use App\Http\Controllers\PasswordResetController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\RestoreController;
 use App\Http\Controllers\RestoreRunController;
+use App\Http\Controllers\StackController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\UserLocaleController;
 use App\Http\Controllers\UserThemeController;
@@ -46,6 +47,7 @@ Route::middleware('auth')->group(function () {
 
     Route::get('/volumes', [VolumeController::class, 'index'])->name('volumes.index');
     Route::post('/volumes/sync', [VolumeController::class, 'sync'])->middleware('admin')->name('volumes.sync');
+    Route::get('/stacks', [StackController::class, 'index'])->name('stacks.index');
 
     Route::resource('backup-jobs', BackupJobController::class)->only(['index']);
     Route::middleware('admin')->group(function () {

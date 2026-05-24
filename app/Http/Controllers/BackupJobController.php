@@ -50,6 +50,11 @@ class BackupJobController extends Controller
 
         return Inertia::render('BackupJobs/Show', [
             'job' => $this->serializeJob($backupJob),
+            'lastSuccessfulBackup' => $backupJob->runs()
+                ->where('status', BackupRun::STATUS_SUCCESS)
+                ->orderByDesc('finished_at')
+                ->orderByDesc('created_at')
+                ->first(['id', 'finished_at', 'backup_key', 'backup_size_bytes']),
             'runs' => $backupJob->runs()->limit(50)->get(),
         ]);
     }

@@ -3,25 +3,23 @@
 namespace App\Http\Controllers;
 
 use App\Actions\Docker\SyncDockerVolumes;
-use App\Models\BackupJob;
 use App\Models\DockerVolume;
+use App\Services\Volumes\VolumeBackupSummaries;
 use Inertia\Inertia;
 use Inertia\Response;
 use Throwable;
 
 class VolumeController extends Controller
 {
-    public function index(): Response
+    public function index(VolumeBackupSummaries $volumeBackupSummaries): Response
     {
+        $volumes = DockerVolume::query()
+            ->orderByDesc('exists')
+            ->orderBy('name')
+            ->get();
+
         return Inertia::render('Volumes/Index', [
-            'volumes' => DockerVolume::query()
-                ->orderByDesc('exists')
-                ->orderBy('name')
-                ->get()
-                ->map(fn (DockerVolume $volume) => [
-                    ...$volume->toArray(),
-                    'related_jobs_count' => BackupJob::where('volume_name', $volume->name)->count(),
-                ]),
+            'volumes' => $volumeBackupSummaries->forVolumes($volumes),
         ]);
     }
 

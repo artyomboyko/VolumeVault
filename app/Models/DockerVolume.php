@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class DockerVolume extends Model
 {
@@ -27,5 +28,10 @@ class DockerVolume extends Model
             'exists' => 'boolean',
             'last_seen_at' => 'datetime',
         ];
+    }
+
+    public function backupJobs(): HasMany
+    {
+        return $this->hasMany(BackupJob::class, 'volume_name', 'name');
     }
 }
