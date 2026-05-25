@@ -19,6 +19,7 @@ class MarkMissingVolumeJobs
 
         BackupJob::query()
             ->whereIn('volume_name', $names->all())
+            ->where('source_type', BackupJob::SOURCE_TYPE_DOCKER_VOLUME)
             ->where('status', '!=', BackupJob::STATUS_RUNNING)
             ->get()
             ->each(function (BackupJob $job) use (&$affected): void {

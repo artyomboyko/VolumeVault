@@ -141,6 +141,7 @@ The container listens on port `8080`. You can expose any host port by changing t
 - `APP_TIMEZONE`: timezone used to interpret backup schedules and display backup job dates, defaults to `UTC`. Use an IANA timezone such as `Europe/Paris`.
 - `APP_URL`: public URL, defaults to `http://localhost:8080`.
 - `TRUSTED_PROXIES`: reverse proxy IP, CIDR, comma-separated list, or `*` when running behind HTTPS termination. Leave empty when exposing VolumeVault directly.
+- `VOLUMEVAULT_HOST_PATH_ALLOWLIST`: optional comma-separated list of Docker host path prefixes allowed for host-path backup jobs, for example `/srv,/mnt/data`. Leave empty to allow any non-root absolute host directory path.
 - `DB_CONNECTION`: defaults to `sqlite`.
 - `DB_DATABASE`: defaults to `/app/storage/database/database.sqlite` inside the Docker image.
 - `QUEUE_CONNECTION`: defaults to `database`.
@@ -158,6 +159,7 @@ environment:
   APP_KEY: base64:paste-generated-key-here
   APP_URL: https://volumevault.example.com
   APP_TIMEZONE: Europe/Paris
+  VOLUMEVAULT_HOST_PATH_ALLOWLIST: /srv,/mnt/data
 ```
 
 Or load an environment file:

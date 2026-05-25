@@ -93,7 +93,7 @@ class SendShoutrrrNotification
         $job = $run->job;
         $lines = [
             'Job: '.$job->name,
-            'Volume: '.$job->volume_name,
+            'Source: '.$job->sourceName(),
             'Destination: '.($job->destination?->name ?? 'Unknown'),
             'Status: '.$run->status,
             'Trigger: '.$run->trigger,
@@ -125,7 +125,8 @@ class SendShoutrrrNotification
         $job = $run->job;
         $values = [
             'job' => $job->name,
-            'volume' => $job->volume_name,
+            'volume' => $job->sourceName(),
+            'source' => $job->sourceName(),
             'destination' => $job->destination?->name ?? 'Unknown',
             'status' => $run->status,
             'trigger' => $run->trigger,

@@ -6,7 +6,7 @@ order: 3
 
 ## How It Works
 
-VolumeVault does not reimplement backup archive creation. Backup runs launch a temporary `offen/docker-volume-backup:latest` container with the selected Docker volume mounted read-only under `/backup`. VolumeVault maps each configured destination to the environment variables expected by `offen/docker-volume-backup`.
+VolumeVault does not reimplement backup archive creation. Backup runs launch a temporary `offen/docker-volume-backup:latest` container with the selected Docker volume or host path mounted read-only under `/backup`. VolumeVault maps each configured destination to the environment variables expected by `offen/docker-volume-backup`.
 
 Restore runs download the selected archive through VolumeVault's destination layer, create a new Docker volume, then extract the archive using the `offen/docker-volume-backup` image with `tar` as entrypoint.
 
@@ -18,7 +18,7 @@ To create a backup job:
 
 1. Make sure Docker volumes have been synced from the Volumes screen.
 2. Create and test at least one active destination.
-3. Open `Backup jobs` and create a job for a specific Docker volume.
+3. Open `Backup jobs` and create a job for a Docker volume or an absolute host path.
 4. Choose a schedule: hourly, daily, weekly, or cron.
 5. Optionally set retention days, retention count, file exclusion regexp, and container stop behavior.
 6. Save the job and run it manually once to validate the destination and logs.
@@ -26,6 +26,26 @@ To create a backup job:
 Backup times are interpreted in `APP_TIMEZONE`. For example, set `APP_TIMEZONE=Europe/Paris` if a daily schedule at `02:00` should run at 02:00 Paris time instead of 02:00 UTC.
 
 Backup jobs can optionally exclude files from the archive with `BACKUP_EXCLUDE_REGEXP`. The value is a Go regular expression matched against each file's full path inside `BACKUP_SOURCES`. For example, `\.log$` excludes log files, `(^|/)cache(/|$)` excludes folders named `cache`, and `(^|/)node_modules(/|$)` excludes `node_modules` folders. Leave the field empty to include everything.
+
+## Host Path Sources
+
+Host path backup jobs mount an existing directory from the Docker host into the temporary Offen container with a read-only Docker bind mount. The path is passed to Docker, while Offen only sees the mounted directory under `/backup`.
+
+Host path rules:
+
+- The path must be absolute, must already exist on the Docker host, and must be a directory.
+- The filesystem root `/` is rejected.
+- Paths containing `.` or `..` segments are rejected.
+- `Stop containers before backup` is only available for Docker volume sources.
+- If `VOLUMEVAULT_HOST_PATH_ALLOWLIST` is set, the host path must match one of its comma-separated prefixes.
+
+Example allowlist:
+
+```env
+VOLUMEVAULT_HOST_PATH_ALLOWLIST=/srv,/mnt/data,/opt/stacks
+```
+
+When the allowlist is configured, jobs outside those prefixes fail validation when saved and the error is shown on the host path field.
 
 ## Scheduling
 
@@ -52,12 +72,12 @@ The environment variable mapping for `offen/docker-volume-backup` is centralized
 Generated archive names follow this pattern:
 
 ```text
-volumevault-<safe-volume-name>-run-<backup-run-id>.tar.gz
+volumevault-<safe-source-name>-run-<backup-run-id>.tar.gz
 ```
 
 ## Restore Behavior
 
-Restore-to-new-volume is the implemented restore mode and the default because it does not overwrite the source volume.
+Restore-to-new-volume is the implemented restore mode and the default because it does not overwrite the source. Host path backups are also restored into a new Docker volume.
 
 The flow is:
 

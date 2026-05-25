@@ -10,7 +10,7 @@
 [![PHP](https://img.shields.io/badge/PHP-8.5%2B-777bb4?logo=php&logoColor=white)](https://www.php.net/)
 [![License](https://img.shields.io/badge/license-Apache%202.0-blue.svg)](composer.json)
 
-VolumeVault is a self-hosted Laravel application for managing Docker volume backups and safe restores through [`offen/docker-volume-backup`](https://github.com/offen/docker-volume-backup).
+VolumeVault is a self-hosted Laravel application for managing Docker volume and host path backups with safe restores through [`offen/docker-volume-backup`](https://github.com/offen/docker-volume-backup).
 
 It provides a clear web UI for scheduled backups, stack-level volume coverage, restore runs, encrypted destinations, notifications, run history, onboarding, and API-driven automation.
 
@@ -67,6 +67,8 @@ The single container runs nginx, PHP-FPM, database migrations, queue worker, and
 Defaults are built into the application for a production SQLite setup. Add environment variables only when you need to override them, for example `APP_URL`, `APP_TIMEZONE`, or SMTP settings.
 
 You can also use `env_file: .env` for overrides, but do not reuse a development `.env` in production without review. Values such as `APP_ENV=local` or `APP_DEBUG=true` override the safe production defaults.
+
+Host path backup jobs can be limited with `VOLUMEVAULT_HOST_PATH_ALLOWLIST`, a comma-separated list of allowed Docker host path prefixes such as `/srv,/mnt/data`. When set, host path jobs outside those prefixes are rejected when saved.
 
 Keep your `APP_KEY` safe: it is required to decrypt destinations, notifications, and installation saves.
 

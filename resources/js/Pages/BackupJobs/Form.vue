@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import AppLayout from '@/Layouts/AppLayout.vue';
 import { Head, Link, useForm, usePage } from '@inertiajs/vue3';
-import { computed, ref } from 'vue';
+import { computed, ref, watch } from 'vue';
 import { useI18n } from '@/i18n';
 
 const props = defineProps<{
@@ -14,6 +14,7 @@ const page = usePage();
 const { t } = useI18n();
 const params = new URLSearchParams(page.url.split('?')[1] || '');
 const editing = computed(() => Boolean(props.job));
+const sourceTypes = ['docker_volume', 'host_path'];
 const scheduleTypes = ['hourly', 'daily', 'weekly', 'cron'];
 const days = ['sunday','monday','tuesday','wednesday','thursday','friday','saturday'];
 const excludeExamples = [
@@ -24,7 +25,9 @@ const excludeExamples = [
 
 const form = useForm({
     name: props.job?.name || '',
+    source_type: props.job?.source_type || 'docker_volume',
     volume_name: props.job?.volume_name || params.get('volume') || '',
+    host_path: props.job?.host_path || '',
     backup_destination_id: props.job?.backup_destination_id || props.destinations[0]?.id || '',
     schedule_type: props.job?.schedule_type || 'daily',
     schedule_config: props.job?.schedule_config || { time: '02:00', everyHours: 6, dayOfWeek: 'sunday', expression: '0 2 * * *' },
@@ -36,8 +39,17 @@ const form = useForm({
 
 const volumeSearch = ref(form.volume_name);
 const volumeSelectorOpen = ref(false);
+const isDockerVolumeSource = computed(() => form.source_type === 'docker_volume');
+const canSubmit = computed(() => Boolean(props.destinations.length) && (!isDockerVolumeSource.value || Boolean(props.volumes.length)));
+
+const sourceTypeLabel = (type: string) => type === 'host_path' ? 'Host path' : 'Docker volume';
+const sourceTypeDescription = (type: string) => type === 'host_path'
+    ? 'Back up an existing directory from the Docker host.'
+    : 'Back up a Docker-managed volume discovered by VolumeVault.';
 
 const filteredVolumes = computed(() => {
+    if (!isDockerVolumeSource.value) return [];
+
     const query = volumeSearch.value.trim().toLowerCase();
 
     if (!query) return props.volumes;
@@ -48,6 +60,8 @@ const filteredVolumes = computed(() => {
 const selectedVolume = computed(() => props.volumes.find((volume) => volume.name === form.volume_name));
 
 const updateVolumeSearch = () => {
+    if (!isDockerVolumeSource.value) return;
+
     const matchingVolume = props.volumes.find((volume) => volume.name === volumeSearch.value);
 
     form.volume_name = matchingVolume?.name || '';
@@ -59,6 +73,15 @@ const selectVolume = (volume: any) => {
     volumeSearch.value = volume.name;
     volumeSelectorOpen.value = false;
 };
+
+watch(() => form.source_type, (sourceType) => {
+    if (sourceType === 'host_path') {
+        form.volume_name = '';
+        volumeSearch.value = '';
+        form.stop_containers_before_backup = false;
+        volumeSelectorOpen.value = false;
+    }
+});
 
 const summary = computed(() => {
     if (form.schedule_type === 'hourly') return `Every ${form.schedule_config.everyHours || 1} hours`;
@@ -79,10 +102,11 @@ const submit = () => {
 
 <template>
     <Head :title="editing ? t('Edit backup job') : t('New backup job')" />
-    <AppLayout :title="editing ? t('Edit backup job') : t('New backup job')" :subtitle="t('Choose the source volume, destination, schedule, retention, and backup exclusions.')">
+    <AppLayout :title="editing ? t('Edit backup job') : t('New backup job')" :subtitle="t('Choose the backup source, destination, schedule, retention, and exclusions.')">
         <form class="card max-w-4xl space-y-6 p-4 sm:p-6" @submit.prevent="submit">
-            <div v-if="!volumes.length || !destinations.length" class="rounded-xl border border-amber-300/30 bg-amber-300/10 p-4 text-sm text-amber-100">
-                {{ t('You need at least one existing Docker volume and one active backup destination before creating a job.') }}
+            <div v-if="!destinations.length || (isDockerVolumeSource && !volumes.length)" class="space-y-2 rounded-xl border border-amber-300/30 bg-amber-300/10 p-4 text-sm text-amber-100">
+                <p v-if="!destinations.length">{{ t('You need at least one active backup destination before creating a job.') }}</p>
+                <p v-if="isDockerVolumeSource && !volumes.length">{{ t('Sync Docker volumes first, or choose a host path source.') }}</p>
             </div>
 
             <div class="grid gap-4 sm:grid-cols-2">
@@ -92,7 +116,23 @@ const submit = () => {
                     <span v-if="form.errors.name" class="text-sm text-rose-300">{{ form.errors.name }}</span>
                 </label>
 
-                <div class="space-y-2">
+                <section class="space-y-3 sm:col-span-2">
+                    <div>
+                        <span class="label">{{ t('Backup source') }}</span>
+                        <span v-if="form.errors.source_type" class="mt-2 block text-sm text-rose-300">{{ form.errors.source_type }}</span>
+                    </div>
+                    <div class="grid gap-3 sm:grid-cols-2">
+                        <label v-for="type in sourceTypes" :key="type" class="flex cursor-pointer items-start gap-3 rounded-xl border border-white/10 bg-slate-950/60 p-4 text-sm">
+                            <input v-model="form.source_type" type="radio" :value="type" class="mt-1 text-sky-400">
+                            <span>
+                                <span class="block font-semibold text-white">{{ t(sourceTypeLabel(type)) }}</span>
+                                <span class="mt-1 block text-slate-300">{{ t(sourceTypeDescription(type)) }}</span>
+                            </span>
+                        </label>
+                    </div>
+                </section>
+
+                <div v-if="isDockerVolumeSource" class="space-y-2">
                     <span class="label">{{ t('Docker volume') }}</span>
                     <div class="relative">
                         <input
@@ -123,9 +163,17 @@ const submit = () => {
                         </div>
                     </div>
                     <p v-if="selectedVolume" class="text-sm text-slate-300">{{ t('Selected volume: {volume}', { volume: selectedVolume.name }) }}</p>
+                    <span v-if="form.errors.volume_name" class="text-sm text-rose-300">{{ form.errors.volume_name }}</span>
                 </div>
 
-                <label class="space-y-2">
+                <label v-else class="space-y-2">
+                    <span class="label">{{ t('Host path') }}</span>
+                    <input v-model="form.host_path" class="input font-mono" required placeholder="/srv/app-data">
+                    <p class="text-sm text-slate-300">{{ t('The path must be an existing directory on the Docker host. If VOLUMEVAULT_HOST_PATH_ALLOWLIST is set, it must match one of the allowed prefixes.') }}</p>
+                    <span v-if="form.errors.host_path" class="text-sm text-rose-300">{{ form.errors.host_path }}</span>
+                </label>
+
+                <label class="space-y-2" :class="{ 'sm:col-span-2': !isDockerVolumeSource }">
                     <span class="label">{{ t('Destination') }}</span>
                     <select v-model="form.backup_destination_id" class="input" required>
                         <option v-for="destination in destinations" :key="destination.id" :value="destination.id">{{ destination.name }} / {{ destination.target_label || destination.bucket }}</option>
@@ -175,7 +223,7 @@ const submit = () => {
                     <span class="label">{{ t('Retention count') }}</span>
                     <input v-model="form.retention_count" class="input" type="number" min="1" :placeholder="t('Optional')">
                 </label>
-                <label class="flex items-center gap-3 rounded-xl border border-white/10 bg-white/5 p-4 text-sm sm:mt-7">
+                <label v-if="isDockerVolumeSource" class="flex items-center gap-3 rounded-xl border border-white/10 bg-white/5 p-4 text-sm sm:mt-7">
                     <input v-model="form.stop_containers_before_backup" type="checkbox" class="rounded border-slate-600 bg-slate-950 text-sky-400">
                     {{ t('Stop containers before backup') }}
                 </label>
@@ -200,7 +248,7 @@ const submit = () => {
             </section>
 
             <div class="flex flex-wrap gap-3">
-                <button class="btn-primary" :disabled="form.processing || !volumes.length || !destinations.length">{{ editing ? t('Update job') : t('Create job') }}</button>
+                <button class="btn-primary" :disabled="form.processing || !canSubmit">{{ editing ? t('Update job') : t('Create job') }}</button>
                 <Link href="/backup-jobs" class="btn-secondary">{{ t('Cancel') }}</Link>
             </div>
         </form>

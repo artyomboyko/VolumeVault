@@ -149,10 +149,12 @@ class OpenApiController extends Controller
             ],
             'BackupJobRequest' => [
                 'type' => 'object',
-                'required' => ['name', 'volume_name', 'backup_destination_id', 'schedule_type'],
+                'required' => ['name', 'backup_destination_id', 'schedule_type'],
                 'properties' => [
                     'name' => ['type' => 'string'],
-                    'volume_name' => ['type' => 'string'],
+                    'source_type' => ['type' => 'string', 'enum' => ['docker_volume', 'host_path'], 'default' => 'docker_volume'],
+                    'volume_name' => ['type' => ['string', 'null'], 'description' => 'Required when source_type is docker_volume.'],
+                    'host_path' => ['type' => ['string', 'null'], 'description' => 'Required when source_type is host_path. Must be an absolute directory path on the Docker host and match VOLUMEVAULT_HOST_PATH_ALLOWLIST when configured.'],
                     'backup_destination_id' => ['type' => 'integer'],
                     'schedule_type' => ['type' => 'string', 'enum' => ['hourly', 'daily', 'weekly', 'cron']],
                     'schedule_config' => ['type' => 'object'],

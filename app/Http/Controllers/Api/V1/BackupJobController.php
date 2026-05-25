@@ -114,10 +114,14 @@ class BackupJobController extends Controller
         $scheduleType = $request->input('schedule_type');
         $scheduleConfig = $request->normalizedScheduleConfig();
         $backupExcludeRegexp = trim((string) $request->input('backup_exclude_regexp', ''));
+        $sourceType = $request->input('source_type', BackupJob::SOURCE_TYPE_DOCKER_VOLUME);
+        $isHostPath = $sourceType === BackupJob::SOURCE_TYPE_HOST_PATH;
 
         return [
             'name' => $request->input('name'),
-            'volume_name' => $request->input('volume_name'),
+            'source_type' => $sourceType,
+            'volume_name' => $isHostPath ? null : $request->input('volume_name'),
+            'host_path' => $isHostPath ? $request->input('host_path') : null,
             'backup_destination_id' => $request->integer('backup_destination_id'),
             'schedule_type' => $scheduleType,
             'schedule_config' => $scheduleConfig,
@@ -127,7 +131,7 @@ class BackupJobController extends Controller
             'retention_days' => $request->input('retention_days'),
             'retention_count' => $request->input('retention_count'),
             'backup_exclude_regexp' => $backupExcludeRegexp !== '' ? $backupExcludeRegexp : null,
-            'stop_containers_before_backup' => $request->boolean('stop_containers_before_backup'),
+            'stop_containers_before_backup' => ! $isHostPath && $request->boolean('stop_containers_before_backup'),
         ];
     }
 

@@ -153,6 +153,6 @@ class NotificationChannelController extends Controller
 
     private function jobsForFrontend(): array
     {
-        return BackupJob::orderBy('name')->get(['id', 'name', 'volume_name'])->toArray();
+        return BackupJob::orderBy('name')->get(['id', 'name', 'source_type', 'volume_name', 'host_path'])->toArray();
     }
 }

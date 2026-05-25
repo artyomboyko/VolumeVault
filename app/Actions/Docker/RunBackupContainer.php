@@ -3,6 +3,7 @@
 namespace App\Actions\Docker;
 
 use App\Models\BackupDestination;
+use App\Models\BackupJob;
 use App\Models\BackupRun;
 use App\Services\Docker\DockerProcess;
 use App\Services\Docker\DockerProcessResult;
@@ -30,11 +31,14 @@ class RunBackupContainer
             $containerName,
             '--entrypoint',
             '/usr/bin/backup',
-            '-v',
-            $run->job->volume_name.':/backup/'.$this->safeMountName($run->job->volume_name).':ro',
-            '-v',
-            '/var/run/docker.sock:/var/run/docker.sock:ro',
         ];
+
+        foreach ($this->sourceMountArguments($run->job) as $argument) {
+            $command[] = $argument;
+        }
+
+        $command[] = '-v';
+        $command[] = '/var/run/docker.sock:/var/run/docker.sock:ro';
 
         foreach ($runtime['mounts'] as $mount) {
             $command[] = '-v';
@@ -63,7 +67,6 @@ class RunBackupContainer
     {
         $job = $run->job;
         $destination = $job->destination;
-        $safeVolume = $this->safeMountName($job->volume_name);
 
         // offen/docker-volume-backup controls destinations and archive behavior through env vars.
         // Check offen/docker-volume-backup documentation if an environment variable changes.
@@ -243,7 +246,33 @@ class RunBackupContainer
 
     public function backupFilename(BackupRun $run): string
     {
-        return 'volumevault-'.$this->safeMountName($run->job->volume_name).'-run-'.$run->id.'.tar.gz';
+        return 'volumevault-'.$this->sourceMountName($run->job).'-run-'.$run->id.'.tar.gz';
+    }
+
+    private function sourceMountArguments(BackupJob $job): array
+    {
+        $target = '/backup/'.$this->sourceMountName($job);
+
+        if ($job->isHostPathSource()) {
+            return [
+                '--mount',
+                'type=bind,src='.$job->host_path.',dst='.$target.',readonly',
+            ];
+        }
+
+        return [
+            '-v',
+            $job->volume_name.':'.$target.':ro',
+        ];
+    }
+
+    private function sourceMountName(BackupJob $job): string
+    {
+        $sourceName = $job->isHostPathSource()
+            ? trim($job->sourceName(), '/')
+            : $job->sourceName();
+
+        return $this->safeMountName($sourceName);
     }
 
     private function safeMountName(string $volumeName): string
