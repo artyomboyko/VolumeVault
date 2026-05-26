@@ -29,7 +29,7 @@ It provides a guided web UI around scheduled backups, encrypted destinations, no
 - Create hourly, daily, weekly, or cron-based backup schedules.
 - Run manual backups, pause or resume jobs, inspect logs, and view backup and restore history.
 - Restore selected archives into new Docker volumes by default.
-- Configure Shoutrrr notification channels globally or per backup job, with backup size available in messages when it is known.
+- Configure Shoutrrr notification channels per backup job, with a default channel for new jobs and backup size available in messages when it is known.
 - Create API tokens for integrations, automation scripts, dashboards, and AI agents.
 - Export encrypted installation saves and import them during onboarding.
 

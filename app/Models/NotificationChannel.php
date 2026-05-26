@@ -52,6 +52,7 @@ class NotificationChannel extends Model
         'title_template',
         'body_template',
         'is_active',
+        'is_default',
         'last_tested_at',
         'last_test_status',
         'last_test_error',
@@ -64,6 +65,7 @@ class NotificationChannel extends Model
         return [
             'url' => 'encrypted',
             'is_active' => 'boolean',
+            'is_default' => 'boolean',
             'last_tested_at' => 'datetime',
         ];
     }
@@ -84,6 +86,7 @@ class NotificationChannel extends Model
             'title_template' => $this->title_template,
             'body_template' => $this->body_template,
             'is_active' => $this->is_active,
+            'is_default' => $this->is_default,
             'last_tested_at' => $this->last_tested_at,
             'last_test_status' => $this->last_test_status,
             'last_test_error' => $this->last_test_error,

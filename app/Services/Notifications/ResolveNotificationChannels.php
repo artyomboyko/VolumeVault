@@ -11,15 +11,12 @@ class ResolveNotificationChannels
     /** @return Collection<int, NotificationChannel> */
     public function forJob(BackupJob $job): Collection
     {
-        return NotificationChannel::query()
+        if (! $job->notifications_enabled) {
+            return new Collection;
+        }
+
+        return $job->notificationChannels()
             ->where('is_active', true)
-            ->where(function ($query) use ($job): void {
-                $query->where('scope', NotificationChannel::SCOPE_ALL)
-                    ->orWhere(function ($query) use ($job): void {
-                        $query->where('scope', NotificationChannel::SCOPE_SPECIFIC)
-                            ->whereHas('backupJobs', fn ($query) => $query->whereKey($job->id));
-                    });
-            })
             ->get();
     }
 }

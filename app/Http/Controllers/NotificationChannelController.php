@@ -3,7 +3,6 @@
 namespace App\Http\Controllers;
 
 use App\Models\ActivityLog;
-use App\Models\BackupJob;
 use App\Models\NotificationChannel;
 use App\Services\Notifications\SendShoutrrrNotification;
 use App\Services\Notifications\ShoutrrrUrlBuilder;
@@ -23,7 +22,6 @@ class NotificationChannelController extends Controller
                 ->latest()
                 ->get()
                 ->map->safeForFrontend(),
-            'jobs' => $this->jobsForFrontend(),
         ]);
     }
 
@@ -32,7 +30,6 @@ class NotificationChannelController extends Controller
         return Inertia::render('Notifications/Form', [
             'channel' => null,
             'services' => NotificationChannel::SERVICES,
-            'jobs' => $this->jobsForFrontend(),
         ]);
     }
 
@@ -42,7 +39,7 @@ class NotificationChannelController extends Controller
         $data['url'] = $this->buildUrl($urlBuilder, $data['service'], $request->input('config', []));
 
         $channel = NotificationChannel::create($this->payload($data, $request));
-        $this->syncJobs($channel, $request);
+        $this->keepSingleDefaultChannel($channel);
 
         ActivityLog::record('notification_channel_created', 'Notification channel created.', $channel);
 
@@ -56,7 +53,6 @@ class NotificationChannelController extends Controller
         return Inertia::render('Notifications/Form', [
             'channel' => $notification->safeForFrontend(),
             'services' => NotificationChannel::SERVICES,
-            'jobs' => $this->jobsForFrontend(),
         ]);
     }
 
@@ -71,7 +67,7 @@ class NotificationChannelController extends Controller
         }
 
         $notification->update($this->payload($data, $request));
-        $this->syncJobs($notification, $request);
+        $this->keepSingleDefaultChannel($notification);
 
         return redirect()->route('notifications.index')->with('success', 'Notification channel updated.');
     }
@@ -81,6 +77,19 @@ class NotificationChannelController extends Controller
         $notification->delete();
 
         return redirect()->route('notifications.index')->with('success', 'Notification channel deleted.');
+    }
+
+    public function updateActive(Request $request, NotificationChannel $notification)
+    {
+        $request->validate([
+            'is_active' => ['required', 'boolean'],
+        ]);
+
+        $notification->forceFill([
+            'is_active' => $request->boolean('is_active'),
+        ])->save();
+
+        return back()->with('success', $notification->is_active ? 'Notification channel enabled.' : 'Notification channel disabled.');
     }
 
     public function test(NotificationChannel $notification, SendShoutrrrNotification $sendShoutrrrNotification)
@@ -102,12 +111,11 @@ class NotificationChannelController extends Controller
             'name' => ['required', 'string', 'max:255'],
             'service' => ['required', 'string', Rule::in(NotificationChannel::SERVICES)],
             'notification_level' => ['required', 'string', Rule::in(NotificationChannel::LEVELS)],
-            'scope' => ['required', 'string', Rule::in(NotificationChannel::SCOPES)],
+            'scope' => ['nullable', 'string', Rule::in(NotificationChannel::SCOPES)],
             'title_template' => ['nullable', 'string', 'max:255'],
             'body_template' => ['nullable', 'string', 'max:4000'],
             'is_active' => ['boolean'],
-            'backup_job_ids' => ['nullable', 'array'],
-            'backup_job_ids.*' => ['integer', 'exists:backup_jobs,id'],
+            'is_default' => ['boolean'],
             'config' => ['nullable', 'array'],
         ]);
     }
@@ -119,10 +127,11 @@ class NotificationChannelController extends Controller
             'service' => $data['service'],
             'url' => $data['url'] ?? null,
             'notification_level' => $data['notification_level'],
-            'scope' => $data['scope'],
+            'scope' => $data['scope'] ?? NotificationChannel::SCOPE_ALL,
             'title_template' => $data['title_template'] ?? null,
             'body_template' => $data['body_template'] ?? null,
             'is_active' => $request->boolean('is_active', true),
+            'is_default' => $request->boolean('is_default'),
         ], fn ($value) => $value !== null);
     }
 
@@ -135,15 +144,13 @@ class NotificationChannelController extends Controller
         }
     }
 
-    private function syncJobs(NotificationChannel $channel, Request $request): void
+    private function keepSingleDefaultChannel(NotificationChannel $channel): void
     {
-        if ($channel->scope !== NotificationChannel::SCOPE_SPECIFIC) {
-            $channel->backupJobs()->sync([]);
-
+        if (! $channel->is_default) {
             return;
         }
 
-        $channel->backupJobs()->sync($request->input('backup_job_ids', []));
+        NotificationChannel::whereKeyNot($channel->id)->update(['is_default' => false]);
     }
 
     private function hasFilledConfig(array $config): bool
@@ -151,8 +158,4 @@ class NotificationChannelController extends Controller
         return collect($config)->contains(fn ($value) => filled($value));
     }
 
-    private function jobsForFrontend(): array
-    {
-        return BackupJob::orderBy('name')->get(['id', 'name', 'source_type', 'volume_name', 'host_path'])->toArray();
-    }
 }

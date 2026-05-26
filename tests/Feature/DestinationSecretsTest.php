@@ -3,6 +3,7 @@
 namespace Tests\Feature;
 
 use App\Models\BackupDestination;
+use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -45,5 +46,27 @@ class DestinationSecretsTest extends TestCase
         $this->assertStringNotContainsString('plain-access-key', json_encode($payload));
         $this->assertStringNotContainsString('plain-secret-key', json_encode($payload));
         $this->assertSame('********', $payload['masked_access_key_id']);
+    }
+
+    public function test_admin_can_toggle_destination_active_state_inline(): void
+    {
+        $admin = User::factory()->admin()->create();
+        $destination = BackupDestination::create([
+            'name' => 'S3',
+            'provider' => BackupDestination::PROVIDER_AWS_S3,
+            'bucket' => 'backups',
+            'access_key_id' => 'access',
+            'secret_access_key' => 'secret',
+            'is_active' => true,
+        ]);
+
+        $this->actingAs($admin)
+            ->from('/destinations')
+            ->patch('/destinations/'.$destination->id.'/active', [
+                'is_active' => false,
+            ])
+            ->assertRedirect('/destinations');
+
+        $this->assertFalse($destination->fresh()->is_active);
     }
 }

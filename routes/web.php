@@ -57,6 +57,7 @@ Route::middleware('auth')->group(function () {
         Route::post('/backup-jobs/{backupJob}/resume', [BackupJobController::class, 'resume'])->name('backup-jobs.resume');
 
         Route::resource('destinations', DestinationController::class)->except(['show']);
+        Route::patch('/destinations/{destination}/active', [DestinationController::class, 'updateActive'])->name('destinations.active');
         Route::post('/destinations/{destination}/test', [DestinationController::class, 'test'])->name('destinations.test');
 
         Route::get('/installation-save', [InstallationSaveController::class, 'index'])->name('installation-save.index');
@@ -64,6 +65,7 @@ Route::middleware('auth')->group(function () {
         Route::post('/installation-save/upload', [InstallationSaveController::class, 'upload'])->name('installation-save.upload');
 
         Route::resource('notifications', NotificationChannelController::class)->parameters(['notifications' => 'notification'])->except(['show']);
+        Route::patch('/notifications/{notification}/active', [NotificationChannelController::class, 'updateActive'])->name('notifications.active');
         Route::post('/notifications/{notification}/test', [NotificationChannelController::class, 'test'])->name('notifications.test');
 
         Route::resource('users', UserController::class)->except(['show']);

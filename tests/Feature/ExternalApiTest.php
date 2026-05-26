@@ -5,6 +5,7 @@ namespace Tests\Feature;
 use App\Models\BackupDestination;
 use App\Models\BackupJob;
 use App\Models\DockerVolume;
+use App\Models\NotificationChannel;
 use App\Models\User;
 use App\Services\Docker\DockerProcess;
 use App\Services\Docker\DockerProcessResult;
@@ -23,6 +24,8 @@ class ExternalApiTest extends TestCase
             ->assertJsonPath('openapi', '3.1.0')
             ->assertJsonPath('components.schemas.BackupJobRequest.properties.source_type.enum.1', 'host_path')
             ->assertJsonPath('components.schemas.BackupJobRequest.properties.backup_exclude_regexp.maxLength', 1000)
+            ->assertJsonPath('components.schemas.BackupJobRequest.properties.notifications_enabled.default', true)
+            ->assertJsonPath('components.schemas.BackupJobRequest.properties.notification_channel_ids.items.type', 'integer')
             ->assertJsonPath('components.schemas.DockerVolume.properties.backup_state.enum.0', 'backed_up')
             ->assertJsonPath('components.schemas.BackupRun.properties.backup_size_bytes.type.0', 'integer')
             ->assertJsonPath('components.securitySchemes.bearerAuth.scheme', 'bearer');
@@ -91,6 +94,13 @@ class ExternalApiTest extends TestCase
             'secret_access_key' => 'secret-access-key',
             'is_active' => true,
         ]);
+        $channel = NotificationChannel::create([
+            'name' => 'Discord',
+            'service' => NotificationChannel::SERVICE_ADVANCED,
+            'url' => 'ntfy://ntfy.sh/default',
+            'notification_level' => NotificationChannel::LEVEL_INFO,
+            'is_default' => true,
+        ]);
         DockerVolume::create(['name' => 'app-data', 'exists' => true]);
         $token = $admin->createToken('openclaw-write', ['read', 'write'])->plainTextToken;
 
@@ -108,6 +118,8 @@ class ExternalApiTest extends TestCase
             ->assertCreated()
             ->assertJsonPath('data.name', 'Daily app data')
             ->assertJsonPath('data.backup_exclude_regexp', '\\.log$')
+            ->assertJsonPath('data.notifications_enabled', true)
+            ->assertJsonPath('data.notification_channel_ids.0', $channel->id)
             ->assertJsonPath('data.destination.has_access_key_id', true)
             ->assertJsonMissing(['secret-access-key'])
             ->assertJsonMissing(['secret-access-key-id']);
