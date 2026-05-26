@@ -24,12 +24,13 @@ const { activeFilterCount: activeAdvancedFilterCount } = useListFilters([statusF
 const statuses = computed(() => uniqueSortedOptions(props.jobs, (job) => job.status));
 const destinations = computed(() => uniqueSortedOptions(props.jobs, (job) => job.destination?.name || t('Missing')));
 const schedules = computed(() => uniqueSortedOptions(props.jobs, (job) => job.schedule_type));
+const sourceLabel = (job: any) => job.source_label || job.host_path || job.volume_name || t('Unknown');
 
 const filteredJobs = computed(() => {
     return props.jobs.filter((job) => {
         const destination = job.destination?.name || t('Missing');
 
-        return matchesSearch([job.name, job.volume_name, destination], search.value)
+        return matchesSearch([job.name, sourceLabel(job), destination], search.value)
             && (!statusFilter.value || job.status === statusFilter.value)
             && (!destinationFilter.value || destination === destinationFilter.value)
             && (!scheduleFilter.value || job.schedule_type === scheduleFilter.value)
@@ -52,11 +53,11 @@ const onJobKeydown = (event: KeyboardEvent, id: number) => {
 
 <template>
     <Head :title="t('Backup jobs')" />
-    <AppLayout :title="t('Backup jobs')" :subtitle="t('Schedule, pause, run, and restore Docker volume backups from one place.')">
+    <AppLayout :title="t('Backup jobs')" :subtitle="t('Schedule, pause, run, and restore Docker volume or host path backups from one place.')">
         <template #actions>
             <div class="flex w-full flex-col gap-3 sm:w-auto sm:flex-row sm:items-center sm:justify-end">
                 <div v-if="jobs.length" class="flex min-w-0 flex-col gap-2 sm:flex-row sm:items-center">
-                    <input v-model="search" class="input sm:w-72" :aria-label="t('Search')" :placeholder="t('Search jobs, volumes, destinations')">
+                    <input v-model="search" class="input sm:w-72" :aria-label="t('Search')" :placeholder="t('Search jobs, sources, destinations')">
                     <div class="flex items-center gap-3">
                         <p class="whitespace-nowrap text-sm text-slate-400">{{ t('{count} results', { count: filteredJobs.length }) }}</p>
                         <button type="button" class="btn-secondary gap-2" :aria-expanded="filtersVisible" :aria-label="filtersVisible ? t('Hide filters') : t('Show filters')" @click="filtersVisible = !filtersVisible">
@@ -118,7 +119,7 @@ const onJobKeydown = (event: KeyboardEvent, id: number) => {
                         <div class="flex items-start justify-between gap-3">
                             <div class="min-w-0">
                                 <h2 class="break-words font-semibold text-white">{{ job.name }}</h2>
-                                <p class="mt-1 break-all text-sm text-slate-400">{{ job.volume_name }}</p>
+                                <p class="mt-1 break-all text-sm text-slate-400">{{ sourceLabel(job) }}</p>
                             </div>
                             <StatusBadge :status="job.status" />
                         </div>
@@ -145,7 +146,7 @@ const onJobKeydown = (event: KeyboardEvent, id: number) => {
                     <thead class="bg-white/5 text-left text-xs uppercase tracking-wide text-slate-400">
                         <tr>
                             <th class="px-4 py-3">{{ t('Name') }}</th>
-                            <th class="px-4 py-3">{{ t('Volume') }}</th>
+                            <th class="px-4 py-3">{{ t('Source') }}</th>
                             <th class="px-4 py-3">{{ t('Destination') }}</th>
                             <th class="px-4 py-3">{{ t('Schedule') }}</th>
                             <th class="px-4 py-3">{{ t('Status') }}</th>
@@ -157,7 +158,7 @@ const onJobKeydown = (event: KeyboardEvent, id: number) => {
                     <tbody class="divide-y divide-white/10">
                         <tr v-for="job in filteredJobs" :key="job.id" class="cursor-pointer hover:bg-white/[0.03]" role="link" tabindex="0" @click="viewJob(job.id)" @keydown="onJobKeydown($event, job.id)">
                             <td class="px-4 py-3 font-medium text-white">{{ job.name }}</td>
-                            <td class="px-4 py-3 text-slate-300">{{ job.volume_name }}</td>
+                            <td class="px-4 py-3 text-slate-300">{{ sourceLabel(job) }}</td>
                             <td class="px-4 py-3 text-slate-300">{{ job.destination?.name || t('Missing') }}</td>
                             <td class="px-4 py-3 text-slate-300">{{ job.schedule_summary }}</td>
                             <td class="px-4 py-3"><StatusBadge :status="job.status" /></td>
@@ -184,7 +185,7 @@ const onJobKeydown = (event: KeyboardEvent, id: number) => {
             </div>
             <div v-else class="p-10 text-center">
                 <p class="text-lg font-semibold">{{ t('No backup jobs yet.') }}</p>
-                <p class="mt-2 text-sm text-slate-400">{{ t('Sync volumes, add a destination, then create your first scheduled backup.') }}</p>
+                <p class="mt-2 text-sm text-slate-400">{{ t('Add a destination, then choose a Docker volume or host path for your first scheduled backup.') }}</p>
                 <Link v-if="can.runDockerActions" href="/backup-jobs/create" class="btn-primary mt-5">{{ t('Create backup job') }}</Link>
             </div>
         </div>

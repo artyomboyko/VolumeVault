@@ -34,7 +34,7 @@ class RestoreController extends Controller
             ],
             'backups' => $backups,
             'listError' => $listError,
-            'generatedTargetVolumeName' => $generateRestoreVolumeName->handle($backupJob->volume_name),
+            'generatedTargetVolumeName' => $generateRestoreVolumeName->handle($backupJob->sourceName()),
         ]);
     }
 

@@ -175,4 +175,52 @@ class BackupDestinationProviderTest extends TestCase
         $this->assertSame('\\.log$', $call['environment']['BACKUP_EXCLUDE_REGEXP'] ?? null);
         $this->assertContains('BACKUP_EXCLUDE_REGEXP', $call['command']);
     }
+
+    public function test_host_path_source_is_mounted_read_only_for_offen(): void
+    {
+        $process = new class extends DockerProcess
+        {
+            public array $calls = [];
+
+            public function run(array $command, int $timeout = 300, array $environment = []): DockerProcessResult
+            {
+                $this->calls[] = ['command' => $command, 'environment' => $environment];
+
+                return new DockerProcessResult($command, 0, 'ok', '');
+            }
+        };
+        $action = new RunBackupContainer($process);
+        $destination = BackupDestination::create([
+            'name' => 'Local',
+            'provider' => BackupDestination::PROVIDER_LOCAL,
+            'bucket' => 'local',
+            'access_key_id' => '',
+            'secret_access_key' => '',
+            'settings' => ['archive_path' => '/archive', 'archive_mount_source' => '/host/archive'],
+        ]);
+        $job = BackupJob::create([
+            'name' => 'Host path backup',
+            'source_type' => BackupJob::SOURCE_TYPE_HOST_PATH,
+            'host_path' => '/srv/app-data',
+            'backup_destination_id' => $destination->id,
+            'schedule_type' => BackupJob::SCHEDULE_DAILY,
+            'schedule_config' => ['time' => '02:00'],
+            'cron_expression' => '0 2 * * *',
+            'status' => BackupJob::STATUS_ACTIVE,
+        ]);
+        $run = BackupRun::create([
+            'backup_job_id' => $job->id,
+            'status' => BackupRun::STATUS_QUEUED,
+            'trigger' => BackupRun::TRIGGER_MANUAL,
+        ]);
+
+        $action->handle($run);
+        $call = $process->calls[0];
+        $mountIndex = array_search('--mount', $call['command'], true);
+
+        $this->assertIsInt($mountIndex);
+        $this->assertSame('type=bind,src=/srv/app-data,dst=/backup/srv_app-data,readonly', $call['command'][$mountIndex + 1]);
+        $this->assertSame('/backup', $call['environment']['BACKUP_SOURCES'] ?? null);
+        $this->assertSame('volumevault-srv_app-data-run-'.$run->id.'.tar.gz', $call['environment']['BACKUP_FILENAME'] ?? null);
+    }
 }

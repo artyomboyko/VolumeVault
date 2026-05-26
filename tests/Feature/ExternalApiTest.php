@@ -6,7 +6,10 @@ use App\Models\BackupDestination;
 use App\Models\BackupJob;
 use App\Models\DockerVolume;
 use App\Models\User;
+use App\Services\Docker\DockerProcess;
+use App\Services\Docker\DockerProcessResult;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Queue;
 use Tests\TestCase;
 
 class ExternalApiTest extends TestCase
@@ -18,6 +21,7 @@ class ExternalApiTest extends TestCase
         $this->getJson('/api/v1/openapi.json')
             ->assertOk()
             ->assertJsonPath('openapi', '3.1.0')
+            ->assertJsonPath('components.schemas.BackupJobRequest.properties.source_type.enum.1', 'host_path')
             ->assertJsonPath('components.schemas.BackupJobRequest.properties.backup_exclude_regexp.maxLength', 1000)
             ->assertJsonPath('components.schemas.DockerVolume.properties.backup_state.enum.0', 'backed_up')
             ->assertJsonPath('components.schemas.BackupRun.properties.backup_size_bytes.type.0', 'integer')
@@ -107,6 +111,107 @@ class ExternalApiTest extends TestCase
             ->assertJsonPath('data.destination.has_access_key_id', true)
             ->assertJsonMissing(['secret-access-key'])
             ->assertJsonMissing(['secret-access-key-id']);
+    }
+
+    public function test_admin_write_token_can_create_host_path_backup_job_when_allowed(): void
+    {
+        config(['volumevault.host_path_allowlist' => ['/srv', '/mnt/data']]);
+        $this->app->instance(DockerProcess::class, new class extends DockerProcess
+        {
+            public function run(array $command, int $timeout = 300, array $environment = []): DockerProcessResult
+            {
+                return new DockerProcessResult($command, 0, 'ok', '');
+            }
+        });
+
+        $admin = User::factory()->admin()->create();
+        $destination = BackupDestination::create([
+            'name' => 'Local',
+            'provider' => BackupDestination::PROVIDER_LOCAL,
+            'bucket' => 'local',
+            'access_key_id' => '',
+            'secret_access_key' => '',
+            'settings' => ['archive_path' => '/archive', 'archive_mount_source' => '/host/archive'],
+            'is_active' => true,
+        ]);
+        $token = $admin->createToken('openclaw-write', ['read', 'write'])->plainTextToken;
+
+        $this->withToken($token)
+            ->postJson('/api/v1/backup-jobs', [
+                'name' => 'Daily host path',
+                'source_type' => BackupJob::SOURCE_TYPE_HOST_PATH,
+                'host_path' => '/srv/app-data',
+                'backup_destination_id' => $destination->id,
+                'schedule_type' => BackupJob::SCHEDULE_DAILY,
+                'schedule_config' => ['time' => '02:00'],
+                'retention_count' => 7,
+            ])
+            ->assertCreated()
+            ->assertJsonPath('data.source_type', BackupJob::SOURCE_TYPE_HOST_PATH)
+            ->assertJsonPath('data.host_path', '/srv/app-data')
+            ->assertJsonPath('data.volume_name', null)
+            ->assertJsonPath('data.source_label', '/srv/app-data');
+    }
+
+    public function test_host_path_backup_job_outside_allowlist_returns_validation_error(): void
+    {
+        config(['volumevault.host_path_allowlist' => ['/srv']]);
+
+        $admin = User::factory()->admin()->create();
+        $destination = BackupDestination::create([
+            'name' => 'Local',
+            'provider' => BackupDestination::PROVIDER_LOCAL,
+            'bucket' => 'local',
+            'access_key_id' => '',
+            'secret_access_key' => '',
+            'settings' => ['archive_path' => '/archive', 'archive_mount_source' => '/host/archive'],
+            'is_active' => true,
+        ]);
+        $token = $admin->createToken('openclaw-write', ['read', 'write'])->plainTextToken;
+
+        $this->withToken($token)
+            ->postJson('/api/v1/backup-jobs', [
+                'name' => 'Unsafe host path',
+                'source_type' => BackupJob::SOURCE_TYPE_HOST_PATH,
+                'host_path' => '/etc',
+                'backup_destination_id' => $destination->id,
+                'schedule_type' => BackupJob::SCHEDULE_DAILY,
+                'schedule_config' => ['time' => '02:00'],
+            ])
+            ->assertUnprocessable()
+            ->assertJsonValidationErrors('host_path');
+    }
+
+    public function test_host_path_backup_job_can_be_queued_without_docker_volume_record(): void
+    {
+        Queue::fake();
+
+        $admin = User::factory()->admin()->create();
+        $destination = BackupDestination::create([
+            'name' => 'Local',
+            'provider' => BackupDestination::PROVIDER_LOCAL,
+            'bucket' => 'local',
+            'access_key_id' => '',
+            'secret_access_key' => '',
+            'settings' => ['archive_path' => '/archive', 'archive_mount_source' => '/host/archive'],
+            'is_active' => true,
+        ]);
+        $job = BackupJob::create([
+            'name' => 'Host path backup',
+            'source_type' => BackupJob::SOURCE_TYPE_HOST_PATH,
+            'host_path' => '/srv/app-data',
+            'backup_destination_id' => $destination->id,
+            'schedule_type' => BackupJob::SCHEDULE_DAILY,
+            'schedule_config' => ['time' => '02:00'],
+            'cron_expression' => '0 2 * * *',
+            'status' => BackupJob::STATUS_ACTIVE,
+        ]);
+        $token = $admin->createToken('openclaw-write', ['read', 'write'])->plainTextToken;
+
+        $this->withToken($token)
+            ->postJson('/api/v1/backup-jobs/'.$job->id.'/run')
+            ->assertAccepted()
+            ->assertJsonPath('data.backup_job_id', $job->id);
     }
 
     public function test_destination_api_does_not_expose_plaintext_secrets(): void

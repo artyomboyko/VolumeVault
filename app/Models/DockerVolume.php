@@ -32,6 +32,7 @@ class DockerVolume extends Model
 
     public function backupJobs(): HasMany
     {
-        return $this->hasMany(BackupJob::class, 'volume_name', 'name');
+        return $this->hasMany(BackupJob::class, 'volume_name', 'name')
+            ->where('source_type', BackupJob::SOURCE_TYPE_DOCKER_VOLUME);
     }
 }

@@ -14,9 +14,9 @@ const props = defineProps<{
 const editing = computed(() => Boolean(props.channel));
 const { t } = useI18n();
 const useCustomMessage = ref(Boolean(props.channel?.title_template || props.channel?.body_template));
-const templateTokens = '{{ job }}, {{ volume }}, {{ destination }}, {{ status }}, {{ trigger }}, {{ duration }}, {{ backup_size }}, {{ error }}';
+const templateTokens = '{{ job }}, {{ source }}, {{ volume }}, {{ destination }}, {{ status }}, {{ trigger }}, {{ duration }}, {{ backup_size }}, {{ error }}';
 const titleTemplatePlaceholder = 'VolumeVault: {{ status }} backup for {{ job }}';
-const bodyTemplatePlaceholder = 'Job: {{ job }}\nVolume: {{ volume }}\nDestination: {{ destination }}\nStatus: {{ status }}\nDuration: {{ duration }}';
+const bodyTemplatePlaceholder = 'Job: {{ job }}\nSource: {{ source }}\nDestination: {{ destination }}\nStatus: {{ status }}\nDuration: {{ duration }}';
 const form = useForm({
     name: props.channel?.name || '',
     service: props.channel?.service || 'discord',
@@ -60,6 +60,8 @@ const submit = () => {
 
     form.post('/notifications');
 };
+
+const sourceLabel = (job: any) => job.source_label || job.host_path || job.volume_name || t('Unknown');
 </script>
 
 <template>
@@ -236,7 +238,7 @@ const submit = () => {
                 <div v-if="form.scope === 'specific'" class="mt-4 grid gap-2 sm:grid-cols-2">
                     <label v-for="job in jobs" :key="job.id" class="flex cursor-pointer items-start gap-3 rounded-xl border border-white/10 bg-slate-950/60 p-3 text-sm">
                         <input type="checkbox" :checked="form.backup_job_ids.includes(job.id)" class="rounded border-slate-600 bg-slate-950 text-sky-400" @change="toggleJob(job.id)">
-                        <span class="min-w-0 break-words">{{ job.name }} <span class="break-all text-slate-500">/ {{ job.volume_name }}</span></span>
+                        <span class="min-w-0 break-words">{{ job.name }} <span class="break-all text-slate-500">/ {{ sourceLabel(job) }}</span></span>
                     </label>
                     <p v-if="!jobs.length" class="text-sm text-slate-400">Create a backup job first, or use all backups.</p>
                 </div>

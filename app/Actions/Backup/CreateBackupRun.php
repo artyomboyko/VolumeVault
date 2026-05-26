@@ -30,12 +30,14 @@ class CreateBackupRun
             ]);
         }
 
-        $volume = DockerVolume::where('name', $job->volume_name)->first();
+        if ($job->isDockerVolumeSource()) {
+            $volume = DockerVolume::where('name', $job->volume_name)->first();
 
-        if (! $volume || ! $volume->exists) {
-            throw ValidationException::withMessages([
-                'volume' => 'Docker volume not found: '.$job->volume_name,
-            ]);
+            if (! $volume || ! $volume->exists) {
+                throw ValidationException::withMessages([
+                    'volume' => 'Docker volume not found: '.$job->volume_name,
+                ]);
+            }
         }
 
         $alreadyRunning = BackupRun::query()

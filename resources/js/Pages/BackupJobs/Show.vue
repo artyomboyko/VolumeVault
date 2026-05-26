@@ -10,6 +10,8 @@ defineProps<{ job: any; lastSuccessfulBackup?: any | null; runs: any[] }>();
 const page = usePage();
 const can = page.props.can as { runDockerActions?: boolean };
 const { t, formatDate } = useI18n();
+const sourceLabel = (job: any) => job.source_label || job.host_path || job.volume_name || t('Unknown');
+const sourceTypeLabel = (job: any) => job.source_type === 'host_path' ? t('Host path') : t('Docker volume');
 const runNow = (id: number) => router.post(`/backup-jobs/${id}/run`);
 const pause = (id: number) => router.post(`/backup-jobs/${id}/pause`);
 const resume = (id: number) => router.post(`/backup-jobs/${id}/resume`);
@@ -33,7 +35,8 @@ const resume = (id: number) => router.post(`/backup-jobs/${id}/resume`);
                 <h2 class="mb-4 text-lg font-semibold">{{ t('Job info') }}</h2>
                 <dl class="grid gap-4 sm:grid-cols-2">
                     <div><dt class="text-xs uppercase text-slate-400">{{ t('Status') }}</dt><dd class="mt-1"><StatusBadge :status="job.status" /></dd></div>
-                    <div class="min-w-0"><dt class="text-xs uppercase text-slate-400">{{ t('Volume') }}</dt><dd class="mt-1 break-all text-white">{{ job.volume_name }}</dd></div>
+                    <div><dt class="text-xs uppercase text-slate-400">{{ t('Source type') }}</dt><dd class="mt-1 text-white">{{ sourceTypeLabel(job) }}</dd></div>
+                    <div class="min-w-0"><dt class="text-xs uppercase text-slate-400">{{ t('Source') }}</dt><dd class="mt-1 break-all text-white">{{ sourceLabel(job) }}</dd></div>
                     <div class="min-w-0"><dt class="text-xs uppercase text-slate-400">{{ t('Destination') }}</dt><dd class="mt-1 break-words text-white">{{ job.destination?.name }}</dd></div>
                     <div class="min-w-0"><dt class="text-xs uppercase text-slate-400">{{ t('Schedule') }}</dt><dd class="mt-1 break-words text-white">{{ job.schedule_summary }}</dd></div>
                     <div><dt class="text-xs uppercase text-slate-400">{{ t('Excluded files') }}</dt><dd class="mt-1 break-all font-mono text-sm text-white">{{ job.backup_exclude_regexp || t('None') }}</dd></div>

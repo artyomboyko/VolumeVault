@@ -33,6 +33,7 @@ class VolumeBackupSummaries
         $jobsByVolume = $volumeNames->isEmpty()
             ? collect()
             : BackupJob::query()
+                ->where('source_type', BackupJob::SOURCE_TYPE_DOCKER_VOLUME)
                 ->whereIn('volume_name', $volumeNames->all())
                 ->get(['id', 'name', 'volume_name', 'status'])
                 ->groupBy('volume_name');
@@ -42,6 +43,7 @@ class VolumeBackupSummaries
             : BackupRun::query()
                 ->select('backup_runs.*', 'backup_jobs.volume_name as summary_volume_name')
                 ->join('backup_jobs', 'backup_jobs.id', '=', 'backup_runs.backup_job_id')
+                ->where('backup_jobs.source_type', BackupJob::SOURCE_TYPE_DOCKER_VOLUME)
                 ->whereIn('backup_jobs.volume_name', $volumeNames->all())
                 ->where('backup_runs.status', BackupRun::STATUS_SUCCESS)
                 ->orderByDesc('backup_runs.finished_at')

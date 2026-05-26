@@ -39,15 +39,18 @@ class SyncDockerVolumes
             $missingQuery->whereNotIn('name', $names->all());
         }
 
-        $jobVolumeNames = BackupJob::query()->select('volume_name');
+        $jobVolumeNames = BackupJob::query()
+            ->where('source_type', BackupJob::SOURCE_TYPE_DOCKER_VOLUME)
+            ->whereNotNull('volume_name')
+            ->select('volume_name');
         $missingNames = (clone $missingQuery)->whereIn('name', $jobVolumeNames)->pluck('name');
-        $orphanedMissingNames = (clone $missingQuery)->whereNotIn('name', BackupJob::query()->select('volume_name'))->pluck('name');
+        $orphanedMissingNames = (clone $missingQuery)->whereNotIn('name', clone $jobVolumeNames)->pluck('name');
 
         $markedMissing = DockerVolume::whereIn('name', $missingNames)->update(['exists' => false]);
         $removed = DockerVolume::whereIn('name', $orphanedMissingNames)->delete();
         $removed += DockerVolume::query()
             ->where('exists', false)
-            ->whereNotIn('name', BackupJob::query()->select('volume_name'))
+            ->whereNotIn('name', clone $jobVolumeNames)
             ->delete();
         $affectedJobs = $this->markMissingVolumeJobs->handle($missingNames->all());
 

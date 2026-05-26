@@ -22,6 +22,7 @@ const form = useForm({
 });
 
 const selectedBackup = computed(() => props.backups.find((backup) => backup.key === form.selected_backup_key));
+const sourceLabel = (job: any) => job.source_label || job.host_path || job.volume_name || t('Unknown');
 const submit = () => form.post(`/backup-jobs/${props.job.id}/restore`);
 </script>
 
@@ -95,7 +96,7 @@ const submit = () => form.post(`/backup-jobs/${props.job.id}/restore`);
                 Restore can take time. The default mode creates a new Docker volume and does not overwrite the source volume.
             </div>
             <dl class="mt-5 grid gap-4 sm:grid-cols-2">
-                <div class="min-w-0"><dt class="text-xs uppercase text-slate-400">{{ t('Source volume') }}</dt><dd class="mt-1 break-all text-white">{{ job.volume_name }}</dd></div>
+                <div class="min-w-0"><dt class="text-xs uppercase text-slate-400">{{ t('Source') }}</dt><dd class="mt-1 break-all text-white">{{ sourceLabel(job) }}</dd></div>
                 <div class="min-w-0"><dt class="text-xs uppercase text-slate-400">{{ t('Target volume') }}</dt><dd class="mt-1 break-all text-white">{{ form.target_volume_name }}</dd></div>
                 <div class="min-w-0"><dt class="text-xs uppercase text-slate-400">{{ t('Destination') }}</dt><dd class="mt-1 break-words text-white">{{ job.destination?.name }}</dd></div>
                 <div><dt class="text-xs uppercase text-slate-400">{{ t('Selected backup') }}</dt><dd class="mt-1 break-all text-white">{{ selectedBackup?.display_name || selectedBackup?.key }}</dd></div>

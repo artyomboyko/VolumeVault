@@ -169,7 +169,7 @@ class NotificationChannelTest extends TestCase
         $dockerProcess->shouldReceive('run')
             ->once()
             ->with(
-                Mockery::on(fn (array $command) => in_array("Job: Nightly\nVolume: app_data\nDestination: S3\nStatus: success\nTrigger: manual\nDuration: 3s\nBackup size: 2 KB", $command, true)),
+                Mockery::on(fn (array $command) => in_array("Job: Nightly\nSource: app_data\nDestination: S3\nStatus: success\nTrigger: manual\nDuration: 3s\nBackup size: 2 KB", $command, true)),
                 60,
                 Mockery::any(),
             )

@@ -13,6 +13,7 @@ use App\Models\BackupRun;
 use App\Models\DockerVolume;
 use App\Services\Logging\AppendRunLog;
 use App\Services\BackupDestinations\ListBackupObjects;
+use App\Services\BackupSources\HostPathPolicy;
 use App\Services\Notifications\SendShoutrrrNotification;
 use App\Services\Scheduling\BackupScheduleCalculator;
 use RuntimeException;
@@ -28,6 +29,7 @@ class RunBackup
         private readonly RunBackupContainer $runBackupContainer,
         private readonly AppendRunLog $appendRunLog,
         private readonly ListBackupObjects $listBackupObjects,
+        private readonly HostPathPolicy $hostPathPolicy,
         private readonly SendShoutrrrNotification $sendShoutrrrNotification,
         private readonly BackupScheduleCalculator $scheduleCalculator,
     ) {}
@@ -59,10 +61,14 @@ class RunBackup
                 throw new RuntimeException('The backup destination is inactive.');
             }
 
-            $this->inspectDockerVolume->handle($job->volume_name);
-            DockerVolume::updateOrCreate(['name' => $job->volume_name], ['exists' => true, 'last_seen_at' => now()]);
+            if ($job->isDockerVolumeSource()) {
+                $this->inspectDockerVolume->handle($job->volume_name);
+                DockerVolume::updateOrCreate(['name' => $job->volume_name], ['exists' => true, 'last_seen_at' => now()]);
+            } else {
+                $this->hostPathPolicy->assertValid((string) $job->host_path);
+            }
 
-            if ($job->stop_containers_before_backup) {
+            if ($job->isDockerVolumeSource() && $job->stop_containers_before_backup) {
                 $containers = $this->findContainersUsingVolume->handle($job->volume_name);
                 $stoppedContainers = collect($containers)->pluck('id')->filter()->values()->all();
 
