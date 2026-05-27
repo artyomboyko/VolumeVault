@@ -9,6 +9,7 @@ use App\Jobs\RunBackupJob;
 use App\Models\ActivityLog;
 use App\Models\BackupJob;
 use App\Models\BackupRun;
+use App\Models\NotificationChannel;
 use App\Services\BackupDestinations\ListBackupObjects;
 use App\Services\Scheduling\BackupScheduleCalculator;
 use Illuminate\Http\JsonResponse;
@@ -22,7 +23,7 @@ class BackupJobController extends Controller
     public function index(): JsonResponse
     {
         return response()->json([
-            'data' => BackupJob::with('destination')
+            'data' => BackupJob::with(['destination', 'notificationChannels'])
                 ->latest()
                 ->get()
                 ->map(fn (BackupJob $job) => $this->serializeJob($job)),
@@ -32,17 +33,18 @@ class BackupJobController extends Controller
     public function store(BackupJobRequest $request): JsonResponse
     {
         $job = BackupJob::create($this->payload($request));
+        $this->syncNotificationChannels($job, $request, true);
 
         ActivityLog::record('backup_job_created', 'Backup job created via API.', $job, [
             'created_by' => $request->user()->id,
         ]);
 
-        return response()->json(['data' => $this->serializeJob($job->load('destination'))], 201);
+        return response()->json(['data' => $this->serializeJob($job->load(['destination', 'notificationChannels']))], 201);
     }
 
     public function show(BackupJob $backupJob): JsonResponse
     {
-        $backupJob->load('destination');
+        $backupJob->load(['destination', 'notificationChannels']);
 
         return response()->json([
             'data' => [
@@ -54,9 +56,10 @@ class BackupJobController extends Controller
 
     public function update(BackupJobRequest $request, BackupJob $backupJob): JsonResponse
     {
-        $backupJob->update($this->payload($request, $backupJob->status));
+        $backupJob->update($this->payload($request, $backupJob->status, $backupJob));
+        $this->syncNotificationChannels($backupJob, $request, false);
 
-        return response()->json(['data' => $this->serializeJob($backupJob->fresh('destination'))]);
+        return response()->json(['data' => $this->serializeJob($backupJob->fresh(['destination', 'notificationChannels']))]);
     }
 
     public function destroy(BackupJob $backupJob): JsonResponse
@@ -85,7 +88,7 @@ class BackupJobController extends Controller
             'pause_reason' => $request->input('pause_reason', 'Paused manually via API.'),
         ])->save();
 
-        return response()->json(['data' => $this->serializeJob($backupJob->fresh('destination'))]);
+        return response()->json(['data' => $this->serializeJob($backupJob->fresh(['destination', 'notificationChannels']))]);
     }
 
     public function resume(BackupJob $backupJob): JsonResponse
@@ -97,7 +100,7 @@ class BackupJobController extends Controller
             'next_run_at' => $this->scheduleCalculator->nextRunAt($backupJob->schedule_type, $backupJob->schedule_config ?? []),
         ])->save();
 
-        return response()->json(['data' => $this->serializeJob($backupJob->fresh('destination'))]);
+        return response()->json(['data' => $this->serializeJob($backupJob->fresh(['destination', 'notificationChannels']))]);
     }
 
     public function backups(BackupJob $backupJob, ListBackupObjects $listBackupObjects): JsonResponse
@@ -109,7 +112,7 @@ class BackupJobController extends Controller
         ]);
     }
 
-    private function payload(BackupJobRequest $request, ?string $status = BackupJob::STATUS_ACTIVE): array
+    private function payload(BackupJobRequest $request, ?string $status = BackupJob::STATUS_ACTIVE, ?BackupJob $job = null): array
     {
         $scheduleType = $request->input('schedule_type');
         $scheduleConfig = $request->normalizedScheduleConfig();
@@ -127,6 +130,7 @@ class BackupJobController extends Controller
             'schedule_config' => $scheduleConfig,
             'cron_expression' => $this->scheduleCalculator->cronExpression($scheduleType, $scheduleConfig),
             'status' => $status ?: BackupJob::STATUS_ACTIVE,
+            'notifications_enabled' => $request->has('notifications_enabled') ? $request->boolean('notifications_enabled') : (bool) ($job?->notifications_enabled ?? true),
             'next_run_at' => $this->scheduleCalculator->nextRunAt($scheduleType, $scheduleConfig),
             'retention_days' => $request->input('retention_days'),
             'retention_count' => $request->input('retention_count'),
@@ -137,10 +141,42 @@ class BackupJobController extends Controller
 
     private function serializeJob(BackupJob $job): array
     {
+        $job->loadMissing('notificationChannels');
+
         return [
             ...$job->toArray(),
             'destination' => $job->destination?->safeForFrontend(),
+            'notification_channel_ids' => $job->notificationChannels->pluck('id')->values()->all(),
             'schedule_summary' => $this->scheduleCalculator->summary($job->schedule_type, $job->schedule_config ?? []),
         ];
+    }
+
+    private function syncNotificationChannels(BackupJob $job, BackupJobRequest $request, bool $creating): void
+    {
+        if ($request->has('notification_channel_ids')) {
+            $job->notificationChannels()->sync($this->notificationChannelIds($request));
+
+            return;
+        }
+
+        if ($creating) {
+            $job->notificationChannels()->sync($this->defaultNotificationChannelIds());
+        }
+    }
+
+    private function notificationChannelIds(BackupJobRequest $request): array
+    {
+        return collect($request->input('notification_channel_ids', []))
+            ->map(fn ($id): int => (int) $id)
+            ->unique()
+            ->values()
+            ->all();
+    }
+
+    private function defaultNotificationChannelIds(): array
+    {
+        $id = NotificationChannel::where('is_default', true)->orderBy('id')->value('id');
+
+        return $id ? [(int) $id] : [];
     }
 }

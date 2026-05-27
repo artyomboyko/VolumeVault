@@ -161,6 +161,12 @@ class OpenApiController extends Controller
                     'retention_days' => ['type' => ['integer', 'null'], 'minimum' => 1],
                     'retention_count' => ['type' => ['integer', 'null'], 'minimum' => 1],
                     'backup_exclude_regexp' => ['type' => ['string', 'null'], 'maxLength' => 1000, 'description' => 'Go regular expression passed to BACKUP_EXCLUDE_REGEXP for offen/docker-volume-backup. Matching full file paths are excluded.'],
+                    'notifications_enabled' => ['type' => 'boolean', 'default' => true],
+                    'notification_channel_ids' => [
+                        'type' => 'array',
+                        'items' => ['type' => 'integer'],
+                        'description' => 'Notification channel IDs selected for this backup job. Omit on create to use the default notification channel when one is configured.',
+                    ],
                     'stop_containers_before_backup' => ['type' => 'boolean'],
                 ],
             ],

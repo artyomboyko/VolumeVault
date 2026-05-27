@@ -42,6 +42,7 @@ class BackupJob extends Model
         'schedule_config',
         'cron_expression',
         'status',
+        'notifications_enabled',
         'pause_reason',
         'last_run_at',
         'next_run_at',
@@ -51,6 +52,10 @@ class BackupJob extends Model
         'retention_count',
         'backup_exclude_regexp',
         'stop_containers_before_backup',
+    ];
+
+    protected $attributes = [
+        'notifications_enabled' => true,
     ];
 
     protected $appends = [
@@ -66,6 +71,7 @@ class BackupJob extends Model
             'last_success_at' => 'datetime',
             'retention_days' => 'integer',
             'retention_count' => 'integer',
+            'notifications_enabled' => 'boolean',
             'stop_containers_before_backup' => 'boolean',
         ];
     }

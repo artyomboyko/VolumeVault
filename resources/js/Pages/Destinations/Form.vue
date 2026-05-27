@@ -79,6 +79,10 @@ const submit = () => {
 
     form.post('/destinations');
 };
+
+const toggleDestinationActive = () => {
+    form.is_active = !form.is_active;
+};
 </script>
 
 <template>
@@ -304,10 +308,23 @@ const submit = () => {
                     <input v-model="form.use_path_style_endpoint" type="checkbox" class="rounded border-slate-600 bg-slate-950 text-sky-400">
                     Use path-style endpoint
                 </label>
-                <label class="flex items-center gap-3 rounded-xl border border-white/10 bg-white/5 p-4 text-sm">
-                    <input v-model="form.is_active" type="checkbox" class="rounded border-slate-600 bg-slate-950 text-sky-400">
-                    Destination active
-                </label>
+                <div class="flex items-start justify-between gap-4 rounded-xl border border-white/10 bg-white/5 p-4 text-sm">
+                    <div>
+                        <p class="font-medium text-white">{{ t('Destination active') }}</p>
+                        <p class="mt-1 text-slate-400">{{ form.is_active ? t('Enabled') : t('Disabled') }}</p>
+                    </div>
+                    <button
+                        type="button"
+                        role="switch"
+                        class="relative mt-1 inline-flex h-7 w-12 shrink-0 items-center rounded-full border p-1 transition focus:outline-none focus:ring-2 focus:ring-sky-400/30"
+                        :class="form.is_active ? 'border-emerald-300/40 bg-emerald-400/30' : 'border-white/10 bg-slate-800'"
+                        :aria-checked="form.is_active"
+                        :aria-label="t('Destination active')"
+                        @click="toggleDestinationActive"
+                    >
+                        <span class="h-5 w-5 rounded-full bg-white shadow-sm transition-transform" :class="form.is_active ? 'translate-x-5' : 'translate-x-0 bg-slate-400'"></span>
+                    </button>
+                </div>
             </div>
 
             <div class="rounded-xl border border-amber-300/30 bg-amber-300/10 p-4 text-sm text-amber-100">

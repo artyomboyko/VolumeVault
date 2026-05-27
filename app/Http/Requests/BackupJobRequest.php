@@ -52,6 +52,9 @@ class BackupJobRequest extends FormRequest
             'retention_days' => ['nullable', 'integer', 'min:1'],
             'retention_count' => ['nullable', 'integer', 'min:1'],
             'backup_exclude_regexp' => ['nullable', 'string', 'max:1000'],
+            'notifications_enabled' => ['boolean'],
+            'notification_channel_ids' => ['nullable', 'array'],
+            'notification_channel_ids.*' => ['integer', 'distinct', 'exists:notification_channels,id'],
             'stop_containers_before_backup' => ['boolean'],
         ];
     }

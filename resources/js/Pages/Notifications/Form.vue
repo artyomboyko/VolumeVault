@@ -8,7 +8,6 @@ import { useI18n } from '@/i18n';
 const props = defineProps<{
     channel: any | null;
     services: string[];
-    jobs: any[];
 }>();
 
 const editing = computed(() => Boolean(props.channel));
@@ -21,11 +20,10 @@ const form = useForm({
     name: props.channel?.name || '',
     service: props.channel?.service || 'discord',
     notification_level: props.channel?.notification_level || 'error',
-    scope: props.channel?.scope || 'all',
     title_template: props.channel?.title_template || '',
     body_template: props.channel?.body_template || '',
     is_active: props.channel?.is_active ?? true,
-    backup_job_ids: props.channel?.backup_job_ids || [],
+    is_default: props.channel?.is_default ?? false,
     config: {} as Record<string, any>,
 });
 
@@ -42,9 +40,16 @@ watch(() => form.service, () => {
     form.config = {};
 });
 
-const toggleJob = (id: number) => {
-    const ids = form.backup_job_ids as number[];
-    form.backup_job_ids = ids.includes(id) ? ids.filter((jobId) => jobId !== id) : [...ids, id];
+const toggleCustomMessage = () => {
+    useCustomMessage.value = !useCustomMessage.value;
+};
+
+const toggleChannelActive = () => {
+    form.is_active = !form.is_active;
+};
+
+const toggleDefaultChannel = () => {
+    form.is_default = !form.is_default;
 };
 
 const submit = () => {
@@ -61,12 +66,11 @@ const submit = () => {
     form.post('/notifications');
 };
 
-const sourceLabel = (job: any) => job.source_label || job.host_path || job.volume_name || t('Unknown');
 </script>
 
 <template>
     <Head :title="editing ? t('Edit notification') : t('New notification')" />
-    <AppLayout :title="editing ? t('Edit notification') : t('New notification')" :subtitle="t('Configure one alert channel and decide which backup results it receives.')">
+    <AppLayout :title="editing ? t('Edit notification') : t('New notification')" :subtitle="t('Configure one alert channel and its delivery behavior.')">
         <form class="card max-w-4xl space-y-6 p-4 sm:p-6" @submit.prevent="submit">
             <div class="grid gap-4 sm:grid-cols-2">
                 <label class="space-y-2">
@@ -192,15 +196,24 @@ const sourceLabel = (job: any) => job.source_label || job.host_path || job.volum
             </section>
 
             <section class="rounded-2xl border border-white/10 bg-white/5 p-4 sm:p-5">
-                <div class="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+                <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                     <div>
                         <h2 class="text-lg font-semibold">{{ t('Message format') }}</h2>
                         <p class="mt-1 text-sm text-slate-400">{{ t('Keep the default message, or override the title and body sent after backup runs.') }}</p>
                     </div>
-                    <label class="flex items-center gap-3 rounded-xl border border-white/10 bg-slate-950/60 px-4 py-3 text-sm">
-                        <input v-model="useCustomMessage" type="checkbox" class="rounded border-slate-600 bg-slate-950 text-sky-400">
-                        {{ t('Use custom message') }}
-                    </label>
+                    <button
+                        type="button"
+                        role="switch"
+                        class="inline-flex shrink-0 items-center gap-3 rounded-full border border-white/10 bg-slate-950/60 px-3 py-2 text-sm transition focus:outline-none focus:ring-2 focus:ring-sky-400/30"
+                        :aria-checked="useCustomMessage"
+                        :aria-label="t('Use custom message')"
+                        @click="toggleCustomMessage"
+                    >
+                        <span class="relative inline-flex h-6 w-11 items-center rounded-full border p-0.5 transition" :class="useCustomMessage ? 'border-emerald-300/40 bg-emerald-400/30' : 'border-white/10 bg-slate-800'">
+                            <span class="h-5 w-5 rounded-full bg-white shadow-sm transition-transform" :class="useCustomMessage ? 'translate-x-5' : 'translate-x-0 bg-slate-400'"></span>
+                        </span>
+                        <span class="font-medium">{{ t('Use custom message') }}</span>
+                    </button>
                 </div>
 
                 <div v-if="useCustomMessage" class="mt-4 grid gap-4">
@@ -222,32 +235,43 @@ const sourceLabel = (job: any) => job.source_label || job.host_path || job.volum
                 </div>
             </section>
 
-            <section class="rounded-2xl border border-white/10 bg-white/5 p-4 sm:p-5">
-                <h2 class="mb-4 text-lg font-semibold">{{ t('Backup scope') }}</h2>
-                <div class="grid gap-3 sm:grid-cols-2">
-                    <label class="flex cursor-pointer items-center gap-3 rounded-xl border border-white/10 bg-slate-950/60 p-4 text-sm">
-                        <input v-model="form.scope" type="radio" value="all" class="text-sky-400">
-                        {{ t('All backups') }}
-                    </label>
-                    <label class="flex cursor-pointer items-center gap-3 rounded-xl border border-white/10 bg-slate-950/60 p-4 text-sm">
-                        <input v-model="form.scope" type="radio" value="specific" class="text-sky-400">
-                        {{ t('Specific backups') }}
-                    </label>
+            <section class="grid gap-3 sm:grid-cols-2">
+                <div class="flex items-start justify-between gap-4 rounded-xl border border-white/10 bg-white/5 p-4 text-sm">
+                    <div>
+                        <p class="font-medium text-white">{{ t('Channel active') }}</p>
+                        <p class="mt-1 text-slate-400">{{ form.is_active ? t('Enabled') : t('Disabled') }}</p>
+                    </div>
+                    <button
+                        type="button"
+                        role="switch"
+                        class="relative mt-1 inline-flex h-7 w-12 shrink-0 items-center rounded-full border p-1 transition focus:outline-none focus:ring-2 focus:ring-sky-400/30"
+                        :class="form.is_active ? 'border-emerald-300/40 bg-emerald-400/30' : 'border-white/10 bg-slate-800'"
+                        :aria-checked="form.is_active"
+                        :aria-label="form.is_active ? t('Deactivate channel') : t('Activate channel')"
+                        @click="toggleChannelActive"
+                    >
+                        <span class="h-5 w-5 rounded-full bg-white shadow-sm transition-transform" :class="form.is_active ? 'translate-x-5' : 'translate-x-0 bg-slate-400'"></span>
+                    </button>
                 </div>
 
-                <div v-if="form.scope === 'specific'" class="mt-4 grid gap-2 sm:grid-cols-2">
-                    <label v-for="job in jobs" :key="job.id" class="flex cursor-pointer items-start gap-3 rounded-xl border border-white/10 bg-slate-950/60 p-3 text-sm">
-                        <input type="checkbox" :checked="form.backup_job_ids.includes(job.id)" class="rounded border-slate-600 bg-slate-950 text-sky-400" @change="toggleJob(job.id)">
-                        <span class="min-w-0 break-words">{{ job.name }} <span class="break-all text-slate-500">/ {{ sourceLabel(job) }}</span></span>
-                    </label>
-                    <p v-if="!jobs.length" class="text-sm text-slate-400">Create a backup job first, or use all backups.</p>
+                <div class="flex items-start justify-between gap-4 rounded-xl border border-white/10 bg-white/5 p-4 text-sm">
+                    <div>
+                        <p class="font-medium text-white">{{ t('Default channel for new backup jobs') }}</p>
+                        <p class="mt-1 text-slate-400">{{ t('Preselect this channel when creating backup jobs. It does not limit which channels a job can use.') }}</p>
+                    </div>
+                    <button
+                        type="button"
+                        role="switch"
+                        class="relative mt-1 inline-flex h-7 w-12 shrink-0 items-center rounded-full border p-1 transition focus:outline-none focus:ring-2 focus:ring-sky-400/30"
+                        :class="form.is_default ? 'border-sky-300/40 bg-sky-400/30' : 'border-white/10 bg-slate-800'"
+                        :aria-checked="form.is_default"
+                        :aria-label="t('Default channel for new backup jobs')"
+                        @click="toggleDefaultChannel"
+                    >
+                        <span class="h-5 w-5 rounded-full bg-white shadow-sm transition-transform" :class="form.is_default ? 'translate-x-5' : 'translate-x-0 bg-slate-400'"></span>
+                    </button>
                 </div>
             </section>
-
-            <label class="flex items-center gap-3 rounded-xl border border-white/10 bg-white/5 p-4 text-sm">
-                <input v-model="form.is_active" type="checkbox" class="rounded border-slate-600 bg-slate-950 text-sky-400">
-                {{ t('Channel active') }}
-            </label>
 
             <div class="flex flex-wrap gap-3">
                 <button class="btn-primary" :disabled="form.processing">{{ editing ? t('Update channel') : t('Create channel') }}</button>

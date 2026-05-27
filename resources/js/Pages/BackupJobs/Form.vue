@@ -8,6 +8,8 @@ const props = defineProps<{
     job: any | null;
     volumes: any[];
     destinations: any[];
+    notificationChannels: any[];
+    defaultNotificationChannelIds: number[];
 }>();
 
 const page = usePage();
@@ -34,6 +36,8 @@ const form = useForm({
     retention_days: props.job?.retention_days || '',
     retention_count: props.job?.retention_count || '',
     backup_exclude_regexp: props.job?.backup_exclude_regexp || '',
+    notifications_enabled: props.job?.notifications_enabled ?? true,
+    notification_channel_ids: (props.job?.notification_channel_ids || props.defaultNotificationChannelIds || []) as number[],
     stop_containers_before_backup: props.job?.stop_containers_before_backup || false,
 });
 
@@ -72,6 +76,19 @@ const selectVolume = (volume: any) => {
     form.volume_name = volume.name;
     volumeSearch.value = volume.name;
     volumeSelectorOpen.value = false;
+};
+
+const toggleNotificationChannel = (id: number) => {
+    const ids = form.notification_channel_ids as number[];
+    form.notification_channel_ids = ids.includes(id) ? ids.filter((channelId) => channelId !== id) : [...ids, id];
+};
+
+const toggleJobNotifications = () => {
+    form.notifications_enabled = !form.notifications_enabled;
+};
+
+const toggleStopContainersBeforeBackup = () => {
+    form.stop_containers_before_backup = !form.stop_containers_before_backup;
 };
 
 watch(() => form.source_type, (sourceType) => {
@@ -223,11 +240,63 @@ const submit = () => {
                     <span class="label">{{ t('Retention count') }}</span>
                     <input v-model="form.retention_count" class="input" type="number" min="1" :placeholder="t('Optional')">
                 </label>
-                <label v-if="isDockerVolumeSource" class="flex items-center gap-3 rounded-xl border border-white/10 bg-white/5 p-4 text-sm sm:mt-7">
-                    <input v-model="form.stop_containers_before_backup" type="checkbox" class="rounded border-slate-600 bg-slate-950 text-sky-400">
-                    {{ t('Stop containers before backup') }}
-                </label>
+                <div v-if="isDockerVolumeSource" class="flex items-start justify-between gap-4 rounded-xl border border-amber-300/20 bg-amber-300/10 p-4 text-sm sm:mt-7">
+                    <div>
+                        <p class="font-medium text-white">{{ t('Stop containers before backup') }}</p>
+                        <p class="mt-1 text-amber-100">{{ t('May temporarily interrupt containers using this volume.') }}</p>
+                    </div>
+                    <button
+                        type="button"
+                        role="switch"
+                        class="relative mt-1 inline-flex h-7 w-12 shrink-0 items-center rounded-full border p-1 transition focus:outline-none focus:ring-2 focus:ring-amber-400/30"
+                        :class="form.stop_containers_before_backup ? 'border-amber-300/50 bg-amber-400/30' : 'border-white/10 bg-slate-800'"
+                        :aria-checked="form.stop_containers_before_backup"
+                        :aria-label="t('Stop containers before backup')"
+                        @click="toggleStopContainersBeforeBackup"
+                    >
+                        <span class="h-5 w-5 rounded-full bg-white shadow-sm transition-transform" :class="form.stop_containers_before_backup ? 'translate-x-5' : 'translate-x-0 bg-slate-400'"></span>
+                    </button>
+                </div>
             </div>
+
+            <section class="rounded-2xl border border-white/10 bg-white/5 p-4 sm:p-5">
+                <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                    <div>
+                        <h2 class="text-lg font-semibold">{{ t('Notifications') }}</h2>
+                        <p class="mt-1 text-sm text-slate-400">{{ t('Choose which notification channels this job can use. Inactive channels stay selected but do not send until reactivated.') }}</p>
+                    </div>
+                    <button
+                        type="button"
+                        role="switch"
+                        class="inline-flex shrink-0 items-center gap-3 rounded-full border border-white/10 bg-slate-950/60 px-3 py-2 text-sm transition focus:outline-none focus:ring-2 focus:ring-sky-400/30"
+                        :aria-checked="form.notifications_enabled"
+                        :aria-label="t('Enable notifications for this job')"
+                        @click="toggleJobNotifications"
+                    >
+                        <span class="relative inline-flex h-6 w-11 items-center rounded-full border p-0.5 transition" :class="form.notifications_enabled ? 'border-emerald-300/40 bg-emerald-400/30' : 'border-white/10 bg-slate-800'">
+                            <span class="h-5 w-5 rounded-full bg-white shadow-sm transition-transform" :class="form.notifications_enabled ? 'translate-x-5' : 'translate-x-0 bg-slate-400'"></span>
+                        </span>
+                        <span class="font-medium">{{ form.notifications_enabled ? t('Enabled') : t('Disabled') }}</span>
+                    </button>
+                </div>
+
+                <div v-if="notificationChannels.length" class="mt-4 grid gap-2 transition sm:grid-cols-2" :class="{ 'opacity-60': !form.notifications_enabled }">
+                    <label v-for="channel in notificationChannels" :key="channel.id" class="flex items-start gap-3 rounded-xl border border-white/10 bg-slate-950/60 p-3 text-sm" :class="form.notifications_enabled ? 'cursor-pointer' : 'cursor-not-allowed'">
+                        <input type="checkbox" :checked="form.notification_channel_ids.includes(channel.id)" :disabled="!form.notifications_enabled" class="mt-1 rounded border-slate-600 bg-slate-950 text-sky-400 disabled:cursor-not-allowed" @change="toggleNotificationChannel(channel.id)">
+                        <span class="min-w-0">
+                            <span class="flex flex-wrap items-center gap-2">
+                                <span class="break-words font-medium text-white">{{ channel.name }}</span>
+                                <span v-if="channel.is_default" class="rounded-full border border-sky-300/30 bg-sky-400/10 px-2 py-0.5 text-xs text-sky-100">{{ t('Default') }}</span>
+                                <span v-if="!channel.is_active" class="rounded-full border border-amber-300/30 bg-amber-400/10 px-2 py-0.5 text-xs text-amber-100">{{ t('Inactive') }}</span>
+                            </span>
+                            <span class="mt-1 block text-slate-400">{{ channel.service }} / {{ channel.notification_level === 'info' ? t('Every backup run') : t('Errors only') }}</span>
+                        </span>
+                    </label>
+                </div>
+                <p v-else class="mt-4 rounded-xl border border-sky-300/20 bg-sky-400/10 p-3 text-sm text-sky-100">{{ t('Create a notification channel first, or save this job without notifications.') }}</p>
+                <span v-if="form.errors.notifications_enabled" class="mt-2 block text-sm text-rose-300">{{ form.errors.notifications_enabled }}</span>
+                <span v-if="form.errors.notification_channel_ids" class="mt-2 block text-sm text-rose-300">{{ form.errors.notification_channel_ids }}</span>
+            </section>
 
             <section class="rounded-2xl border border-white/10 bg-white/5 p-4 sm:p-5">
                 <div class="space-y-2">

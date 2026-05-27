@@ -15,6 +15,7 @@ const destroyDestination = (id: number) => {
 };
 
 const testDestination = (id: number) => router.post(`/destinations/${id}/test`);
+const toggleDestinationActive = (destination: any) => router.patch(`/destinations/${destination.id}/active`, { is_active: !destination.is_active }, { preserveScroll: true });
 </script>
 
 <template>
@@ -33,11 +34,22 @@ const testDestination = (id: number) => router.post(`/destinations/${id}/test`);
                                 <h2 class="break-words font-semibold text-white">{{ destination.name }}</h2>
                                 <p class="mt-1 break-words text-sm text-slate-400">{{ destination.provider_label || destination.provider }}</p>
                             </div>
-                            <StatusBadge :status="destination.last_test_status || 'unknown'" />
+                            <button
+                                type="button"
+                                role="switch"
+                                class="relative inline-flex h-7 w-12 shrink-0 items-center rounded-full border p-1 transition focus:outline-none focus:ring-2 focus:ring-sky-400/30"
+                                :class="destination.is_active ? 'border-emerald-300/40 bg-emerald-400/30' : 'border-white/10 bg-slate-800'"
+                                :aria-checked="destination.is_active"
+                                :aria-label="destination.is_active ? t('Deactivate destination') : t('Activate destination')"
+                                @click="toggleDestinationActive(destination)"
+                            >
+                                <span class="h-5 w-5 rounded-full bg-white shadow-sm transition-transform" :class="destination.is_active ? 'translate-x-5' : 'translate-x-0 bg-slate-400'"></span>
+                            </button>
                         </div>
                         <dl class="grid gap-3 text-sm">
                             <div><dt class="text-xs uppercase text-slate-500">{{ t('Target') }}</dt><dd class="mt-1 break-words text-slate-200">{{ destination.target_label || destination.bucket }}</dd></div>
                             <div><dt class="text-xs uppercase text-slate-500">{{ t('Endpoint') }}</dt><dd class="mt-1 break-all text-slate-200">{{ destination.endpoint || '-' }}</dd></div>
+                            <div><dt class="text-xs uppercase text-slate-500">{{ t('Last test') }}</dt><dd class="mt-1"><StatusBadge :status="destination.last_test_status || 'unknown'" /></dd></div>
                         </dl>
                         <div class="flex flex-wrap gap-2">
                             <ActionIcon :label="t('Test')" icon="test" @click="testDestination(destination.id)" />
@@ -54,6 +66,7 @@ const testDestination = (id: number) => router.post(`/destinations/${id}/test`);
                             <th class="px-4 py-3">{{ t('Provider') }}</th>
                             <th class="px-4 py-3">{{ t('Target') }}</th>
                             <th class="px-4 py-3">{{ t('Endpoint') }}</th>
+                            <th class="px-4 py-3">{{ t('Active') }}</th>
                             <th class="px-4 py-3">{{ t('Last test') }}</th>
                             <th class="px-4 py-3">{{ t('Actions') }}</th>
                         </tr>
@@ -64,6 +77,19 @@ const testDestination = (id: number) => router.post(`/destinations/${id}/test`);
                             <td class="px-4 py-3 text-slate-300">{{ destination.provider_label || destination.provider }}</td>
                             <td class="px-4 py-3 text-slate-300">{{ destination.target_label || destination.bucket }}</td>
                             <td class="max-w-xs truncate px-4 py-3 text-slate-300">{{ destination.endpoint || '-' }}</td>
+                            <td class="px-4 py-3">
+                                <button
+                                    type="button"
+                                    role="switch"
+                                    class="relative inline-flex h-7 w-12 items-center rounded-full border p-1 transition focus:outline-none focus:ring-2 focus:ring-sky-400/30"
+                                    :class="destination.is_active ? 'border-emerald-300/40 bg-emerald-400/30' : 'border-white/10 bg-slate-800'"
+                                    :aria-checked="destination.is_active"
+                                    :aria-label="destination.is_active ? t('Deactivate destination') : t('Activate destination')"
+                                    @click="toggleDestinationActive(destination)"
+                                >
+                                    <span class="h-5 w-5 rounded-full bg-white shadow-sm transition-transform" :class="destination.is_active ? 'translate-x-5' : 'translate-x-0 bg-slate-400'"></span>
+                                </button>
+                            </td>
                             <td class="px-4 py-3"><StatusBadge :status="destination.last_test_status || 'unknown'" /></td>
                             <td class="px-4 py-3">
                                 <div class="flex flex-wrap gap-2">

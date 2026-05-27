@@ -6,6 +6,7 @@ use App\Models\BackupDestination;
 use App\Models\BackupJob;
 use App\Models\BackupRun;
 use App\Models\NotificationChannel;
+use App\Models\User;
 use App\Services\Docker\DockerProcess;
 use App\Services\Docker\DockerProcessResult;
 use App\Services\Notifications\ResolveNotificationChannels;
@@ -49,41 +50,55 @@ class NotificationChannelTest extends TestCase
         $this->assertSame('discord://token-value@123456789?username=VolumeVault&splitLines=No', $url);
     }
 
-    public function test_resolver_returns_global_and_specific_channels_for_job(): void
+    public function test_resolver_returns_selected_active_channels_for_job(): void
     {
-        [$job, $otherJob] = $this->createJobs();
+        [$job] = $this->createJobs();
 
-        $global = NotificationChannel::create([
-            'name' => 'Global',
+        $selected = NotificationChannel::create([
+            'name' => 'Selected',
             'service' => NotificationChannel::SERVICE_ADVANCED,
-            'url' => 'ntfy://ntfy.sh/global',
+            'url' => 'ntfy://ntfy.sh/selected',
             'notification_level' => NotificationChannel::LEVEL_ERROR,
-            'scope' => NotificationChannel::SCOPE_ALL,
         ]);
+        $selected->backupJobs()->attach($job);
 
-        $specific = NotificationChannel::create([
-            'name' => 'Specific',
+        $inactive = NotificationChannel::create([
+            'name' => 'Inactive',
             'service' => NotificationChannel::SERVICE_ADVANCED,
-            'url' => 'ntfy://ntfy.sh/specific',
+            'url' => 'ntfy://ntfy.sh/inactive',
             'notification_level' => NotificationChannel::LEVEL_ERROR,
-            'scope' => NotificationChannel::SCOPE_SPECIFIC,
+            'is_active' => false,
         ]);
-        $specific->backupJobs()->attach($job);
+        $inactive->backupJobs()->attach($job);
 
-        $ignored = NotificationChannel::create([
-            'name' => 'Ignored',
+        $unselected = NotificationChannel::create([
+            'name' => 'Unselected',
             'service' => NotificationChannel::SERVICE_ADVANCED,
-            'url' => 'ntfy://ntfy.sh/ignored',
+            'url' => 'ntfy://ntfy.sh/unselected',
             'notification_level' => NotificationChannel::LEVEL_ERROR,
-            'scope' => NotificationChannel::SCOPE_SPECIFIC,
         ]);
-        $ignored->backupJobs()->attach($otherJob);
 
         $resolved = app(ResolveNotificationChannels::class)->forJob($job)->pluck('id')->all();
 
-        $this->assertContains($global->id, $resolved);
-        $this->assertContains($specific->id, $resolved);
-        $this->assertNotContains($ignored->id, $resolved);
+        $this->assertContains($selected->id, $resolved);
+        $this->assertNotContains($inactive->id, $resolved);
+        $this->assertNotContains($unselected->id, $resolved);
+    }
+
+    public function test_resolver_returns_no_channels_when_job_notifications_are_disabled(): void
+    {
+        [$job] = $this->createJobs();
+        $job->forceFill(['notifications_enabled' => false])->save();
+
+        $channel = NotificationChannel::create([
+            'name' => 'Selected',
+            'service' => NotificationChannel::SERVICE_ADVANCED,
+            'url' => 'ntfy://ntfy.sh/selected',
+            'notification_level' => NotificationChannel::LEVEL_ERROR,
+        ]);
+        $channel->backupJobs()->attach($job);
+
+        $this->assertSame([], app(ResolveNotificationChannels::class)->forJob($job)->pluck('id')->all());
     }
 
     public function test_success_notifications_only_send_to_info_channels(): void
@@ -96,21 +111,20 @@ class NotificationChannelTest extends TestCase
             'duration_seconds' => 3,
         ]);
 
-        NotificationChannel::create([
+        $error = NotificationChannel::create([
             'name' => 'Errors',
             'service' => NotificationChannel::SERVICE_ADVANCED,
             'url' => 'ntfy://ntfy.sh/errors',
             'notification_level' => NotificationChannel::LEVEL_ERROR,
-            'scope' => NotificationChannel::SCOPE_ALL,
         ]);
 
-        NotificationChannel::create([
+        $all = NotificationChannel::create([
             'name' => 'All',
             'service' => NotificationChannel::SERVICE_ADVANCED,
             'url' => 'ntfy://ntfy.sh/all',
             'notification_level' => NotificationChannel::LEVEL_INFO,
-            'scope' => NotificationChannel::SCOPE_ALL,
         ]);
+        $job->notificationChannels()->attach([$error->id, $all->id]);
 
         $dockerProcess = Mockery::mock(DockerProcess::class);
         $dockerProcess->shouldReceive('run')->once()->andReturn(new DockerProcessResult([], 0, 'ok', ''));
@@ -130,13 +144,13 @@ class NotificationChannelTest extends TestCase
         ]);
 
         foreach ([NotificationChannel::LEVEL_ERROR, NotificationChannel::LEVEL_INFO] as $level) {
-            NotificationChannel::create([
+            $channel = NotificationChannel::create([
                 'name' => $level,
                 'service' => NotificationChannel::SERVICE_ADVANCED,
                 'url' => 'ntfy://ntfy.sh/'.$level,
                 'notification_level' => $level,
-                'scope' => NotificationChannel::SCOPE_ALL,
             ]);
+            $job->notificationChannels()->attach($channel);
         }
 
         $dockerProcess = Mockery::mock(DockerProcess::class);
@@ -157,13 +171,13 @@ class NotificationChannelTest extends TestCase
             'backup_size_bytes' => 2048,
         ]);
 
-        NotificationChannel::create([
+        $channel = NotificationChannel::create([
             'name' => 'All',
             'service' => NotificationChannel::SERVICE_ADVANCED,
             'url' => 'ntfy://ntfy.sh/all',
             'notification_level' => NotificationChannel::LEVEL_INFO,
-            'scope' => NotificationChannel::SCOPE_ALL,
         ]);
+        $job->notificationChannels()->attach($channel);
 
         $dockerProcess = Mockery::mock(DockerProcess::class);
         $dockerProcess->shouldReceive('run')
@@ -189,13 +203,13 @@ class NotificationChannelTest extends TestCase
             'duration_seconds' => 3,
         ]);
 
-        NotificationChannel::create([
+        $channel = NotificationChannel::create([
             'name' => 'Discord',
             'service' => NotificationChannel::SERVICE_DISCORD,
             'url' => 'discord://token@123?username=VolumeVault',
             'notification_level' => NotificationChannel::LEVEL_INFO,
-            'scope' => NotificationChannel::SCOPE_ALL,
         ]);
+        $job->notificationChannels()->attach($channel);
 
         $dockerProcess = Mockery::mock(DockerProcess::class);
         $dockerProcess->shouldReceive('run')
@@ -226,15 +240,15 @@ class NotificationChannelTest extends TestCase
             'backup_size_bytes' => 1536,
         ]);
 
-        NotificationChannel::create([
+        $channel = NotificationChannel::create([
             'name' => 'Ntfy',
             'service' => NotificationChannel::SERVICE_ADVANCED,
             'url' => 'ntfy://ntfy.sh/all',
             'notification_level' => NotificationChannel::LEVEL_ERROR,
-            'scope' => NotificationChannel::SCOPE_ALL,
             'title_template' => 'Backup {{ status }}: {{ job }}',
             'body_template' => "{{ volume }} to {{ destination }} in {{ duration }} / {{ backup_size }}\n{{ error }}",
         ]);
+        $job->notificationChannels()->attach($channel);
 
         $dockerProcess = Mockery::mock(DockerProcess::class);
         $dockerProcess->shouldReceive('run')
@@ -249,6 +263,59 @@ class NotificationChannelTest extends TestCase
         $this->app->instance(DockerProcess::class, $dockerProcess);
 
         app(SendShoutrrrNotification::class)->sendBackupRunFinished($run);
+    }
+
+    public function test_setting_default_channel_clears_previous_default(): void
+    {
+        $admin = User::factory()->admin()->create();
+        $first = NotificationChannel::create([
+            'name' => 'First',
+            'service' => NotificationChannel::SERVICE_ADVANCED,
+            'url' => 'ntfy://ntfy.sh/first',
+            'notification_level' => NotificationChannel::LEVEL_ERROR,
+            'is_default' => true,
+        ]);
+        $second = NotificationChannel::create([
+            'name' => 'Second',
+            'service' => NotificationChannel::SERVICE_ADVANCED,
+            'url' => 'ntfy://ntfy.sh/second',
+            'notification_level' => NotificationChannel::LEVEL_INFO,
+        ]);
+
+        $this->actingAs($admin)
+            ->put('/notifications/'.$second->id, [
+                'name' => 'Second',
+                'service' => NotificationChannel::SERVICE_ADVANCED,
+                'notification_level' => NotificationChannel::LEVEL_INFO,
+                'is_active' => true,
+                'is_default' => true,
+                'config' => [],
+            ])
+            ->assertRedirect('/notifications');
+
+        $this->assertFalse($first->fresh()->is_default);
+        $this->assertTrue($second->fresh()->is_default);
+    }
+
+    public function test_admin_can_toggle_notification_channel_active_state_inline(): void
+    {
+        $admin = User::factory()->admin()->create();
+        $channel = NotificationChannel::create([
+            'name' => 'Discord',
+            'service' => NotificationChannel::SERVICE_ADVANCED,
+            'url' => 'ntfy://ntfy.sh/discord',
+            'notification_level' => NotificationChannel::LEVEL_ERROR,
+            'is_active' => true,
+        ]);
+
+        $this->actingAs($admin)
+            ->from('/notifications')
+            ->patch('/notifications/'.$channel->id.'/active', [
+                'is_active' => false,
+            ])
+            ->assertRedirect('/notifications');
+
+        $this->assertFalse($channel->fresh()->is_active);
     }
 
     private function createJobs(): array

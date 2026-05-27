@@ -92,7 +92,7 @@ In-place and safe in-place modes are represented in the model and UI but are int
 
 ## Notifications
 
-VolumeVault sends backup notifications through Shoutrrr after a backup run finishes. Channels can apply to all backup jobs or only selected jobs.
+VolumeVault sends backup notifications through Shoutrrr after a backup run finishes. Each backup job has its own notification toggle and selected notification channels.
 
 Supported guided setup modes:
 
@@ -108,10 +108,13 @@ Notification levels:
 - `Errors only`: sends notifications only for failed backup runs.
 - `Every backup run`: sends notifications for both successful and failed backup runs.
 
-Notification scopes:
+Per-job notification configuration:
 
-- `All backups`: applies the channel to every backup job.
-- `Specific backups`: applies the channel only to selected backup jobs.
+- `Enable notifications for this job`: controls whether that backup job sends notifications.
+- Selected channels: one or more configured channels used by that job.
+- Inactive channels stay selectable but do not send until reactivated.
+
+One notification channel can be marked as the default channel. It is preselected when creating new backup jobs, but users can change the selection and choose any combination of channels.
 
 Notification URLs are encrypted at rest and never returned to the frontend or API after saving. Use the channel test button after setup to verify the target service.
 

@@ -10,6 +10,7 @@ use App\Models\BackupDestination;
 use App\Models\BackupJob;
 use App\Models\BackupRun;
 use App\Models\DockerVolume;
+use App\Models\NotificationChannel;
 use App\Services\Scheduling\BackupScheduleCalculator;
 use Illuminate\Http\Request;
 use Illuminate\Validation\ValidationException;
@@ -23,7 +24,7 @@ class BackupJobController extends Controller
     public function index(): Response
     {
         return Inertia::render('BackupJobs/Index', [
-            'jobs' => BackupJob::with('destination')
+            'jobs' => BackupJob::with(['destination', 'notificationChannels'])
                 ->latest()
                 ->get()
                 ->map(fn (BackupJob $job) => $this->serializeJob($job)),
@@ -38,6 +39,7 @@ class BackupJobController extends Controller
     public function store(BackupJobRequest $request)
     {
         $job = BackupJob::create($this->payload($request));
+        $this->syncNotificationChannels($job, $request, true);
 
         ActivityLog::record('backup_job_created', 'Backup job created.', $job);
 
@@ -46,7 +48,7 @@ class BackupJobController extends Controller
 
     public function show(BackupJob $backupJob): Response
     {
-        $backupJob->load('destination');
+        $backupJob->load(['destination', 'notificationChannels']);
 
         return Inertia::render('BackupJobs/Show', [
             'job' => $this->serializeJob($backupJob),
@@ -61,7 +63,7 @@ class BackupJobController extends Controller
 
     public function edit(BackupJob $backupJob): Response
     {
-        $backupJob->load('destination');
+        $backupJob->load(['destination', 'notificationChannels']);
 
         return Inertia::render('BackupJobs/Form', [
             ...$this->formProps(),
@@ -71,7 +73,8 @@ class BackupJobController extends Controller
 
     public function update(BackupJobRequest $request, BackupJob $backupJob)
     {
-        $backupJob->update($this->payload($request, $backupJob->status));
+        $backupJob->update($this->payload($request, $backupJob->status, $backupJob));
+        $this->syncNotificationChannels($backupJob, $request, false);
 
         return redirect()->route('backup-jobs.index')->with('success', 'Backup job updated.');
     }
@@ -123,10 +126,12 @@ class BackupJobController extends Controller
             'job' => null,
             'volumes' => DockerVolume::where('exists', true)->orderBy('name')->get(['name']),
             'destinations' => BackupDestination::where('is_active', true)->orderBy('name')->get()->map->safeForFrontend(),
+            'notificationChannels' => NotificationChannel::with('backupJobs')->orderBy('name')->get()->map->safeForFrontend(),
+            'defaultNotificationChannelIds' => $this->defaultNotificationChannelIds(),
         ];
     }
 
-    private function payload(BackupJobRequest $request, ?string $status = BackupJob::STATUS_ACTIVE): array
+    private function payload(BackupJobRequest $request, ?string $status = BackupJob::STATUS_ACTIVE, ?BackupJob $job = null): array
     {
         $scheduleType = $request->input('schedule_type');
         $scheduleConfig = $request->normalizedScheduleConfig();
@@ -144,6 +149,7 @@ class BackupJobController extends Controller
             'schedule_config' => $scheduleConfig,
             'cron_expression' => $this->scheduleCalculator->cronExpression($scheduleType, $scheduleConfig),
             'status' => $status ?: BackupJob::STATUS_ACTIVE,
+            'notifications_enabled' => $request->has('notifications_enabled') ? $request->boolean('notifications_enabled') : (bool) ($job?->notifications_enabled ?? true),
             'next_run_at' => $this->scheduleCalculator->nextRunAt($scheduleType, $scheduleConfig),
             'retention_days' => $request->input('retention_days'),
             'retention_count' => $request->input('retention_count'),
@@ -154,10 +160,42 @@ class BackupJobController extends Controller
 
     private function serializeJob(BackupJob $job): array
     {
+        $job->loadMissing('notificationChannels');
+
         return [
             ...$job->toArray(),
             'destination' => $job->destination?->safeForFrontend(),
+            'notification_channel_ids' => $job->notificationChannels->pluck('id')->values()->all(),
             'schedule_summary' => $this->scheduleCalculator->summary($job->schedule_type, $job->schedule_config ?? []),
         ];
+    }
+
+    private function syncNotificationChannels(BackupJob $job, BackupJobRequest $request, bool $creating): void
+    {
+        if ($request->has('notification_channel_ids')) {
+            $job->notificationChannels()->sync($this->notificationChannelIds($request));
+
+            return;
+        }
+
+        if ($creating) {
+            $job->notificationChannels()->sync($this->defaultNotificationChannelIds());
+        }
+    }
+
+    private function notificationChannelIds(BackupJobRequest $request): array
+    {
+        return collect($request->input('notification_channel_ids', []))
+            ->map(fn ($id): int => (int) $id)
+            ->unique()
+            ->values()
+            ->all();
+    }
+
+    private function defaultNotificationChannelIds(): array
+    {
+        $id = NotificationChannel::where('is_default', true)->orderBy('id')->value('id');
+
+        return $id ? [(int) $id] : [];
     }
 }

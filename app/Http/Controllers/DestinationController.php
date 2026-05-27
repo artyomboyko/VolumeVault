@@ -8,6 +8,7 @@ use App\Http\Requests\UpdateDestinationRequest;
 use App\Models\ActivityLog;
 use App\Models\BackupDestination;
 use App\Services\BackupDestinations\TestBackupDestination;
+use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -69,6 +70,19 @@ class DestinationController extends Controller
         $destination->delete();
 
         return redirect()->route('destinations.index')->with('success', 'Destination deleted.');
+    }
+
+    public function updateActive(Request $request, BackupDestination $destination)
+    {
+        $request->validate([
+            'is_active' => ['required', 'boolean'],
+        ]);
+
+        $destination->forceFill([
+            'is_active' => $request->boolean('is_active'),
+        ])->save();
+
+        return back()->with('success', $destination->is_active ? 'Destination enabled.' : 'Destination disabled.');
     }
 
     public function test(BackupDestination $destination, TestBackupDestination $testBackupDestination)
