@@ -1,9 +1,11 @@
 <?php
 
 use App\Http\Controllers\ApiTokenController;
+use App\Http\Controllers\AvailableUpdateController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\BackupJobController;
 use App\Http\Controllers\BackupRunController;
+use App\Http\Controllers\ChangelogController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\DestinationController;
 use App\Http\Controllers\InstallationSaveController;
@@ -42,6 +44,9 @@ Route::middleware('auth')->group(function () {
     Route::patch('/user/theme', [UserThemeController::class, 'update'])->name('user.theme.update');
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::put('/profile', [ProfileController::class, 'update'])->name('profile.update');
+    Route::get('/changelog', [ChangelogController::class, 'index'])->name('changelog.index');
+    Route::patch('/changelog/seen', [ChangelogController::class, 'seen'])->name('changelog.seen');
+    Route::patch('/updates/available/dismiss', [AvailableUpdateController::class, 'dismiss'])->name('updates.available.dismiss');
 
     Route::get('/dashboard', DashboardController::class)->name('dashboard');
 

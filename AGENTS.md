@@ -61,7 +61,7 @@ Preserve the existing visual language and layout patterns.
 
 - Use Vue 3 composition style.
 - Use Inertia forms and props consistently with existing pages.
-- Keep translations in `resources/js/i18n/locales`.
+- Keep UI translations in `resources/js/i18n/locales`.
 - Avoid introducing new UI abstractions unless they are reused.
 
 ## Verification
@@ -83,6 +83,18 @@ npm run build
 ## Documentation
 
 Update `README.md` or `docs/` when behavior, deployment, security assumptions, API usage, or user workflows change.
+
+## Changelog
+
+When a change affects users, deployment, security assumptions, migrations, APIs, workflows, or visible UI behavior, update `config/changelog.php`.
+
+Use the `unreleased` section while developing. Do not guess the next release version. Move `unreleased` entries into the tagged release section during the release process.
+
+When adding changelog entries, add a stable `key` in `config/changelog.php` and add the user-facing title and description to every locale file in `resources/changelog/{locale}.php`. Keep changelog release-note copy out of `resources/js/i18n/locales`, which is for UI labels.
+
+When creating a release or tag, run `php artisan changelog:release vX.Y.Z` before committing and tagging the release.
+
+Do not add changelog entries for internal-only refactors, test-only changes, formatting, or implementation details that users do not need to act on.
 
 ## Editing Guidelines
 

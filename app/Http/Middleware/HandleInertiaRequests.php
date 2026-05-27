@@ -3,6 +3,8 @@
 namespace App\Http\Middleware;
 
 use App\Models\User;
+use App\Services\Changelog\AvailableUpdateChecker;
+use App\Services\Changelog\Changelog;
 use Illuminate\Http\Request;
 use Inertia\Middleware;
 
@@ -47,6 +49,12 @@ class HandleInertiaRequests extends Middleware
                 'theme' => $request->user()?->theme ?? User::DEFAULT_THEME,
                 'themes' => User::SUPPORTED_THEMES,
             ],
+            'updateSummary' => fn () => $request->user()
+                ? app(Changelog::class)->unreadForUser($request->user())
+                : null,
+            'availableUpdate' => fn () => $request->user()
+                ? app(AvailableUpdateChecker::class)->forUser($request->user())
+                : null,
             'flash' => [
                 'success' => fn () => $request->session()->get('success'),
                 'error' => fn () => $request->session()->get('error'),

@@ -1,5 +1,7 @@
 <?php
 
+use App\Console\Commands\ChangelogRelease;
+use App\Console\Commands\ChangelogValidate;
 use App\Http\Middleware\EnsureUserIsAdmin;
 use App\Http\Middleware\HandleInertiaRequests;
 use Illuminate\Foundation\Application;
@@ -16,6 +18,10 @@ return Application::configure(basePath: dirname(__DIR__))
         commands: __DIR__.'/../routes/console.php',
         health: '/up',
     )
+    ->withCommands([
+        ChangelogRelease::class,
+        ChangelogValidate::class,
+    ])
     ->withMiddleware(function (Middleware $middleware) {
         $trustedProxies = $_SERVER['TRUSTED_PROXIES'] ?? $_ENV['TRUSTED_PROXIES'] ?? env('TRUSTED_PROXIES');
 
