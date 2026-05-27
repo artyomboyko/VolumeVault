@@ -35,5 +35,8 @@ jobs:
       - name: Build assets
         run: npm run build
 
+      - name: Prepare test environment
+        run: touch .env
+
       - name: Run tests
         run: php artisan test

@@ -54,6 +54,10 @@ class BackupJob extends Model
         'stop_containers_before_backup',
     ];
 
+    protected $attributes = [
+        'notifications_enabled' => true,
+    ];
+
     protected $appends = [
         'source_label',
     ];
