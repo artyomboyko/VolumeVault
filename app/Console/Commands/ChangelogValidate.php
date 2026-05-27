@@ -10,7 +10,7 @@ use Illuminate\Support\Facades\File;
 class ChangelogValidate extends Command
 {
     protected $signature = 'changelog:validate
-        {--version= : Release version to validate}
+        {version? : Release version to validate}
         {--release : Enforce release/tag publishing rules}
         {--path= : Changelog config path}';
 
@@ -36,7 +36,7 @@ class ChangelogValidate extends Command
 
         $errors = $changelog->validateData(
             data: $data,
-            version: $this->option('version') ? (string) $this->option('version') : null,
+            version: $this->argument('version') ? (string) $this->argument('version') : null,
             release: (bool) $this->option('release'),
         );
         $errors = [

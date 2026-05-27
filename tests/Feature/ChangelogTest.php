@@ -166,11 +166,8 @@ class ChangelogTest extends TestCase
             'releases' => [],
         ]));
 
-        $this->artisan('changelog:validate', [
-            '--version' => 'v1.2.0',
-            '--release' => true,
-            '--path' => $path,
-        ])->assertExitCode(1);
+        $this->artisan("changelog:validate v1.2.0 --release --path={$path}")
+            ->assertExitCode(1);
     }
 
     public function test_project_changelog_config_is_valid(): void
