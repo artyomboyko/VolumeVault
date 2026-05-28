@@ -133,6 +133,14 @@ This layout is useful when you want separate container lifecycle, logs, and reso
 
 The container listens on port `8080`. You can expose any host port by changing the value on the left, for example `9090:8080`, and should set `APP_URL` to the public URL you use.
 
+## Update Summaries
+
+After an application update, VolumeVault can show each signed-in user a short in-app summary of the changes they have not seen yet. The summary uses the version embedded in the container image and the local changelog shipped with the application, so it does not require GitHub access from your server.
+
+Users can dismiss the update summary after reading it, and can reopen the full changelog from the user menu or the version link in the footer. Images built from `main` show unreleased entries when they are available.
+
+When `APP_VERSION` is a tagged release, VolumeVault can also check GitHub for a newer release and show a discreet footer notice plus a card on the changelog page. This check is cached and can be disabled with `VOLUMEVAULT_UPDATE_CHECK_ENABLED=false` for offline or restricted installations.
+
 ## Environment Variables
 
 - `APP_KEY`: required for encrypted destination credentials, notification URLs, and installation saves.
@@ -150,6 +158,7 @@ The container listens on port `8080`. You can expose any host port by changing t
 - `VOLUMEVAULT_MIGRATIONS_ENABLED`: set to `false` only when running migrations in a separate container.
 - `VOLUMEVAULT_QUEUE_ENABLED`: set to `false` only when splitting queue workers into separate containers.
 - `VOLUMEVAULT_SCHEDULER_ENABLED`: set to `false` only when splitting the scheduler into a separate container.
+- `VOLUMEVAULT_UPDATE_CHECK_ENABLED`: set to `false` to disable the cached GitHub latest-release check shown in the footer and changelog page.
 - `MAIL_MAILER`: use `smtp` or another real mail transport to enable email password reset links. The default `log` mode hides email reset in the UI.
 
 You can override values directly in Compose:

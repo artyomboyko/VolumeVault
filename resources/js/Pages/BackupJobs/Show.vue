@@ -15,6 +15,7 @@ const sourceTypeLabel = (job: any) => job.source_type === 'host_path' ? t('Host 
 const runNow = (id: number) => router.post(`/backup-jobs/${id}/run`);
 const pause = (id: number) => router.post(`/backup-jobs/${id}/pause`);
 const resume = (id: number) => router.post(`/backup-jobs/${id}/resume`);
+const destroyJob = (id: number) => confirm(t('Delete this backup job and its run history?')) && router.delete(`/backup-jobs/${id}`);
 </script>
 
 <template>
@@ -27,6 +28,7 @@ const resume = (id: number) => router.post(`/backup-jobs/${id}/resume`);
                 <button v-else-if="can.runDockerActions" class="btn-secondary" :disabled="job.status === 'running'" @click="pause(job.id)">{{ t('Pause') }}</button>
                 <Link v-if="can.runDockerActions" :href="`/backup-jobs/${job.id}/restore`" class="btn-secondary">{{ t('Restore') }}</Link>
                 <Link v-if="can.runDockerActions" :href="`/backup-jobs/${job.id}/edit`" class="btn-secondary">{{ t('Edit') }}</Link>
+                <button v-if="can.runDockerActions" type="button" class="btn-danger" @click="destroyJob(job.id)">{{ t('Delete') }}</button>
             </div>
         </template>
 

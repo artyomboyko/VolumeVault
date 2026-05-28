@@ -1,0 +1,107 @@
+<?php
+
+return [
+    'unreleased' => [
+        [
+            'type' => 'feature',
+            'key' => 'in_app_update_summaries',
+        ],
+        [
+            'type' => 'feature',
+            'key' => 'available_update_checks',
+        ],
+        [
+            'type' => 'change',
+            'key' => 'backup_job_detail_deletion',
+        ],
+    ],
+
+    'releases' => [
+        'v1.4.0' => [
+            'date' => '2026-05-27',
+            'url' => 'https://github.com/Darkdragon14/VolumeVault/releases/tag/v1.4.0',
+            'items' => [
+                [
+                    'type' => 'feature',
+                    'key' => 'per_job_notification_channels',
+                ],
+                [
+                    'type' => 'migration',
+                    'key' => 'notification_defaults_migration',
+                ],
+            ],
+        ],
+        'v1.3.0' => [
+            'date' => '2026-05-26',
+            'url' => 'https://github.com/Darkdragon14/VolumeVault/releases/tag/v1.3.0',
+            'items' => [
+                [
+                    'type' => 'feature',
+                    'key' => 'host_path_backup_sources',
+                ],
+                [
+                    'type' => 'change',
+                    'key' => 'host_path_safety_controls',
+                ],
+            ],
+        ],
+        'v1.2.0' => [
+            'date' => '2026-05-24',
+            'url' => 'https://github.com/Darkdragon14/VolumeVault/releases/tag/v1.2.0',
+            'items' => [
+                [
+                    'type' => 'feature',
+                    'key' => 'stack_backup_coverage',
+                ],
+                [
+                    'type' => 'change',
+                    'key' => 'backup_archive_metadata',
+                ],
+            ],
+        ],
+        'v1.1.2' => [
+            'date' => '2026-05-17',
+            'url' => 'https://github.com/Darkdragon14/VolumeVault/releases/tag/v1.1.2',
+            'items' => [
+                [
+                    'type' => 'change',
+                    'key' => 'trusted_proxy_support',
+                ],
+            ],
+        ],
+        'v1.1.1' => [
+            'date' => '2026-05-08',
+            'url' => 'https://github.com/Darkdragon14/VolumeVault/releases/tag/v1.1.1',
+            'items' => [
+                [
+                    'type' => 'change',
+                    'key' => 'cleaner_docker_volume_sync',
+                ],
+            ],
+        ],
+        'v1.1.0' => [
+            'date' => '2026-05-08',
+            'url' => 'https://github.com/Darkdragon14/VolumeVault/releases/tag/v1.1.0',
+            'items' => [
+                [
+                    'type' => 'feature',
+                    'key' => 'list_search_and_filters',
+                ],
+                [
+                    'type' => 'change',
+                    'key' => 'php_85_container_runtime',
+                ],
+            ],
+        ],
+        'v1.0.0' => [
+            'date' => '2026-05-06',
+            'url' => 'https://github.com/Darkdragon14/VolumeVault/releases/tag/v1.0.0',
+            'items' => [
+                [
+                    'type' => 'feature',
+                    'key' => 'first_stable_release',
+                ],
+            ],
+        ],
+    ],
+];

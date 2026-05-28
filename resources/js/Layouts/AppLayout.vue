@@ -1,8 +1,38 @@
 <script setup lang="ts">
 import { Link, router, usePage } from '@inertiajs/vue3';
-import { computed, onBeforeUnmount, onMounted, ref } from 'vue';
+import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue';
 import { useI18n } from '@/i18n';
 import { useTheme } from '@/theme';
+
+type ChangelogItem = {
+    type: string;
+    title: string;
+    description: string;
+};
+
+type ChangelogSection = {
+    version: string;
+    date?: string | null;
+    url?: string | null;
+    is_unreleased: boolean;
+    items: ChangelogItem[];
+};
+
+type UpdateSummary = {
+    has_unread: boolean;
+    current_version: string;
+    last_seen_version?: string | null;
+    changelog_id: string;
+    item_count: number;
+    sections: ChangelogSection[];
+};
+
+type AvailableUpdate = {
+    version: string;
+    url: string;
+    published_at?: string | null;
+    body_excerpt?: string | null;
+};
 
 withDefaults(defineProps<{
     title: string;
@@ -18,6 +48,9 @@ const flash = computed(() => (page.props.flash || {}) as { success?: string; err
 const auth = computed(() => (page.props.auth || {}) as { user?: { id: number; name: string; email: string; role: string; locale: string; theme: string } | null });
 const can = computed(() => (page.props.can || {}) as { manageSensitiveData?: boolean; runDockerActions?: boolean; manageUsers?: boolean });
 const app = computed(() => (page.props.app || {}) as { version?: string });
+const updateSummary = computed(() => (page.props.updateSummary || null) as UpdateSummary | null);
+const availableUpdate = computed(() => (page.props.availableUpdate || null) as AvailableUpdate | null);
+const shouldShowUpdateSummary = computed(() => Boolean(updateSummary.value?.has_unread) && !page.url.startsWith('/changelog'));
 const updateLocale = (event: Event) => router.patch('/user/locale', { locale: (event.target as HTMLSelectElement).value }, { preserveScroll: true });
 const themeToggleLabel = computed(() => isDark.value ? t('Switch to light theme') : t('Switch to dark theme'));
 const themeName = computed(() => isDark.value ? t('Dark theme') : t('Light theme'));
@@ -25,8 +58,10 @@ const currentYear = new Date().getFullYear();
 const githubProfileUrl = 'https://github.com/Darkdragon14';
 const githubRepoUrl = 'https://github.com/Darkdragon14/VolumeVault';
 const githubIssuesUrl = 'https://github.com/Darkdragon14/VolumeVault/issues';
+const snoozedUpdateSummaryStorageKey = 'volumevault.snoozed_update_summary_id';
 
 const openMenu = ref<'settings' | 'user' | null>(null);
+const showUpdateSummary = ref(false);
 const headerRef = ref<HTMLElement | null>(null);
 
 const primaryNav = computed(() => [
@@ -50,6 +85,52 @@ const settingsNav = computed(() => [
 const hasActiveItem = (items: { href: string }[]) => items.some((item) => page.url.startsWith(item.href));
 const toggleMenu = (menu: 'settings' | 'user') => openMenu.value = openMenu.value === menu ? null : menu;
 const closeMenu = () => openMenu.value = null;
+const changelogTypeLabel = (type: string) => t(({ feature: 'Feature', change: 'Changed', migration: 'Migration', breaking: 'Breaking' } as Record<string, string>)[type] || type);
+const changelogTypeClass = (type: string) => ({
+    feature: 'border-sky-300/30 bg-sky-400/10 text-sky-100',
+    change: 'border-violet-300/30 bg-violet-400/10 text-violet-200',
+    migration: 'border-amber-300/40 bg-amber-300/10 text-amber-100',
+    breaking: 'border-rose-300/40 bg-rose-400/10 text-rose-100',
+}[type] || 'border-white/10 bg-white/5 text-slate-200');
+const sectionTitle = (section: ChangelogSection) => section.is_unreleased ? t('Unreleased') : t('Release {version}', { version: section.version });
+const readSnoozedUpdateSummaryId = (): string | null => {
+    try {
+        return typeof window === 'undefined' ? null : window.sessionStorage.getItem(snoozedUpdateSummaryStorageKey);
+    } catch {
+        return null;
+    }
+};
+const writeSnoozedUpdateSummaryId = (changelogId: string): void => {
+    try {
+        window.sessionStorage.setItem(snoozedUpdateSummaryStorageKey, changelogId);
+    } catch {
+        return;
+    }
+};
+const clearSnoozedUpdateSummaryId = (): void => {
+    try {
+        window.sessionStorage.removeItem(snoozedUpdateSummaryStorageKey);
+    } catch {
+        return;
+    }
+};
+const isUpdateSummarySnoozed = (summary: UpdateSummary | null) => summary
+    ? readSnoozedUpdateSummaryId() === summary.changelog_id
+    : false;
+const snoozeUpdateSummary = () => {
+    if (updateSummary.value) {
+        writeSnoozedUpdateSummaryId(updateSummary.value.changelog_id);
+    }
+
+    showUpdateSummary.value = false;
+};
+const markUpdateSummarySeen = () => router.patch('/changelog/seen', {}, {
+    preserveScroll: true,
+    onSuccess: () => {
+        clearSnoozedUpdateSummaryId();
+        showUpdateSummary.value = false;
+    },
+});
 
 const closeOnOutsideClick = (event: MouseEvent) => {
     if (headerRef.value && !headerRef.value.contains(event.target as Node)) {
@@ -58,7 +139,12 @@ const closeOnOutsideClick = (event: MouseEvent) => {
 };
 
 const closeOnEscape = (event: KeyboardEvent) => {
-    if (event.key === 'Escape') closeMenu();
+    if (event.key === 'Escape') {
+        closeMenu();
+        if (showUpdateSummary.value) {
+            snoozeUpdateSummary();
+        }
+    }
 };
 
 onMounted(() => {
@@ -70,6 +156,10 @@ onBeforeUnmount(() => {
     document.removeEventListener('click', closeOnOutsideClick);
     document.removeEventListener('keydown', closeOnEscape);
 });
+
+watch(shouldShowUpdateSummary, (shouldShow) => {
+    showUpdateSummary.value = shouldShow && !isUpdateSummarySnoozed(updateSummary.value);
+}, { immediate: true });
 </script>
 
 <template>
@@ -129,7 +219,7 @@ onBeforeUnmount(() => {
                     <div v-if="auth.user" class="relative">
                         <button
                             class="group flex w-full items-center gap-3 rounded-2xl border border-white/10 bg-white/5 px-3 py-2 text-left text-sm text-slate-200 transition hover:bg-white/10 lg:w-auto"
-                            :class="{ 'bg-white/10 text-white': openMenu === 'user' || page.url.startsWith('/profile') || page.url.startsWith('/api-tokens') }"
+                            :class="{ 'bg-white/10 text-white': openMenu === 'user' || page.url.startsWith('/profile') || page.url.startsWith('/api-tokens') || page.url.startsWith('/changelog') }"
                             type="button"
                             aria-haspopup="menu"
                             :aria-expanded="openMenu === 'user'"
@@ -157,6 +247,10 @@ onBeforeUnmount(() => {
 
                             <Link v-if="can.manageUsers" href="/api-tokens" class="block rounded-xl px-3 py-3 text-sm font-medium text-slate-200 transition hover:bg-white/10" role="menuitem" @click="closeMenu">
                                 {{ t('API tokens') }}
+                            </Link>
+
+                            <Link href="/changelog" class="block rounded-xl px-3 py-3 text-sm font-medium text-slate-200 transition hover:bg-white/10" role="menuitem" @click="closeMenu">
+                                {{ t('Changelog') }}
                             </Link>
 
                             <div class="mt-2 rounded-xl border border-white/10 bg-white/[0.03] p-3">
@@ -231,13 +325,60 @@ onBeforeUnmount(() => {
             <slot />
         </main>
 
+        <div v-if="showUpdateSummary && updateSummary" class="fixed inset-0 z-[70] flex items-end justify-center bg-slate-950/70 px-4 py-6 backdrop-blur-sm sm:items-center" role="dialog" aria-modal="true" :aria-label="t('Update summary')" @click.self="snoozeUpdateSummary">
+            <section class="max-h-[90vh] w-full max-w-2xl overflow-hidden rounded-3xl border border-white/10 bg-slate-950 shadow-2xl shadow-black/40">
+                <div class="border-b border-white/10 bg-white/[0.03] px-5 py-4 sm:px-6">
+                    <div class="flex items-start justify-between gap-4">
+                        <div>
+                            <p class="text-xs font-semibold uppercase tracking-wide text-sky-300">{{ t('Update summary') }}</p>
+                            <h2 class="mt-1 text-xl font-bold text-white">{{ t('What changed in VolumeVault') }}</h2>
+                            <p class="mt-2 text-sm text-slate-400">{{ t('VolumeVault was updated. Review the important changes before continuing.') }}</p>
+                        </div>
+                        <button type="button" class="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-white/10 bg-white/5 text-slate-300 transition hover:bg-white/10 hover:text-white" :aria-label="t('Remind me later')" @click="snoozeUpdateSummary">
+                            <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                                <path d="M18 6 6 18" />
+                                <path d="m6 6 12 12" />
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="max-h-[55vh] space-y-5 overflow-y-auto px-5 py-5 sm:px-6">
+                    <section v-for="section in updateSummary.sections" :key="section.version" class="rounded-2xl border border-white/10 bg-white/[0.03] p-4">
+                        <div class="mb-3 flex flex-wrap items-center gap-2">
+                            <h3 class="font-semibold text-white">{{ sectionTitle(section) }}</h3>
+                            <span v-if="section.date" class="text-xs text-slate-500">{{ t('Release date: {date}', { date: section.date }) }}</span>
+                        </div>
+                        <div class="space-y-3">
+                            <article v-for="item in section.items" :key="`${section.version}-${item.title}`" class="rounded-xl border border-white/10 bg-slate-950/60 p-3">
+                                <span class="inline-flex rounded-full border px-2.5 py-1 text-xs font-semibold" :class="changelogTypeClass(item.type)">{{ changelogTypeLabel(item.type) }}</span>
+                                <h4 class="mt-2 font-semibold text-white">{{ item.title }}</h4>
+                                <p class="mt-1 text-sm text-slate-400">{{ item.description }}</p>
+                            </article>
+                        </div>
+                    </section>
+                </div>
+
+                <div class="flex flex-col gap-3 border-t border-white/10 bg-white/[0.03] px-5 py-4 sm:flex-row sm:items-center sm:justify-between sm:px-6">
+                    <Link href="/changelog" class="btn-secondary" @click="snoozeUpdateSummary">{{ t('View full changelog') }}</Link>
+                    <button type="button" class="btn-primary" @click="markUpdateSummarySeen">{{ t('Mark as read') }}</button>
+                </div>
+            </section>
+        </div>
+
         <footer class="border-t border-white/10 bg-slate-950/30">
             <div class="mx-auto flex max-w-7xl flex-col gap-3 px-4 py-5 text-xs text-slate-500 sm:flex-row sm:items-center sm:justify-between sm:px-6 lg:px-8">
                 <p>
                     &copy; {{ currentYear }}
                     <a :href="githubProfileUrl" class="font-medium text-slate-400 transition hover:text-sky-300" target="_blank" rel="noopener noreferrer">Darkdragon14</a>
                     <span class="mx-1.5 text-slate-600">&middot;</span>
-                    <span>VolumeVault {{ app.version || 'main' }}</span>
+                    <Link href="/changelog" class="transition hover:text-sky-300">VolumeVault {{ app.version || 'main' }}</Link>
+                    <template v-if="availableUpdate">
+                        <span class="mx-1.5 text-slate-600">&middot;</span>
+                        <Link href="/changelog" class="rounded-full border border-sky-300/20 bg-sky-400/10 px-2 py-0.5 font-medium text-sky-300 transition hover:bg-sky-400/15 hover:text-sky-200">
+                            {{ t('Version {version} available', { version: availableUpdate.version }) }}
+                        </Link>
+                    </template>
                 </p>
 
                 <div class="flex flex-wrap items-center gap-x-4 gap-y-2">

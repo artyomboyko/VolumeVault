@@ -40,6 +40,9 @@ class User extends Authenticatable
         'role',
         'locale',
         'theme',
+        'last_seen_app_version',
+        'last_seen_changelog_id',
+        'last_dismissed_available_version',
     ];
 
     /**
