@@ -1,22 +1,26 @@
 <?php
 
 return [
-    'unreleased' => [
-        [
-            'type' => 'feature',
-            'key' => 'in_app_update_summaries',
-        ],
-        [
-            'type' => 'feature',
-            'key' => 'available_update_checks',
-        ],
-        [
-            'type' => 'change',
-            'key' => 'backup_job_detail_deletion',
-        ],
-    ],
-
+    'unreleased' => [],
     'releases' => [
+        'v1.5.0' => [
+            'date' => '2026-05-28',
+            'url' => 'https://github.com/Darkdragon14/VolumeVault/releases/tag/v1.5.0',
+            'items' => [
+                [
+                    'type' => 'feature',
+                    'key' => 'in_app_update_summaries',
+                ],
+                [
+                    'type' => 'feature',
+                    'key' => 'available_update_checks',
+                ],
+                [
+                    'type' => 'change',
+                    'key' => 'backup_job_detail_deletion',
+                ],
+            ],
+        ],
         'v1.4.0' => [
             'date' => '2026-05-27',
             'url' => 'https://github.com/Darkdragon14/VolumeVault/releases/tag/v1.4.0',
