@@ -1,6 +1,10 @@
 <?php
 
 return [
+    'keyboard_shortcuts' => [
+        'title' => 'Scorciatoie da tastiera',
+        'description' => 'Su desktop, usa Ctrl+K per la navigazione rapida, scorciatoie con prefisso g per le viste e / per focalizzare la ricerca nelle liste.',
+    ],
     'in_app_update_summaries' => [
         'title' => "Riepiloghi aggiornamento nell'app",
         'description' => "VolumeVault ora puo mostrare agli utenti cosa e cambiato dopo un aggiornamento dell'applicazione.",

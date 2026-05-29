@@ -1,6 +1,10 @@
 <?php
 
 return [
+    'keyboard_shortcuts' => [
+        'title' => 'Sneltoetsen',
+        'description' => 'Gebruik op desktop Ctrl+K voor snelle navigatie, g-sneltoetsen voor weergaven en / om zoeken in lijsten te focussen.',
+    ],
     'in_app_update_summaries' => [
         'title' => 'Update-overzichten in de app',
         'description' => 'VolumeVault kan gebruikers nu tonen wat er is gewijzigd na een applicatie-update.',

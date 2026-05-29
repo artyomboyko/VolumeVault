@@ -1,6 +1,10 @@
 <?php
 
 return [
+    'keyboard_shortcuts' => [
+        'title' => 'Atajos de teclado',
+        'description' => 'En escritorio, use Ctrl+K para navegacion rapida, atajos con prefijo g para vistas y / para enfocar la busqueda de listas.',
+    ],
     'in_app_update_summaries' => [
         'title' => 'Resumenes de actualizacion integrados',
         'description' => 'VolumeVault ahora puede mostrar a los usuarios que cambio despues de una actualizacion de la aplicacion.',

@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { Link, router, usePage } from '@inertiajs/vue3';
-import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue';
+import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue';
 import { useI18n } from '@/i18n';
 import { useTheme } from '@/theme';
 
@@ -34,6 +34,16 @@ type AvailableUpdate = {
     body_excerpt?: string | null;
 };
 
+type QuickNavItem = {
+    label: string;
+    href: string;
+    group: string;
+    shortcutKey: string;
+    shortcutLabel: string;
+    shortcutSearchAliases: string[];
+    description?: string;
+};
+
 withDefaults(defineProps<{
     title: string;
     subtitle?: string;
@@ -62,29 +72,276 @@ const snoozedUpdateSummaryStorageKey = 'volumevault.snoozed_update_summary_id';
 
 const openMenu = ref<'settings' | 'user' | null>(null);
 const showUpdateSummary = ref(false);
+const isQuickNavOpen = ref(false);
+const quickNavQuery = ref('');
+const selectedQuickNavIndex = ref(0);
 const headerRef = ref<HTMLElement | null>(null);
+const quickNavSearchRef = ref<HTMLInputElement | null>(null);
+const pendingGoShortcut = ref(false);
+const quickNavModifierLabel = ref('Ctrl');
+const areKeyboardShortcutsEnabled = ref(false);
+let pendingGoShortcutTimeout: number | null = null;
+let keyboardShortcutMediaQuery: MediaQueryList | null = null;
+
+const shortcutLabel = (key: string) => t('g then {key}', { key });
+const shortcutSearchAliases = (key: string) => [`g ${key}`, `g${key}`, key];
 
 const primaryNav = computed(() => [
-    { label: t('Dashboard'), href: '/dashboard' },
-    { label: t('Volumes'), href: '/volumes' },
-    { label: t('Stacks'), href: '/stacks' },
-    { label: t('Backup jobs'), href: '/backup-jobs' },
+    { label: t('Dashboard'), href: '/dashboard', shortcutKey: 'h' },
+    { label: t('Volumes'), href: '/volumes', shortcutKey: 'v' },
+    { label: t('Stacks'), href: '/stacks', shortcutKey: 's' },
+    { label: t('Backup jobs'), href: '/backup-jobs', shortcutKey: 'j' },
 ]);
 
 const settingsNav = computed(() => [
     ...(can.value.manageSensitiveData ? [
-        { label: t('Destinations'), description: t('Storage targets'), href: '/destinations' },
-        { label: t('Notifications'), description: t('Alert channels'), href: '/notifications' },
-        { label: t('Installation save'), description: t('Export and import setup'), href: '/installation-save' },
+        { label: t('Destinations'), description: t('Storage targets'), href: '/destinations', shortcutKey: 'd' },
+        { label: t('Notifications'), description: t('Alert channels'), href: '/notifications', shortcutKey: 'n' },
+        { label: t('Installation save'), description: t('Export and import setup'), href: '/installation-save', shortcutKey: 'i' },
     ] : []),
     ...(can.value.manageUsers ? [
-        { label: t('Users'), description: t('Team access'), href: '/users' },
+        { label: t('Users'), description: t('Team access'), href: '/users', shortcutKey: 'u' },
     ] : []),
 ]);
+
+const accountNav = computed(() => [
+    { label: t('Edit profile'), href: '/profile', shortcutKey: 'p' },
+    ...(can.value.manageUsers ? [
+        { label: t('API tokens'), href: '/api-tokens', shortcutKey: 'a' },
+    ] : []),
+    { label: t('Changelog'), href: '/changelog', shortcutKey: 'c' },
+]);
+
+const quickNavItems = computed<QuickNavItem[]>(() => [
+    ...primaryNav.value.map((item) => ({
+        ...item,
+        group: t('Navigation'),
+        shortcutLabel: shortcutLabel(item.shortcutKey),
+        shortcutSearchAliases: shortcutSearchAliases(item.shortcutKey),
+    })),
+    ...settingsNav.value.map((item) => ({
+        ...item,
+        group: t('Settings'),
+        shortcutLabel: shortcutLabel(item.shortcutKey),
+        shortcutSearchAliases: shortcutSearchAliases(item.shortcutKey),
+    })),
+    ...accountNav.value.map((item) => ({
+        ...item,
+        group: t('Account'),
+        shortcutLabel: shortcutLabel(item.shortcutKey),
+        shortcutSearchAliases: shortcutSearchAliases(item.shortcutKey),
+    })),
+]);
+
+const filteredQuickNavItems = computed(() => {
+    const query = quickNavQuery.value.trim().toLowerCase();
+
+    if (!query) {
+        return quickNavItems.value;
+    }
+
+    return quickNavItems.value.filter((item) => [item.label, item.description, item.group, item.href, item.shortcutLabel, ...item.shortcutSearchAliases]
+        .filter(Boolean)
+        .join(' ')
+        .toLowerCase()
+        .includes(query));
+});
+
+const quickNavShortcutMap = computed(() => new Map(quickNavItems.value.map((item) => [item.shortcutKey, item])));
 
 const hasActiveItem = (items: { href: string }[]) => items.some((item) => page.url.startsWith(item.href));
 const toggleMenu = (menu: 'settings' | 'user') => openMenu.value = openMenu.value === menu ? null : menu;
 const closeMenu = () => openMenu.value = null;
+const openQuickNav = () => {
+    if (!auth.value.user || showUpdateSummary.value || !areKeyboardShortcutsEnabled.value) {
+        return;
+    }
+
+    closeMenu();
+    isQuickNavOpen.value = true;
+};
+const closeQuickNav = () => isQuickNavOpen.value = false;
+const updateKeyboardShortcutAvailability = () => {
+    areKeyboardShortcutsEnabled.value = Boolean(keyboardShortcutMediaQuery?.matches);
+
+    if (!areKeyboardShortcutsEnabled.value) {
+        clearPendingGoShortcut();
+        closeQuickNav();
+    }
+};
+const detectQuickNavModifier = () => {
+    if (typeof window === 'undefined') {
+        return;
+    }
+
+    quickNavModifierLabel.value = /Mac|iPhone|iPad|iPod/.test(window.navigator.platform) ? 'Cmd' : 'Ctrl';
+};
+const visitQuickNavItem = (item: QuickNavItem) => {
+    closeQuickNav();
+
+    if (page.url !== item.href) {
+        router.visit(item.href);
+    }
+};
+const selectQuickNavItem = (offset: number) => {
+    const itemCount = filteredQuickNavItems.value.length;
+
+    if (!itemCount) {
+        return;
+    }
+
+    selectedQuickNavIndex.value = (selectedQuickNavIndex.value + offset + itemCount) % itemCount;
+};
+const onQuickNavKeydown = (event: KeyboardEvent) => {
+    if (event.key === 'Escape') {
+        event.preventDefault();
+        closeQuickNav();
+
+        return;
+    }
+
+    if (event.key === 'ArrowDown') {
+        event.preventDefault();
+        selectQuickNavItem(1);
+
+        return;
+    }
+
+    if (event.key === 'ArrowUp') {
+        event.preventDefault();
+        selectQuickNavItem(-1);
+
+        return;
+    }
+
+    if (event.key === 'Home') {
+        event.preventDefault();
+        selectedQuickNavIndex.value = 0;
+
+        return;
+    }
+
+    if (event.key === 'End') {
+        event.preventDefault();
+        selectedQuickNavIndex.value = Math.max(filteredQuickNavItems.value.length - 1, 0);
+
+        return;
+    }
+
+    if (event.key === 'Enter') {
+        const item = filteredQuickNavItems.value[selectedQuickNavIndex.value];
+
+        if (item) {
+            event.preventDefault();
+            visitQuickNavItem(item);
+        }
+    }
+};
+const clearPendingGoShortcut = () => {
+    pendingGoShortcut.value = false;
+
+    if (pendingGoShortcutTimeout !== null) {
+        window.clearTimeout(pendingGoShortcutTimeout);
+        pendingGoShortcutTimeout = null;
+    }
+};
+const startPendingGoShortcut = () => {
+    clearPendingGoShortcut();
+    pendingGoShortcut.value = true;
+    pendingGoShortcutTimeout = window.setTimeout(clearPendingGoShortcut, 1200);
+};
+const isEditableTarget = (target: EventTarget | null) => {
+    const element = target instanceof HTMLElement ? target : null;
+
+    return Boolean(element && (
+        element.isContentEditable
+        || ['INPUT', 'SELECT', 'TEXTAREA'].includes(element.tagName)
+        || element.closest('[contenteditable="true"]')
+    ));
+};
+const focusPageSearch = () => {
+    const searchInput = document.querySelector<HTMLInputElement>('[data-list-search]');
+
+    if (!searchInput) {
+        return false;
+    }
+
+    searchInput.focus();
+    searchInput.select();
+
+    return true;
+};
+const onGlobalKeydown = (event: KeyboardEvent) => {
+    if (!areKeyboardShortcutsEnabled.value) {
+        return;
+    }
+
+    if (event.key === 'Escape') {
+        clearPendingGoShortcut();
+
+        if (isQuickNavOpen.value) {
+            event.preventDefault();
+            closeQuickNav();
+
+            return;
+        }
+
+        closeMenu();
+
+        if (showUpdateSummary.value) {
+            snoozeUpdateSummary();
+        }
+
+        return;
+    }
+
+    if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === 'k') {
+        if (!auth.value.user || showUpdateSummary.value) {
+            return;
+        }
+
+        event.preventDefault();
+        isQuickNavOpen.value ? closeQuickNav() : openQuickNav();
+
+        return;
+    }
+
+    if (isQuickNavOpen.value || showUpdateSummary.value || !auth.value.user) {
+        return;
+    }
+
+    if (event.key === '/' && !isEditableTarget(event.target)) {
+        if (focusPageSearch()) {
+            event.preventDefault();
+        }
+
+        return;
+    }
+
+    if (isEditableTarget(event.target) || event.ctrlKey || event.metaKey || event.altKey || event.shiftKey) {
+        return;
+    }
+
+    const key = event.key.toLowerCase();
+
+    if (pendingGoShortcut.value) {
+        clearPendingGoShortcut();
+
+        const item = quickNavShortcutMap.value.get(key);
+
+        if (item) {
+            event.preventDefault();
+            visitQuickNavItem(item);
+        }
+
+        return;
+    }
+
+    if (key === 'g') {
+        event.preventDefault();
+        startPendingGoShortcut();
+    }
+};
 const changelogTypeLabel = (type: string) => t(({ feature: 'Feature', change: 'Changed', migration: 'Migration', breaking: 'Breaking' } as Record<string, string>)[type] || type);
 const changelogTypeClass = (type: string) => ({
     feature: 'border-sky-300/30 bg-sky-400/10 text-sky-100',
@@ -138,23 +395,40 @@ const closeOnOutsideClick = (event: MouseEvent) => {
     }
 };
 
-const closeOnEscape = (event: KeyboardEvent) => {
-    if (event.key === 'Escape') {
-        closeMenu();
-        if (showUpdateSummary.value) {
-            snoozeUpdateSummary();
-        }
-    }
-};
-
 onMounted(() => {
+    detectQuickNavModifier();
+    keyboardShortcutMediaQuery = window.matchMedia('(min-width: 640px) and (hover: hover) and (pointer: fine)');
+    keyboardShortcutMediaQuery.addEventListener('change', updateKeyboardShortcutAvailability);
+    updateKeyboardShortcutAvailability();
     document.addEventListener('click', closeOnOutsideClick);
-    document.addEventListener('keydown', closeOnEscape);
+    document.addEventListener('keydown', onGlobalKeydown);
 });
 
 onBeforeUnmount(() => {
     document.removeEventListener('click', closeOnOutsideClick);
-    document.removeEventListener('keydown', closeOnEscape);
+    document.removeEventListener('keydown', onGlobalKeydown);
+    keyboardShortcutMediaQuery?.removeEventListener('change', updateKeyboardShortcutAvailability);
+    clearPendingGoShortcut();
+});
+
+watch(quickNavQuery, () => {
+    selectedQuickNavIndex.value = 0;
+});
+
+watch(filteredQuickNavItems, (items) => {
+    selectedQuickNavIndex.value = Math.min(selectedQuickNavIndex.value, Math.max(items.length - 1, 0));
+});
+
+watch(isQuickNavOpen, async (isOpen) => {
+    if (!isOpen) {
+        quickNavQuery.value = '';
+        selectedQuickNavIndex.value = 0;
+
+        return;
+    }
+
+    await nextTick();
+    quickNavSearchRef.value?.focus();
 });
 
 watch(shouldShowUpdateSummary, (shouldShow) => {
@@ -325,6 +599,46 @@ watch(shouldShowUpdateSummary, (shouldShow) => {
             <slot />
         </main>
 
+        <div v-if="isQuickNavOpen" class="fixed inset-0 z-[80] flex items-start justify-center bg-slate-950/70 px-4 py-16 backdrop-blur-sm sm:py-24" role="dialog" aria-modal="true" :aria-label="t('Quick navigation')" @click.self="closeQuickNav">
+            <section class="w-full max-w-2xl overflow-hidden rounded-3xl border border-white/10 bg-slate-950 shadow-2xl shadow-black/40" @keydown.stop="onQuickNavKeydown">
+                <div class="border-b border-white/10 bg-white/[0.03] px-4 py-4">
+                    <label class="sr-only" for="quick-nav-search">{{ t('Search views') }}</label>
+                    <input id="quick-nav-search" ref="quickNavSearchRef" v-model="quickNavQuery" class="w-full bg-transparent text-base font-semibold text-white outline-none placeholder:text-slate-500" :placeholder="t('Search views')" autocomplete="off">
+                </div>
+
+                <div class="max-h-[55vh] overflow-y-auto p-2">
+                    <button
+                        v-for="(item, index) in filteredQuickNavItems"
+                        :key="item.href"
+                        type="button"
+                        class="flex w-full items-center justify-between gap-3 rounded-2xl px-3 py-3 text-left transition"
+                        :class="index === selectedQuickNavIndex ? 'bg-sky-400/10 text-sky-100' : 'text-slate-200 hover:bg-white/10'"
+                        @mouseenter="selectedQuickNavIndex = index"
+                        @click="visitQuickNavItem(item)"
+                    >
+                        <span class="min-w-0">
+                            <span class="block truncate font-semibold">{{ item.label }}</span>
+                            <span class="mt-0.5 block truncate text-xs text-slate-400">
+                                {{ item.group }}
+                                <template v-if="item.description"> / {{ item.description }}</template>
+                            </span>
+                        </span>
+                        <kbd class="shrink-0 rounded-lg border border-white/10 bg-slate-950/60 px-2 py-1 text-[0.65rem] font-semibold tracking-wide text-slate-400">{{ item.shortcutLabel }}</kbd>
+                    </button>
+
+                    <p v-if="!filteredQuickNavItems.length" class="px-5 py-8 text-center text-sm text-slate-400">
+                        {{ t('No matching views') }}
+                    </p>
+                </div>
+
+                <div class="flex flex-wrap items-center gap-x-4 gap-y-2 border-t border-white/10 bg-white/[0.03] px-4 py-3 text-xs text-slate-500">
+                    <span><kbd class="rounded border border-white/10 bg-slate-950/60 px-1.5 py-0.5 font-semibold text-slate-400">Enter</kbd> {{ t('Open selected view') }}</span>
+                    <span><kbd class="rounded border border-white/10 bg-slate-950/60 px-1.5 py-0.5 font-semibold text-slate-400">/</kbd> {{ t('Focus page search') }}</span>
+                    <span><kbd class="rounded border border-white/10 bg-slate-950/60 px-1.5 py-0.5 font-semibold text-slate-400">Esc</kbd> {{ t('Close') }}</span>
+                </div>
+            </section>
+        </div>
+
         <div v-if="showUpdateSummary && updateSummary" class="fixed inset-0 z-[70] flex items-end justify-center bg-slate-950/70 px-4 py-6 backdrop-blur-sm sm:items-center" role="dialog" aria-modal="true" :aria-label="t('Update summary')" @click.self="snoozeUpdateSummary">
             <section class="max-h-[90vh] w-full max-w-2xl overflow-hidden rounded-3xl border border-white/10 bg-slate-950 shadow-2xl shadow-black/40">
                 <div class="border-b border-white/10 bg-white/[0.03] px-5 py-4 sm:px-6">
@@ -382,6 +696,13 @@ watch(shouldShowUpdateSummary, (shouldShow) => {
                 </p>
 
                 <div class="flex flex-wrap items-center gap-x-4 gap-y-2">
+                    <span v-if="auth.user && areKeyboardShortcutsEnabled" class="hidden items-center gap-1.5 text-slate-400 sm:inline-flex">
+                        <span>{{ t('Quick nav') }}</span>
+                        <span class="text-slate-600">:</span>
+                        <kbd class="rounded border border-white/10 bg-slate-950/60 px-1.5 py-0.5 text-[0.65rem] font-semibold uppercase tracking-wide text-slate-400">{{ quickNavModifierLabel }}</kbd>
+                        <span class="text-slate-600">+</span>
+                        <kbd class="rounded border border-white/10 bg-slate-950/60 px-1.5 py-0.5 text-[0.65rem] font-semibold uppercase tracking-wide text-slate-400">K</kbd>
+                    </span>
                     <a :href="githubRepoUrl" class="inline-flex items-center gap-1.5 text-slate-400 transition hover:text-sky-300" target="_blank" rel="noopener noreferrer" :aria-label="t('Open the GitHub repository')">
                         <svg class="h-4 w-4" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
                             <path fill-rule="evenodd" d="M12 2C6.477 2 2 6.484 2 12.021c0 4.428 2.865 8.184 6.839 9.504.5.092.682-.217.682-.483 0-.237-.009-.866-.014-1.7-2.782.605-3.369-1.343-3.369-1.343-.455-1.158-1.11-1.466-1.11-1.466-.908-.621.069-.608.069-.608 1.004.071 1.532 1.033 1.532 1.033.892 1.53 2.341 1.088 2.91.832.091-.647.35-1.088.636-1.338-2.221-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.987 1.029-2.687-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0 1 12 6.852c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.203 2.398.1 2.651.64.7 1.028 1.594 1.028 2.687 0 3.848-2.337 4.695-4.566 4.944.359.31.678.922.678 1.858 0 1.34-.012 2.421-.012 2.75 0 .268.18.58.688.482A10.024 10.024 0 0 0 22 12.021C22 6.484 17.523 2 12 2Z" clip-rule="evenodd" />

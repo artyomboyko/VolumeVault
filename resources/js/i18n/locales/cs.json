@@ -348,5 +348,15 @@
   "Published at: {date}": "Publikovano: {date}",
   "Dismiss this version": "Skryt tuto verzi",
   "Open the GitHub repository": "Open the GitHub repository",
-  "Report a problem or suggest an improvement": "Report a problem or suggest an improvement"
+  "Report a problem or suggest an improvement": "Report a problem or suggest an improvement",
+  "Quick nav": "Rychla navigace",
+  "Quick navigation": "Rychla navigace",
+  "Search views": "Hledat zobrazeni",
+  "No matching views": "Zadna odpovidajici zobrazeni",
+  "Navigation": "Navigace",
+  "Account": "Ucet",
+  "Open selected view": "Otevrit vybrane zobrazeni",
+  "Focus page search": "Zamerit hledani na strance",
+  "Close": "Zavrit",
+  "g then {key}": "g potom {key}"
 }
