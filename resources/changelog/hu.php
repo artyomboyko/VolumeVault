@@ -1,6 +1,10 @@
 <?php
 
 return [
+    'keyboard_shortcuts' => [
+        'title' => 'Billentyuparancsok',
+        'description' => 'Desktopon hasznalja a Ctrl+K-t gyors navigaciohoz, a g elotagu parancsokat a nezetekhez es a / jelet a listakereses fokuszalashoz.',
+    ],
     'in_app_update_summaries' => [
         'title' => 'Alkalmazason beluli frissitesi osszegzesek',
         'description' => 'A VolumeVault mostantol meg tudja mutatni a felhasznaloknak, mi valtozott egy alkalmazasfrissites utan.',

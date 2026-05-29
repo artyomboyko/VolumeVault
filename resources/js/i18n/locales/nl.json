@@ -348,5 +348,15 @@
   "Published at: {date}": "Gepubliceerd op: {date}",
   "Dismiss this version": "Deze versie verbergen",
   "Open the GitHub repository": "Open the GitHub repository",
-  "Report a problem or suggest an improvement": "Report a problem or suggest an improvement"
+  "Report a problem or suggest an improvement": "Report a problem or suggest an improvement",
+  "Quick nav": "Snelle navigatie",
+  "Quick navigation": "Snelle navigatie",
+  "Search views": "Weergaven zoeken",
+  "No matching views": "Geen overeenkomende weergaven",
+  "Navigation": "Navigatie",
+  "Account": "Account",
+  "Open selected view": "Geselecteerde weergave openen",
+  "Focus page search": "Paginazoekveld focussen",
+  "Close": "Sluiten",
+  "g then {key}": "g dan {key}"
 }

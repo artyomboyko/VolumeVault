@@ -348,5 +348,15 @@
   "Published at: {date}": "Publiee le : {date}",
   "Dismiss this version": "Masquer cette version",
   "Open the GitHub repository": "Ouvrir le depot GitHub",
-  "Report a problem or suggest an improvement": "Signaler un probleme ou proposer une amelioration"
+  "Report a problem or suggest an improvement": "Signaler un probleme ou proposer une amelioration",
+  "Quick nav": "Navigation rapide",
+  "Quick navigation": "Navigation rapide",
+  "Search views": "Rechercher une vue",
+  "No matching views": "Aucune vue correspondante",
+  "Navigation": "Navigation",
+  "Account": "Compte",
+  "Open selected view": "Ouvrir la vue selectionnee",
+  "Focus page search": "Cibler la recherche de la page",
+  "Close": "Fermer",
+  "g then {key}": "g puis {key}"
 }

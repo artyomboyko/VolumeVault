@@ -1,6 +1,10 @@
 <?php
 
 return [
+    'keyboard_shortcuts' => [
+        'title' => 'Klavesove zkratky',
+        'description' => 'Na desktopu pouzijte Ctrl+K pro rychlou navigaci, zkratky s predponou g pro zobrazeni a / pro zamereni hledani v seznamech.',
+    ],
     'in_app_update_summaries' => [
         'title' => 'Souhrny aktualizaci v aplikaci',
         'description' => 'VolumeVault ted muze uzivatelum ukazat, co se po aktualizaci aplikace zmenilo.',

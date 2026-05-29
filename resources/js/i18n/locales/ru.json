@@ -348,5 +348,15 @@
   "Published at: {date}": "Опубликовано: {date}",
   "Dismiss this version": "Скрыть эту версию",
   "Open the GitHub repository": "Open the GitHub repository",
-  "Report a problem or suggest an improvement": "Report a problem or suggest an improvement"
+  "Report a problem or suggest an improvement": "Report a problem or suggest an improvement",
+  "Quick nav": "Быстрая навигация",
+  "Quick navigation": "Быстрая навигация",
+  "Search views": "Поиск разделов",
+  "No matching views": "Нет подходящих разделов",
+  "Navigation": "Навигация",
+  "Account": "Аккаунт",
+  "Open selected view": "Открыть выбранный раздел",
+  "Focus page search": "Перейти к поиску страницы",
+  "Close": "Закрыть",
+  "g then {key}": "g затем {key}"
 }

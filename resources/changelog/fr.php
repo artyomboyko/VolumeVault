@@ -1,6 +1,10 @@
 <?php
 
 return [
+    'keyboard_shortcuts' => [
+        'title' => 'Raccourcis clavier',
+        'description' => 'Sur desktop, utilisez Ctrl+K pour la navigation rapide, les raccourcis commencant par g pour les vues et / pour cibler la recherche des listes.',
+    ],
     'in_app_update_summaries' => [
         'title' => 'Resumes de mise a jour integres',
         'description' => "VolumeVault peut maintenant montrer aux utilisateurs ce qui a change apres une mise a jour de l'application.",

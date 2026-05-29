@@ -1,6 +1,10 @@
 <?php
 
 return [
+    'keyboard_shortcuts' => [
+        'title' => 'Keyboard shortcuts',
+        'description' => 'On desktop, use Ctrl+K for quick navigation, g-prefixed shortcuts for views, and / to focus list search.',
+    ],
     'in_app_update_summaries' => [
         'title' => 'In-app update summaries',
         'description' => 'VolumeVault can now show users what changed after an application update.',

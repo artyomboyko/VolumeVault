@@ -1,7 +1,12 @@
 <?php
 
 return [
-    'unreleased' => [],
+    'unreleased' => [
+        [
+            'type' => 'feature',
+            'key' => 'keyboard_shortcuts',
+        ],
+    ],
     'releases' => [
         'v1.5.0' => [
             'date' => '2026-05-28',

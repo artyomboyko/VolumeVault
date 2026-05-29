@@ -348,5 +348,15 @@
   "Published at: {date}": "Publikalva: {date}",
   "Dismiss this version": "Verzio elrejtese",
   "Open the GitHub repository": "Open the GitHub repository",
-  "Report a problem or suggest an improvement": "Report a problem or suggest an improvement"
+  "Report a problem or suggest an improvement": "Report a problem or suggest an improvement",
+  "Quick nav": "Gyors navigacio",
+  "Quick navigation": "Gyors navigacio",
+  "Search views": "Nezetek keresese",
+  "No matching views": "Nincs egyezo nezet",
+  "Navigation": "Navigacio",
+  "Account": "Fiok",
+  "Open selected view": "Kivalasztott nezet megnyitasa",
+  "Focus page search": "Oldalkereses fokuszalasa",
+  "Close": "Bezaras",
+  "g then {key}": "g majd {key}"
 }
