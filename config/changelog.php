@@ -1,13 +1,18 @@
 <?php
 
 return [
-    'unreleased' => [
-        [
-            'type' => 'feature',
-            'key' => 'keyboard_shortcuts',
-        ],
-    ],
+    'unreleased' => [],
     'releases' => [
+        'v1.6.0' => [
+            'date' => '2026-05-29',
+            'url' => 'https://github.com/Darkdragon14/VolumeVault/releases/tag/v1.6.0',
+            'items' => [
+                [
+                    'type' => 'feature',
+                    'key' => 'keyboard_shortcuts',
+                ],
+            ],
+        ],
         'v1.5.0' => [
             'date' => '2026-05-28',
             'url' => 'https://github.com/Darkdragon14/VolumeVault/releases/tag/v1.5.0',
