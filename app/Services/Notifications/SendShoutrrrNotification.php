@@ -6,11 +6,13 @@ use App\Enums\AlertEventType;
 use App\Enums\AlertStatus;
 use App\Models\Alert;
 use App\Models\AlertEvent;
+use App\Models\BackupDestination;
 use App\Models\BackupJob;
 use App\Models\BackupRun;
 use App\Models\NotificationChannel;
 use App\Services\Docker\DockerProcess;
 use App\Services\Docker\DockerProcessResult;
+use Illuminate\Database\Eloquent\Collection;
 
 class SendShoutrrrNotification
 {
@@ -61,13 +63,15 @@ class SendShoutrrrNotification
     {
         $alert->loadMissing('rule', 'subject');
 
-        if (! $alert->subject instanceof BackupJob) {
+        $channels = $this->alertChannels($alert);
+
+        if ($channels->isEmpty()) {
             return 0;
         }
 
         $sent = 0;
 
-        foreach ($this->resolveNotificationChannels->forJobAlerts($alert->subject) as $channel) {
+        foreach ($channels as $channel) {
             $result = $this->send(
                 $channel,
                 $this->alertTitle($alert, $type),
@@ -93,6 +97,20 @@ class SendShoutrrrNotification
         }
 
         return $sent;
+    }
+
+    /** @return Collection<int, NotificationChannel> */
+    private function alertChannels(Alert $alert): Collection
+    {
+        if ($alert->subject instanceof BackupJob) {
+            return $this->resolveNotificationChannels->forJobAlerts($alert->subject);
+        }
+
+        if ($alert->subject instanceof BackupDestination) {
+            return $this->resolveNotificationChannels->forAlertRule($alert->rule);
+        }
+
+        return new Collection;
     }
 
     private function send(NotificationChannel $channel, string $title, string $message): DockerProcessResult
@@ -183,15 +201,23 @@ class SendShoutrrrNotification
 
     private function alertMessage(Alert $alert, string $type): string
     {
-        $job = $alert->subject;
+        $subject = $alert->subject;
         $lines = [
             'Alert: '.$alert->rule->type->value,
             'Status: '.($type === 'resolved' ? AlertStatus::Resolved->value : $alert->status->value),
             'Severity: '.$alert->severity->value,
-            'Job: '.$job->name,
-            'Source: '.$job->sourceName(),
-            'Message: '.$alert->message,
         ];
+
+        if ($subject instanceof BackupJob) {
+            $lines[] = 'Job: '.$subject->name;
+            $lines[] = 'Source: '.$subject->sourceName();
+        } elseif ($subject instanceof BackupDestination) {
+            $lines[] = 'Destination: '.$subject->name;
+            $lines[] = 'Provider: '.$subject->provider;
+            $lines[] = 'Target: '.$subject->targetLabel();
+        }
+
+        $lines[] = 'Message: '.$alert->message;
 
         if ($type === 'reminder') {
             $lines[] = 'Trigger count: '.$alert->trigger_count;

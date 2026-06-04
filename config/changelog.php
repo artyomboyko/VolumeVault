@@ -6,6 +6,14 @@ return [
             'type' => 'feature',
             'key' => 'advanced_alerting',
         ],
+        [
+            'type' => 'feature',
+            'key' => 'destination_storage_limit_alerts',
+        ],
+        [
+            'type' => 'change',
+            'key' => 'mobile_navigation_redesign',
+        ],
     ],
     'releases' => [
         'v1.6.0' => [

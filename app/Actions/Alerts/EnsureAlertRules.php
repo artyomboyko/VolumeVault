@@ -57,6 +57,7 @@ class EnsureAlertRules
                 'backup_size_out_of_range_min_bytes' => (int) ($defaults['backup_size_out_of_range_min_bytes'] ?? 1024),
                 'backup_size_out_of_range_max_bytes' => (int) ($defaults['backup_size_out_of_range_max_bytes'] ?? 10737418240),
             ],
+            AlertType::DestinationStorageLimit => $common,
         };
     }
 }

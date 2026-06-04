@@ -8,4 +8,5 @@ enum AlertType: string
     case JobNeverSucceeded = 'job_never_succeeded';
     case JobInErrorTooLong = 'job_in_error_too_long';
     case BackupSizeOutOfRange = 'backup_size_out_of_range';
+    case DestinationStorageLimit = 'destination_storage_limit';
 }

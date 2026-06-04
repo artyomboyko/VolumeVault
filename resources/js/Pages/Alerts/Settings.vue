@@ -6,7 +6,7 @@ import { ref } from 'vue';
 import { useI18n } from '@/i18n';
 import { bestSizeUnit, bytesToUnitValue, sizeUnits, type SizeUnit, unitValueToBytes } from '@/Composables/useFormatBytes';
 
-const props = defineProps<{ rules: any[] }>();
+const props = defineProps<{ rules: any[]; notificationChannels: any[] }>();
 
 const { t } = useI18n();
 const sizeUnitSelections = ref<Record<string, SizeUnit>>({});
@@ -15,6 +15,7 @@ const form = useForm({
         id: rule.id,
         type: rule.type,
         enabled: rule.enabled,
+        notification_channel_ids: rule.notification_channel_ids || [],
         config: { ...rule.config },
     })),
 });
@@ -24,12 +25,14 @@ const alertRuleLabel = (type: string) => ({
     job_never_succeeded: 'Job never succeeded',
     job_in_error_too_long: 'Job in error too long',
     backup_size_out_of_range: 'Backup size out of range',
+    destination_storage_limit: 'Destination storage limit',
 }[type] || type);
 const alertRuleDescription = (type: string) => ({
     backup_too_old: 'Warn when a job has not produced a successful backup recently.',
     job_never_succeeded: 'Detect jobs that keep finishing without any successful backup.',
     job_in_error_too_long: 'Escalate jobs that stay in error longer than expected.',
     backup_size_out_of_range: 'Detect unusually small or large successful backup archives.',
+    destination_storage_limit: 'Warn when a backup destination exceeds its configured absolute storage thresholds.',
 }[type] || '');
 const sizeUnitKey = (id: number, key: string) => `${id}.${key}`;
 const selectedSizeUnit = (rule: any, key: string): SizeUnit => sizeUnitSelections.value[sizeUnitKey(rule.id, key)] || bestSizeUnit(rule.config[key]);
@@ -38,6 +41,10 @@ const inputValue = (event: Event) => (event.target as HTMLInputElement).value;
 const selectValue = (event: Event) => (event.target as HTMLSelectElement).value as SizeUnit;
 const updateSizeUnit = (rule: any, key: string, unit: SizeUnit) => sizeUnitSelections.value[sizeUnitKey(rule.id, key)] = unit;
 const updateSizeThreshold = (config: any, key: string, value: string, unit: SizeUnit) => config[key] = unitValueToBytes(value, unit);
+const toggleRuleNotificationChannel = (rule: any, id: number) => {
+    const ids = rule.notification_channel_ids as number[];
+    rule.notification_channel_ids = ids.includes(id) ? ids.filter((channelId) => channelId !== id) : [...ids, id];
+};
 const submit = () => form.put('/alerts/settings');
 </script>
 
@@ -150,6 +157,28 @@ const submit = () => form.put('/alerts/settings');
                         </label>
                     </template>
                 </div>
+
+                <section v-if="rule.type === 'destination_storage_limit'" class="rounded-xl border border-white/10 bg-slate-950/60 p-4">
+                    <div class="flex flex-col gap-1">
+                        <h3 class="font-semibold text-white">{{ t('Destination alert channels') }}</h3>
+                        <p class="text-sm text-slate-400">{{ t('Choose which channels receive destination storage limit notifications. If none are selected, alerts stay visible only in VolumeVault.') }}</p>
+                    </div>
+                    <div v-if="notificationChannels.length" class="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+                        <button
+                            v-for="channel in notificationChannels"
+                            :key="channel.id"
+                            type="button"
+                            class="rounded-xl border p-3 text-left text-sm transition focus:outline-none focus:ring-2 focus:ring-sky-500/30 dark:focus:ring-sky-400/30"
+                            :class="rule.notification_channel_ids.includes(channel.id) ? 'border-sky-300/60 bg-sky-400/10 text-sky-50' : 'border-white/10 bg-white/[0.03] text-slate-300 hover:bg-white/[0.06]'"
+                            :aria-pressed="rule.notification_channel_ids.includes(channel.id)"
+                            @click="toggleRuleNotificationChannel(rule, channel.id)"
+                        >
+                            <span class="block font-medium text-white">{{ channel.name }}</span>
+                            <span class="mt-1 block text-xs text-slate-400">{{ channel.service }} - {{ channel.is_active ? t('Enabled') : t('Disabled') }}</span>
+                        </button>
+                    </div>
+                    <p v-else class="mt-4 rounded-xl border border-amber-300/30 bg-amber-300/10 p-3 text-sm text-amber-100">{{ t('Create a notification channel before enabling external notifications for this alert.') }}</p>
+                </section>
                 <span v-if="form.errors[`rules.${index}.config.backup_size_out_of_range_max_bytes`]" class="text-sm text-rose-300">{{ form.errors[`rules.${index}.config.backup_size_out_of_range_max_bytes`] }}</span>
             </section>
 

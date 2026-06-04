@@ -5,6 +5,7 @@ namespace App\Models;
 use App\Enums\AlertType;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class AlertRule extends Model
@@ -38,5 +39,10 @@ class AlertRule extends Model
     public function jobConfigs(): HasMany
     {
         return $this->hasMany(JobAlertConfig::class);
+    }
+
+    public function notificationChannels(): BelongsToMany
+    {
+        return $this->belongsToMany(NotificationChannel::class)->withTimestamps();
     }
 }
