@@ -204,12 +204,12 @@ const submit = () => {
                     <button
                         type="button"
                         role="switch"
-                        class="inline-flex shrink-0 items-center gap-3 rounded-full border border-white/10 bg-slate-950/60 px-3 py-2 text-sm transition focus:outline-none focus:ring-2 focus:ring-sky-400/30"
+                        class="inline-flex shrink-0 items-center gap-3 rounded-full border border-white/10 bg-slate-950/60 px-3 py-2 text-sm transition focus:outline-none focus:ring-2 focus:ring-sky-500/30 dark:focus:ring-sky-400/30"
                         :aria-checked="useCustomMessage"
                         :aria-label="t('Use custom message')"
                         @click="toggleCustomMessage"
                     >
-                        <span class="relative inline-flex h-6 w-11 items-center rounded-full border p-0.5 transition" :class="useCustomMessage ? 'border-emerald-300/40 bg-emerald-400/30' : 'border-white/10 bg-slate-800'">
+                        <span class="relative inline-flex h-6 w-11 items-center rounded-full border p-0.5 transition" :class="useCustomMessage ? 'border-emerald-700 bg-emerald-600 dark:border-emerald-300/50 dark:bg-emerald-500/50' : 'border-slate-300 bg-slate-200 dark:border-white/10 dark:bg-slate-800'">
                             <span class="h-5 w-5 rounded-full bg-white shadow-sm transition-transform" :class="useCustomMessage ? 'translate-x-5' : 'translate-x-0 bg-slate-400'"></span>
                         </span>
                         <span class="font-medium">{{ t('Use custom message') }}</span>
@@ -244,8 +244,8 @@ const submit = () => {
                     <button
                         type="button"
                         role="switch"
-                        class="relative mt-1 inline-flex h-7 w-12 shrink-0 items-center rounded-full border p-1 transition focus:outline-none focus:ring-2 focus:ring-sky-400/30"
-                        :class="form.is_active ? 'border-emerald-300/40 bg-emerald-400/30' : 'border-white/10 bg-slate-800'"
+                        class="relative mt-1 inline-flex h-7 w-12 shrink-0 items-center rounded-full border p-1 transition focus:outline-none focus:ring-2 focus:ring-sky-500/30 dark:focus:ring-sky-400/30"
+                        :class="form.is_active ? 'border-emerald-700 bg-emerald-600 dark:border-emerald-300/50 dark:bg-emerald-500/50' : 'border-slate-300 bg-slate-200 dark:border-white/10 dark:bg-slate-800'"
                         :aria-checked="form.is_active"
                         :aria-label="form.is_active ? t('Deactivate channel') : t('Activate channel')"
                         @click="toggleChannelActive"
@@ -262,8 +262,8 @@ const submit = () => {
                     <button
                         type="button"
                         role="switch"
-                        class="relative mt-1 inline-flex h-7 w-12 shrink-0 items-center rounded-full border p-1 transition focus:outline-none focus:ring-2 focus:ring-sky-400/30"
-                        :class="form.is_default ? 'border-sky-300/40 bg-sky-400/30' : 'border-white/10 bg-slate-800'"
+                        class="relative mt-1 inline-flex h-7 w-12 shrink-0 items-center rounded-full border p-1 transition focus:outline-none focus:ring-2 focus:ring-sky-500/30 dark:focus:ring-sky-400/30"
+                        :class="form.is_default ? 'border-emerald-700 bg-emerald-600 dark:border-emerald-300/50 dark:bg-emerald-500/50' : 'border-slate-300 bg-slate-200 dark:border-white/10 dark:bg-slate-800'"
                         :aria-checked="form.is_default"
                         :aria-label="t('Default channel for new backup jobs')"
                         @click="toggleDefaultChannel"

@@ -42,6 +42,7 @@ type QuickNavItem = {
     shortcutLabel: string;
     shortcutSearchAliases: string[];
     description?: string;
+    badge?: number;
 };
 
 withDefaults(defineProps<{
@@ -60,6 +61,7 @@ const can = computed(() => (page.props.can || {}) as { manageSensitiveData?: boo
 const app = computed(() => (page.props.app || {}) as { version?: string });
 const updateSummary = computed(() => (page.props.updateSummary || null) as UpdateSummary | null);
 const availableUpdate = computed(() => (page.props.availableUpdate || null) as AvailableUpdate | null);
+const activeAlertCount = computed(() => Number(page.props.activeAlertCount || 0));
 const shouldShowUpdateSummary = computed(() => Boolean(updateSummary.value?.has_unread) && !page.url.startsWith('/changelog'));
 const updateLocale = (event: Event) => router.patch('/user/locale', { locale: (event.target as HTMLSelectElement).value }, { preserveScroll: true });
 const themeToggleLabel = computed(() => isDark.value ? t('Switch to light theme') : t('Switch to dark theme'));
@@ -91,6 +93,7 @@ const primaryNav = computed(() => [
     { label: t('Volumes'), href: '/volumes', shortcutKey: 'v' },
     { label: t('Stacks'), href: '/stacks', shortcutKey: 's' },
     { label: t('Backup jobs'), href: '/backup-jobs', shortcutKey: 'j' },
+    { label: t('Alerts'), href: '/alerts', shortcutKey: 'a', badge: activeAlertCount.value },
 ]);
 
 const settingsNav = computed(() => [
@@ -107,7 +110,7 @@ const settingsNav = computed(() => [
 const accountNav = computed(() => [
     { label: t('Edit profile'), href: '/profile', shortcutKey: 'p' },
     ...(can.value.manageUsers ? [
-        { label: t('API tokens'), href: '/api-tokens', shortcutKey: 'a' },
+        { label: t('API tokens'), href: '/api-tokens', shortcutKey: 't' },
     ] : []),
     { label: t('Changelog'), href: '/changelog', shortcutKey: 'c' },
 ]);
@@ -453,16 +456,17 @@ watch(shouldShowUpdateSummary, (shouldShow) => {
                             v-for="item in primaryNav"
                             :key="item.href"
                             :href="item.href"
-                            class="rounded-xl px-3 py-2 text-sm font-medium text-slate-300 transition hover:bg-white/10 hover:text-white"
+                            class="inline-flex items-center gap-2 rounded-xl px-3 py-2 text-sm font-medium text-slate-300 transition hover:bg-slate-100 hover:text-slate-950 dark:hover:bg-white/10 dark:hover:text-white"
                             :class="{ 'bg-white/10 text-white': page.url.startsWith(item.href) }"
                             @click="closeMenu"
                         >
-                            {{ item.label }}
+                            <span>{{ item.label }}</span>
+                            <span v-if="item.badge" class="rounded-full bg-rose-400/20 px-2 py-0.5 text-xs text-rose-100">{{ item.badge }}</span>
                         </Link>
 
                         <div v-if="settingsNav.length" class="relative">
                             <button
-                                class="group inline-flex items-center gap-2 rounded-xl px-3 py-2 text-sm font-medium text-slate-300 transition hover:bg-white/10 hover:text-white"
+                                class="group inline-flex items-center gap-2 rounded-xl px-3 py-2 text-sm font-medium text-slate-300 transition hover:bg-slate-100 hover:text-slate-950 dark:hover:bg-white/10 dark:hover:text-white"
                                 :class="{ 'bg-white/10 text-white': openMenu === 'settings' || hasActiveItem(settingsNav) }"
                                 type="button"
                                 aria-haspopup="menu"
@@ -478,7 +482,7 @@ watch(shouldShowUpdateSummary, (shouldShow) => {
                                     v-for="item in settingsNav"
                                     :key="item.href"
                                     :href="item.href"
-                                    class="block rounded-xl px-3 py-3 text-sm transition hover:bg-white/10"
+                                    class="block rounded-xl px-3 py-3 text-sm transition hover:bg-slate-100 dark:hover:bg-white/10"
                                     :class="page.url.startsWith(item.href) ? 'bg-sky-400/10 text-sky-100' : 'text-slate-200'"
                                     role="menuitem"
                                     @click="closeMenu"
@@ -492,7 +496,7 @@ watch(shouldShowUpdateSummary, (shouldShow) => {
 
                     <div v-if="auth.user" class="relative">
                         <button
-                            class="group flex w-full items-center gap-3 rounded-2xl border border-white/10 bg-white/5 px-3 py-2 text-left text-sm text-slate-200 transition hover:bg-white/10 lg:w-auto"
+                            class="group flex w-full items-center gap-3 rounded-2xl border border-white/10 bg-white/5 px-3 py-2 text-left text-sm text-slate-200 transition hover:bg-slate-100 dark:hover:bg-white/10 lg:w-auto"
                             :class="{ 'bg-white/10 text-white': openMenu === 'user' || page.url.startsWith('/profile') || page.url.startsWith('/api-tokens') || page.url.startsWith('/changelog') }"
                             type="button"
                             aria-haspopup="menu"
@@ -515,15 +519,15 @@ watch(shouldShowUpdateSummary, (shouldShow) => {
                                 <p class="truncate text-xs text-slate-400">{{ auth.user.email }}</p>
                             </div>
 
-                            <Link href="/profile" class="mt-2 block rounded-xl px-3 py-3 text-sm font-medium text-slate-200 transition hover:bg-white/10" role="menuitem" @click="closeMenu">
+                            <Link href="/profile" class="mt-2 block rounded-xl px-3 py-3 text-sm font-medium text-slate-200 transition hover:bg-slate-100 dark:hover:bg-white/10" role="menuitem" @click="closeMenu">
                                 {{ t('Edit profile') }}
                             </Link>
 
-                            <Link v-if="can.manageUsers" href="/api-tokens" class="block rounded-xl px-3 py-3 text-sm font-medium text-slate-200 transition hover:bg-white/10" role="menuitem" @click="closeMenu">
+                            <Link v-if="can.manageUsers" href="/api-tokens" class="block rounded-xl px-3 py-3 text-sm font-medium text-slate-200 transition hover:bg-slate-100 dark:hover:bg-white/10" role="menuitem" @click="closeMenu">
                                 {{ t('API tokens') }}
                             </Link>
 
-                            <Link href="/changelog" class="block rounded-xl px-3 py-3 text-sm font-medium text-slate-200 transition hover:bg-white/10" role="menuitem" @click="closeMenu">
+                            <Link href="/changelog" class="block rounded-xl px-3 py-3 text-sm font-medium text-slate-200 transition hover:bg-slate-100 dark:hover:bg-white/10" role="menuitem" @click="closeMenu">
                                 {{ t('Changelog') }}
                             </Link>
 
@@ -533,7 +537,7 @@ watch(shouldShowUpdateSummary, (shouldShow) => {
                                     <button
                                         type="button"
                                         role="switch"
-                                        class="relative inline-flex h-9 w-20 items-center rounded-full border border-white/10 bg-white/10 p-1 text-slate-400 transition focus:outline-none focus:ring-2 focus:ring-sky-400/30 dark:bg-slate-950/70"
+                                        class="relative inline-flex h-9 w-20 items-center rounded-full border border-white/10 bg-white/10 p-1 text-slate-400 transition focus:outline-none focus:ring-2 focus:ring-sky-500/30 dark:bg-slate-950/70 dark:focus:ring-sky-400/30"
                                         :aria-checked="isDark"
                                         :aria-label="themeToggleLabel"
                                         :title="themeName"
@@ -612,7 +616,7 @@ watch(shouldShowUpdateSummary, (shouldShow) => {
                         :key="item.href"
                         type="button"
                         class="flex w-full items-center justify-between gap-3 rounded-2xl px-3 py-3 text-left transition"
-                        :class="index === selectedQuickNavIndex ? 'bg-sky-400/10 text-sky-100' : 'text-slate-200 hover:bg-white/10'"
+                        :class="index === selectedQuickNavIndex ? 'bg-sky-400/10 text-sky-100' : 'text-slate-200 hover:bg-slate-100 dark:hover:bg-white/10'"
                         @mouseenter="selectedQuickNavIndex = index"
                         @click="visitQuickNavItem(item)"
                     >
@@ -648,7 +652,7 @@ watch(shouldShowUpdateSummary, (shouldShow) => {
                             <h2 class="mt-1 text-xl font-bold text-white">{{ t('What changed in VolumeVault') }}</h2>
                             <p class="mt-2 text-sm text-slate-400">{{ t('VolumeVault was updated. Review the important changes before continuing.') }}</p>
                         </div>
-                        <button type="button" class="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-white/10 bg-white/5 text-slate-300 transition hover:bg-white/10 hover:text-white" :aria-label="t('Remind me later')" @click="snoozeUpdateSummary">
+                        <button type="button" class="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-white/10 bg-white/5 text-slate-300 transition hover:bg-slate-100 hover:text-slate-950 dark:hover:bg-white/10 dark:hover:text-white" :aria-label="t('Remind me later')" @click="snoozeUpdateSummary">
                             <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
                                 <path d="M18 6 6 18" />
                                 <path d="m6 6 12 12" />

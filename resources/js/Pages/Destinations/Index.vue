@@ -37,8 +37,8 @@ const toggleDestinationActive = (destination: any) => router.patch(`/destination
                             <button
                                 type="button"
                                 role="switch"
-                                class="relative inline-flex h-7 w-12 shrink-0 items-center rounded-full border p-1 transition focus:outline-none focus:ring-2 focus:ring-sky-400/30"
-                                :class="destination.is_active ? 'border-emerald-300/40 bg-emerald-400/30' : 'border-white/10 bg-slate-800'"
+                                class="relative inline-flex h-7 w-12 shrink-0 items-center rounded-full border p-1 transition focus:outline-none focus:ring-2 focus:ring-sky-500/30 dark:focus:ring-sky-400/30"
+                                :class="destination.is_active ? 'border-emerald-700 bg-emerald-600 dark:border-emerald-300/50 dark:bg-emerald-500/50' : 'border-slate-300 bg-slate-200 dark:border-white/10 dark:bg-slate-800'"
                                 :aria-checked="destination.is_active"
                                 :aria-label="destination.is_active ? t('Deactivate destination') : t('Activate destination')"
                                 @click="toggleDestinationActive(destination)"
@@ -72,7 +72,7 @@ const toggleDestinationActive = (destination: any) => router.patch(`/destination
                         </tr>
                     </thead>
                     <tbody class="divide-y divide-white/10">
-                        <tr v-for="destination in destinations" :key="destination.id" class="hover:bg-white/[0.03]">
+                        <tr v-for="destination in destinations" :key="destination.id" class="hover:bg-slate-100 dark:hover:bg-white/[0.03]">
                             <td class="px-4 py-3 font-medium text-white">{{ destination.name }}</td>
                             <td class="px-4 py-3 text-slate-300">{{ destination.provider_label || destination.provider }}</td>
                             <td class="px-4 py-3 text-slate-300">{{ destination.target_label || destination.bucket }}</td>
@@ -81,8 +81,8 @@ const toggleDestinationActive = (destination: any) => router.patch(`/destination
                                 <button
                                     type="button"
                                     role="switch"
-                                    class="relative inline-flex h-7 w-12 items-center rounded-full border p-1 transition focus:outline-none focus:ring-2 focus:ring-sky-400/30"
-                                    :class="destination.is_active ? 'border-emerald-300/40 bg-emerald-400/30' : 'border-white/10 bg-slate-800'"
+                                    class="relative inline-flex h-7 w-12 items-center rounded-full border p-1 transition focus:outline-none focus:ring-2 focus:ring-sky-500/30 dark:focus:ring-sky-400/30"
+                                    :class="destination.is_active ? 'border-emerald-700 bg-emerald-600 dark:border-emerald-300/50 dark:bg-emerald-500/50' : 'border-slate-300 bg-slate-200 dark:border-white/10 dark:bg-slate-800'"
                                     :aria-checked="destination.is_active"
                                     :aria-label="destination.is_active ? t('Deactivate destination') : t('Activate destination')"
                                     @click="toggleDestinationActive(destination)"

@@ -1,6 +1,10 @@
 <?php
 
 return [
+    'advanced_alerting' => [
+        'title' => 'Alerting avance',
+        'description' => 'VolumeVault peut surveiller les jobs de backup pour detecter les sauvegardes trop anciennes, les echecs repetes, les erreurs prolongees et les tailles d archives inhabituelles.',
+    ],
     'keyboard_shortcuts' => [
         'title' => 'Raccourcis clavier',
         'description' => 'Sur desktop, utilisez Ctrl+K pour la navigation rapide, les raccourcis commencant par g pour les vues et / pour cibler la recherche des listes.',

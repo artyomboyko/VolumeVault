@@ -16,6 +16,12 @@ const classes: Record<string, string> = {
     error: 'bg-rose-400/10 text-rose-200 ring-rose-400/30',
     failed: 'bg-rose-400/10 text-rose-200 ring-rose-400/30',
     cancelled: 'bg-slate-400/10 text-slate-200 ring-slate-400/30',
+    warning: 'bg-amber-400/10 text-amber-200 ring-amber-400/30',
+    critical: 'bg-rose-400/10 text-rose-200 ring-rose-400/30',
+    resolved: 'bg-emerald-400/10 text-emerald-200 ring-emerald-400/30',
+    triggered: 'bg-amber-400/10 text-amber-200 ring-amber-400/30',
+    notified: 'bg-sky-400/10 text-sky-200 ring-sky-400/30',
+    reminder_sent: 'bg-violet-400/10 text-violet-200 ring-violet-400/30',
 };
 </script>
 

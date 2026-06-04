@@ -20,7 +20,7 @@ defineEmits<{
 const baseClass = 'group relative inline-flex h-9 w-9 items-center justify-center rounded-xl border text-sm transition focus:outline-none focus:ring-2 focus:ring-sky-400/40 disabled:cursor-not-allowed disabled:opacity-50';
 const variantClass = props.variant === 'danger'
     ? 'border-rose-300/20 bg-rose-500/10 text-rose-100 hover:bg-rose-500/20'
-    : 'border-white/10 bg-white/5 text-slate-100 hover:bg-white/10';
+    : 'border-white/10 bg-white/5 text-slate-100 hover:bg-slate-100 dark:hover:bg-white/10';
 </script>
 
 <template>

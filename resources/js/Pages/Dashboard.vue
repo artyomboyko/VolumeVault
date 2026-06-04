@@ -57,7 +57,7 @@ const statValue = (key: string, value: any) => {
                     <Link href="/backup-jobs" class="text-sm text-sky-300 hover:text-sky-200">{{ t('View jobs') }}</Link>
                 </div>
                 <div v-if="recentBackupRuns.length" class="space-y-3">
-                    <Link v-for="run in recentBackupRuns" :key="run.id" :href="`/backup-runs/${run.id}`" class="flex flex-col gap-2 rounded-xl bg-white/5 px-4 py-3 hover:bg-white/10 sm:flex-row sm:items-center sm:justify-between">
+                    <Link v-for="run in recentBackupRuns" :key="run.id" :href="`/backup-runs/${run.id}`" class="flex flex-col gap-2 rounded-xl bg-white/5 px-4 py-3 hover:bg-slate-100 dark:hover:bg-white/10 sm:flex-row sm:items-center sm:justify-between">
                         <div class="min-w-0">
                             <p class="break-words font-medium">{{ run.job?.name || t('Backup run #{id}', { id: run.id }) }}</p>
                             <p class="text-xs text-slate-400">{{ formatDate(run.started_at || run.created_at) }} <span v-if="run.backup_size_bytes">/ {{ formatBytes(run.backup_size_bytes) }}</span></p>
@@ -71,7 +71,7 @@ const statValue = (key: string, value: any) => {
             <section class="card p-5">
                 <h2 class="mb-4 text-lg font-semibold">{{ t('Recent restore runs') }}</h2>
                 <div v-if="recentRestoreRuns.length" class="space-y-3">
-                    <Link v-for="run in recentRestoreRuns" :key="run.id" :href="`/restore-runs/${run.id}`" class="flex flex-col gap-2 rounded-xl bg-white/5 px-4 py-3 hover:bg-white/10 sm:flex-row sm:items-center sm:justify-between">
+                    <Link v-for="run in recentRestoreRuns" :key="run.id" :href="`/restore-runs/${run.id}`" class="flex flex-col gap-2 rounded-xl bg-white/5 px-4 py-3 hover:bg-slate-100 dark:hover:bg-white/10 sm:flex-row sm:items-center sm:justify-between">
                         <div class="min-w-0">
                             <p class="break-all font-medium">{{ run.source_volume_name }} to {{ run.target_volume_name }}</p>
                             <p class="text-xs text-slate-400">{{ formatDate(run.started_at || run.created_at) }}</p>
