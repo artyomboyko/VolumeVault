@@ -18,6 +18,8 @@ class UpdateAlertRulesRequest extends FormRequest
             'rules' => ['required', 'array'],
             'rules.*.id' => ['required', 'integer', 'distinct', 'exists:alert_rules,id'],
             'rules.*.enabled' => ['required', 'boolean'],
+            'rules.*.notification_channel_ids' => ['nullable', 'array'],
+            'rules.*.notification_channel_ids.*' => ['integer', 'distinct', 'exists:notification_channels,id'],
             'rules.*.config' => ['required', 'array'],
             'rules.*.config.check_interval_minutes' => ['required', 'integer', 'min:1'],
             'rules.*.config.cooldown_minutes' => ['required', 'integer', 'min:0'],
@@ -47,13 +49,14 @@ class UpdateAlertRulesRequest extends FormRequest
         });
     }
 
-    /** @return array<int, array{id: int, enabled: bool, config: array<string, bool|int>}> */
+    /** @return array<int, array{id: int, enabled: bool, notification_channel_ids: array<int, int>, config: array<string, bool|int>}> */
     public function alertRules(): array
     {
         return collect($this->validated('rules'))
             ->map(fn (array $rule): array => [
                 'id' => (int) $rule['id'],
                 'enabled' => (bool) $rule['enabled'],
+                'notification_channel_ids' => $this->notificationChannelIds($rule['notification_channel_ids'] ?? []),
                 'config' => $this->normalizeConfig($rule['config'] ?? []),
             ])
             ->values()
@@ -74,6 +77,16 @@ class UpdateAlertRulesRequest extends FormRequest
             'backup_size_out_of_range_max_bytes',
         ])->filter(fn (string $key): bool => array_key_exists($key, $config) && $config[$key] !== null)
             ->mapWithKeys(fn (string $key): array => [$key => $key === 'reminder_enabled' ? (bool) $config[$key] : (int) $config[$key]])
+            ->all();
+    }
+
+    /** @return array<int, int> */
+    private function notificationChannelIds(array $ids): array
+    {
+        return collect($ids)
+            ->map(fn (mixed $id): int => (int) $id)
+            ->unique()
+            ->values()
             ->all();
     }
 }

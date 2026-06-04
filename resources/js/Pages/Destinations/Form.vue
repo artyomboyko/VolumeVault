@@ -2,8 +2,9 @@
 import AppLayout from '@/Layouts/AppLayout.vue';
 import PasswordInput from '@/Components/PasswordInput.vue';
 import { Head, Link, useForm } from '@inertiajs/vue3';
-import { computed } from 'vue';
+import { computed, ref } from 'vue';
 import { useI18n } from '@/i18n';
+import { bestSizeUnit, bytesToUnitValue, sizeUnits, type SizeUnit, unitValueToBytes } from '@/Composables/useFormatBytes';
 
 type ProviderOption = {
     value: string;
@@ -20,6 +21,7 @@ const editing = computed(() => Boolean(props.destination));
 const { t } = useI18n();
 const settings = props.destination?.settings || {};
 const hasSecret = (field: string) => Boolean(props.destination?.has_secrets?.[field]);
+const storageLimitUnitSelections = ref<Record<string, SizeUnit>>({});
 
 const form = useForm({
     name: props.destination?.name || '',
@@ -50,6 +52,8 @@ const form = useForm({
         token_url: settings.token_url || '',
         archive_path: settings.archive_path || '',
         archive_mount_source: settings.archive_mount_source || '',
+        storage_limit_warning_bytes: settings.storage_limit_warning_bytes ?? null,
+        storage_limit_critical_bytes: settings.storage_limit_critical_bytes ?? null,
     },
     secrets: {
         username: '',
@@ -70,6 +74,19 @@ const selectedProvider = computed(() => props.providers.find((provider) => provi
 const isS3 = computed(() => ['aws_s3', 'cloudflare_r2', 'custom_s3'].includes(form.provider));
 const error = (key: string) => form.errors[key as keyof typeof form.errors];
 const secretHint = (field: string) => editing.value && hasSecret(field) ? 'Already saved. Leave blank to keep existing value.' : '';
+const settingValue = (key: string) => (form.settings as Record<string, any>)[key];
+const selectedStorageLimitUnit = (key: string): SizeUnit => storageLimitUnitSelections.value[key] || bestSizeUnit(settingValue(key));
+const sizeInputValue = (key: string, unit: SizeUnit) => bytesToUnitValue(settingValue(key), unit);
+const inputValue = (event: Event) => (event.target as HTMLInputElement).value;
+const selectValue = (event: Event) => (event.target as HTMLSelectElement).value as SizeUnit;
+const updateStorageLimitUnit = (key: string, unit: SizeUnit) => {
+    const currentUnit = selectedStorageLimitUnit(key);
+    const currentValue = sizeInputValue(key, currentUnit);
+
+    storageLimitUnitSelections.value[key] = unit;
+    (form.settings as Record<string, any>)[key] = unitValueToBytes(currentValue, unit);
+};
+const updateStorageLimitThreshold = (key: string, value: string, unit: SizeUnit) => (form.settings as Record<string, any>)[key] = unitValueToBytes(value, unit);
 
 const submit = () => {
     if (editing.value) {
@@ -300,6 +317,48 @@ const toggleDestinationActive = () => {
                 </label>
                 <div class="rounded-xl border border-amber-300/30 bg-amber-300/10 p-4 text-sm text-amber-100 sm:col-span-2">
                     Local destinations need a path shared between VolumeVault and the temporary Offen container. Test the destination before trusting scheduled backups.
+                </div>
+            </section>
+
+            <section class="rounded-2xl border border-white/10 bg-white/5 p-4 sm:p-5">
+                <div>
+                    <h2 class="text-lg font-semibold text-white">{{ t('Destination storage limits') }}</h2>
+                    <p class="mt-1 text-sm text-slate-400">{{ t('Configure absolute usage thresholds for the destination storage limit alert. Leave both empty to skip this destination.') }}</p>
+                </div>
+                <div class="mt-4 grid gap-4 sm:grid-cols-2">
+                    <label class="space-y-2">
+                        <span class="label">{{ t('Warning threshold') }}</span>
+                        <span class="flex gap-2">
+                            <input
+                                class="input min-w-0"
+                                type="number"
+                                min="0"
+                                step="0.01"
+                                :value="sizeInputValue('storage_limit_warning_bytes', selectedStorageLimitUnit('storage_limit_warning_bytes'))"
+                                @input="updateStorageLimitThreshold('storage_limit_warning_bytes', inputValue($event), selectedStorageLimitUnit('storage_limit_warning_bytes'))"
+                            >
+                            <select class="input w-24 shrink-0" :value="selectedStorageLimitUnit('storage_limit_warning_bytes')" @change="updateStorageLimitUnit('storage_limit_warning_bytes', selectValue($event))">
+                                <option v-for="unit in sizeUnits" :key="unit.label" :value="unit.label">{{ unit.label }}</option>
+                            </select>
+                        </span>
+                    </label>
+                    <label class="space-y-2">
+                        <span class="label">{{ t('Critical threshold') }}</span>
+                        <span class="flex gap-2">
+                            <input
+                                class="input min-w-0"
+                                type="number"
+                                min="0"
+                                step="0.01"
+                                :value="sizeInputValue('storage_limit_critical_bytes', selectedStorageLimitUnit('storage_limit_critical_bytes'))"
+                                @input="updateStorageLimitThreshold('storage_limit_critical_bytes', inputValue($event), selectedStorageLimitUnit('storage_limit_critical_bytes'))"
+                            >
+                            <select class="input w-24 shrink-0" :value="selectedStorageLimitUnit('storage_limit_critical_bytes')" @change="updateStorageLimitUnit('storage_limit_critical_bytes', selectValue($event))">
+                                <option v-for="unit in sizeUnits" :key="unit.label" :value="unit.label">{{ unit.label }}</option>
+                            </select>
+                        </span>
+                        <span v-if="error('settings.storage_limit_critical_bytes')" class="text-sm text-rose-300">{{ error('settings.storage_limit_critical_bytes') }}</span>
+                    </label>
                 </div>
             </section>
 

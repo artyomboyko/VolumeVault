@@ -5,6 +5,14 @@ return [
         'title' => 'Advanced alerting',
         'description' => 'VolumeVault can monitor backup jobs for stale backups, repeated failures, long-running error states, and unusual archive sizes.',
     ],
+    'destination_storage_limit_alerts' => [
+        'title' => 'Speicherlimit-Warnungen fuer Ziele',
+        'description' => 'Backup-Ziele koennen jetzt absolute Warn- und kritische Speicherschwellen mit eigenen Benachrichtigungskanaelen festlegen.',
+    ],
+    'mobile_navigation_redesign' => [
+        'title' => 'Verbesserte mobile Navigation',
+        'description' => 'Die mobile Kopfzeile nutzt jetzt eine kompakte Menu-Schaltflaeche und ein strukturiertes Navigationspanel, statt alle Links in der Kopfzeile zu stapeln.',
+    ],
     'keyboard_shortcuts' => [
         'title' => 'Tastaturkuerzel',
         'description' => 'Auf dem Desktop nutzen Sie Ctrl+K fuer die Schnellnavigation, g-Kuerzel fuer Ansichten und / zum Fokussieren der Listensuche.',

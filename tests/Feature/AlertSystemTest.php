@@ -19,6 +19,7 @@ use App\Models\User;
 use App\Services\Docker\DockerProcess;
 use App\Services\Docker\DockerProcessResult;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\File;
 use Mockery;
 use Tests\TestCase;
 
@@ -30,8 +31,8 @@ class AlertSystemTest extends TestCase
     {
         app(EnsureAlertRules::class)->handle();
 
-        $this->assertSame(4, AlertRule::count());
-        $this->assertTrue(AlertRule::where('enabled', false)->count() === 4);
+        $this->assertSame(5, AlertRule::count());
+        $this->assertTrue(AlertRule::where('enabled', false)->count() === 5);
     }
 
     public function test_backup_too_old_alert_triggers_and_resolves(): void
@@ -134,6 +135,110 @@ class AlertSystemTest extends TestCase
         $this->assertSame($run->id, $alert->context['backup_run_id']);
     }
 
+    public function test_destination_storage_limit_alert_uses_destination_thresholds_and_delta(): void
+    {
+        $directory = $this->storageLimitDirectory('delta');
+        File::put($directory.'/first.tar.gz', str_repeat('x', 2048));
+        $this->localDestination($directory, [
+            'storage_limit_warning_bytes' => 1024,
+            'storage_limit_critical_bytes' => 4096,
+        ]);
+        $rule = $this->enabledRule(AlertType::DestinationStorageLimit);
+
+        app(RunAllAlertChecks::class)->handle($rule);
+
+        $alert = Alert::firstOrFail();
+        $this->assertSame(AlertSeverity::Warning, $alert->severity);
+        $this->assertSame(2048, $alert->context['used_bytes']);
+        $this->assertNull($alert->context['delta_bytes']);
+
+        File::put($directory.'/second.tar.gz', str_repeat('x', 3072));
+
+        app(RunAllAlertChecks::class)->handle($rule);
+
+        $alert->refresh();
+        $this->assertSame(AlertSeverity::Critical, $alert->severity);
+        $this->assertSame(5120, $alert->context['used_bytes']);
+        $this->assertSame(2048, $alert->context['previous_used_bytes']);
+        $this->assertSame(3072, $alert->context['delta_bytes']);
+    }
+
+    public function test_disabled_destination_storage_limit_alert_does_not_trigger(): void
+    {
+        $directory = $this->storageLimitDirectory('disabled');
+        File::put($directory.'/archive.tar.gz', str_repeat('x', 2048));
+        $this->localDestination($directory, ['storage_limit_warning_bytes' => 1024]);
+        $rule = $this->disabledRule(AlertType::DestinationStorageLimit);
+
+        app(RunAllAlertChecks::class)->handle($rule);
+
+        $this->assertSame(0, Alert::count());
+    }
+
+    public function test_destination_storage_limit_alert_resolves_when_usage_returns_below_threshold(): void
+    {
+        $directory = $this->storageLimitDirectory('resolve');
+        File::put($directory.'/archive.tar.gz', str_repeat('x', 2048));
+        $this->localDestination($directory, [
+            'storage_limit_warning_bytes' => 1024,
+            'storage_limit_critical_bytes' => 4096,
+        ]);
+        $rule = $this->enabledRule(AlertType::DestinationStorageLimit);
+
+        app(RunAllAlertChecks::class)->handle($rule);
+        $alert = Alert::firstOrFail();
+
+        File::cleanDirectory($directory);
+
+        app(RunAllAlertChecks::class)->handle($rule);
+
+        $this->assertSame(AlertStatus::Resolved, $alert->fresh()->status);
+    }
+
+    public function test_destination_storage_limit_alert_uses_rule_notification_channels(): void
+    {
+        $directory = $this->storageLimitDirectory('notify');
+        File::put($directory.'/archive.tar.gz', str_repeat('x', 2048));
+        $this->localDestination($directory, ['storage_limit_warning_bytes' => 1024]);
+        $rule = $this->enabledRule(AlertType::DestinationStorageLimit);
+        $channel = NotificationChannel::create([
+            'name' => 'Storage alerts',
+            'service' => NotificationChannel::SERVICE_ADVANCED,
+            'url' => 'ntfy://ntfy.sh/storage',
+            'notification_level' => NotificationChannel::LEVEL_ERROR,
+        ]);
+        $rule->notificationChannels()->attach($channel);
+
+        $dockerProcess = Mockery::mock(DockerProcess::class);
+        $dockerProcess->shouldReceive('run')->once()->andReturn(new DockerProcessResult([], 0, 'ok', ''));
+        $this->app->instance(DockerProcess::class, $dockerProcess);
+
+        app(RunAllAlertChecks::class)->handle($rule);
+
+        $this->assertDatabaseHas('alert_events', [
+            'event_type' => AlertEventType::Notified->value,
+        ]);
+    }
+
+    public function test_destination_storage_limit_alert_without_channels_stays_in_app_only(): void
+    {
+        $directory = $this->storageLimitDirectory('silent');
+        File::put($directory.'/archive.tar.gz', str_repeat('x', 2048));
+        $this->localDestination($directory, ['storage_limit_warning_bytes' => 1024]);
+        $rule = $this->enabledRule(AlertType::DestinationStorageLimit);
+
+        $dockerProcess = Mockery::mock(DockerProcess::class);
+        $dockerProcess->shouldReceive('run')->never();
+        $this->app->instance(DockerProcess::class, $dockerProcess);
+
+        app(RunAllAlertChecks::class)->handle($rule);
+
+        $this->assertSame(AlertStatus::Active, Alert::firstOrFail()->status);
+        $this->assertDatabaseMissing('alert_events', [
+            'event_type' => AlertEventType::Notified->value,
+        ]);
+    }
+
     public function test_job_custom_alert_settings_can_enable_a_globally_disabled_rule(): void
     {
         $job = $this->backupJob([
@@ -228,6 +333,56 @@ class AlertSystemTest extends TestCase
         $this->assertArrayNotHasKey('backup_size_out_of_range_max_bytes', $config);
     }
 
+    public function test_alert_settings_update_syncs_destination_alert_notification_channels(): void
+    {
+        app(EnsureAlertRules::class)->handle();
+        $rule = AlertRule::where('type', AlertType::DestinationStorageLimit->value)->firstOrFail();
+        $channel = NotificationChannel::create([
+            'name' => 'Storage alerts',
+            'service' => NotificationChannel::SERVICE_ADVANCED,
+            'url' => 'ntfy://ntfy.sh/storage',
+            'notification_level' => NotificationChannel::LEVEL_ERROR,
+        ]);
+
+        $this->actingAs(User::factory()->admin()->create())
+            ->put('/alerts/settings', [
+                'rules' => [[
+                    'id' => $rule->id,
+                    'enabled' => true,
+                    'notification_channel_ids' => [$channel->id],
+                    'config' => [
+                        'check_interval_minutes' => 60,
+                        'cooldown_minutes' => 1440,
+                        'reminder_enabled' => false,
+                    ],
+                ]],
+            ])
+            ->assertSessionHasNoErrors()
+            ->assertRedirect(route('alerts.settings.edit'));
+
+        $this->assertTrue($rule->fresh()->notificationChannels()->whereKey($channel->id)->exists());
+    }
+
+    public function test_destination_storage_limits_require_critical_threshold_after_warning_threshold(): void
+    {
+        $directory = $this->storageLimitDirectory('validation');
+        $destination = $this->localDestination($directory);
+
+        $this->actingAs(User::factory()->admin()->create())
+            ->put('/destinations/'.$destination->id, [
+                'name' => $destination->name,
+                'provider' => BackupDestination::PROVIDER_LOCAL,
+                'is_active' => true,
+                'settings' => [
+                    'archive_path' => $directory,
+                    'archive_mount_source' => $directory,
+                    'storage_limit_warning_bytes' => 4096,
+                    'storage_limit_critical_bytes' => 1024,
+                ],
+            ])
+            ->assertSessionHasErrors('settings.storage_limit_critical_bytes');
+    }
+
     public function test_job_alert_config_update_omits_null_optional_overrides(): void
     {
         app(EnsureAlertRules::class)->handle();
@@ -315,5 +470,31 @@ class AlertSystemTest extends TestCase
             'access_key_id' => 'access',
             'secret_access_key' => 'secret',
         ]);
+    }
+
+    private function localDestination(string $path, array $settings = []): BackupDestination
+    {
+        File::ensureDirectoryExists($path);
+
+        return BackupDestination::create([
+            'name' => 'Local',
+            'provider' => BackupDestination::PROVIDER_LOCAL,
+            'bucket' => 'local',
+            'access_key_id' => '',
+            'secret_access_key' => '',
+            'settings' => array_replace([
+                'archive_path' => $path,
+                'archive_mount_source' => $path,
+            ], $settings),
+        ]);
+    }
+
+    private function storageLimitDirectory(string $name): string
+    {
+        $path = sys_get_temp_dir().'/volumevault-storage-limit-'.$name;
+        File::deleteDirectory($path);
+        File::ensureDirectoryExists($path);
+
+        return $path;
     }
 }

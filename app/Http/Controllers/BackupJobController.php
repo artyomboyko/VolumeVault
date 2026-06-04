@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Actions\Alerts\EnsureAlertRules;
 use App\Actions\Backup\CreateBackupRun;
+use App\Enums\AlertType;
 use App\Http\Requests\BackupJobRequest;
 use App\Jobs\RunBackupJob;
 use App\Models\ActivityLog;
@@ -139,7 +140,10 @@ class BackupJobController extends Controller
             'destinations' => BackupDestination::where('is_active', true)->orderBy('name')->get()->map->safeForFrontend(),
             'notificationChannels' => NotificationChannel::with('backupJobs')->orderBy('name')->get()->map->safeForFrontend(),
             'defaultNotificationChannelIds' => $this->defaultNotificationChannelIds(),
-            'alertRules' => AlertRule::orderBy('id')->get()->map(fn (AlertRule $rule): array => $this->serializeAlertRule($rule)),
+            'alertRules' => AlertRule::where('type', '!=', AlertType::DestinationStorageLimit->value)
+                ->orderBy('id')
+                ->get()
+                ->map(fn (AlertRule $rule): array => $this->serializeAlertRule($rule)),
         ];
     }
 

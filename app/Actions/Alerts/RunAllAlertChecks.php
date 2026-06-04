@@ -21,6 +21,7 @@ class RunAllAlertChecks
         private readonly JobNeverSucceededCheck $jobNeverSucceededCheck,
         private readonly JobInErrorTooLongCheck $jobInErrorTooLongCheck,
         private readonly BackupSizeOutOfRangeCheck $backupSizeOutOfRangeCheck,
+        private readonly DestinationStorageLimitCheck $destinationStorageLimitCheck,
         private readonly SendShoutrrrNotification $sendShoutrrrNotification,
         private readonly ResolveEffectiveAlertConfig $resolveEffectiveAlertConfig,
     ) {}
@@ -45,10 +46,11 @@ class RunAllAlertChecks
             AlertType::JobNeverSucceeded => $this->jobNeverSucceededCheck,
             AlertType::JobInErrorTooLong => $this->jobInErrorTooLongCheck,
             AlertType::BackupSizeOutOfRange => $this->backupSizeOutOfRangeCheck,
+            AlertType::DestinationStorageLimit => $this->destinationStorageLimitCheck,
         };
     }
 
-    /** @param array{subject: BackupJob, severity: mixed, message: string, context: array<string, mixed>} $finding */
+    /** @param array{subject: Model, severity: mixed, message: string, context: array<string, mixed>} $finding */
     private function trigger(AlertRule $rule, array $finding): void
     {
         $subject = $finding['subject'];

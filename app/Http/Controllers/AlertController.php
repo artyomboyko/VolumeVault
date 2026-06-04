@@ -67,7 +67,7 @@ class AlertController extends Controller
             'id' => $subject->getKey(),
             'type' => class_basename($subject),
             'name' => method_exists($subject, 'sourceName') ? $subject->name : ($subject->name ?? '#'.$subject->getKey()),
-            'source' => method_exists($subject, 'sourceName') ? $subject->sourceName() : null,
+            'source' => method_exists($subject, 'sourceName') ? $subject->sourceName() : (method_exists($subject, 'targetLabel') ? $subject->targetLabel() : null),
         ];
     }
 }
