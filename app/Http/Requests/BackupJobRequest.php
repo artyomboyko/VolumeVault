@@ -61,7 +61,6 @@ class BackupJobRequest extends FormRequest
             'alert_configs.*.alert_rule_id' => ['required_with:alert_configs', 'integer', 'distinct', 'exists:alert_rules,id'],
             'alert_configs.*.enabled' => ['nullable', 'boolean'],
             'alert_configs.*.config' => ['nullable', 'array'],
-            'alert_configs.*.config.check_interval_minutes' => ['nullable', 'integer', 'min:1'],
             'alert_configs.*.config.cooldown_minutes' => ['nullable', 'integer', 'min:0'],
             'alert_configs.*.config.reminder_enabled' => ['nullable', 'boolean'],
             'alert_configs.*.config.backup_too_old_days' => ['nullable', 'integer', 'min:1'],
