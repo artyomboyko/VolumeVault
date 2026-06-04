@@ -55,6 +55,20 @@ class BackupJobRequest extends FormRequest
             'notifications_enabled' => ['boolean'],
             'notification_channel_ids' => ['nullable', 'array'],
             'notification_channel_ids.*' => ['integer', 'distinct', 'exists:notification_channels,id'],
+            'use_custom_alert_settings' => ['boolean'],
+            'alert_notifications_enabled' => ['boolean'],
+            'alert_configs' => ['nullable', 'array'],
+            'alert_configs.*.alert_rule_id' => ['required_with:alert_configs', 'integer', 'distinct', 'exists:alert_rules,id'],
+            'alert_configs.*.enabled' => ['nullable', 'boolean'],
+            'alert_configs.*.config' => ['nullable', 'array'],
+            'alert_configs.*.config.check_interval_minutes' => ['nullable', 'integer', 'min:1'],
+            'alert_configs.*.config.cooldown_minutes' => ['nullable', 'integer', 'min:0'],
+            'alert_configs.*.config.reminder_enabled' => ['nullable', 'boolean'],
+            'alert_configs.*.config.backup_too_old_days' => ['nullable', 'integer', 'min:1'],
+            'alert_configs.*.config.job_never_succeeded_min_runs' => ['nullable', 'integer', 'min:1'],
+            'alert_configs.*.config.job_in_error_days' => ['nullable', 'integer', 'min:1'],
+            'alert_configs.*.config.backup_size_out_of_range_min_bytes' => ['nullable', 'integer', 'min:0'],
+            'alert_configs.*.config.backup_size_out_of_range_max_bytes' => ['nullable', 'integer', 'min:1'],
             'stop_containers_before_backup' => ['boolean'],
         ];
     }
@@ -69,6 +83,7 @@ class BackupJobRequest extends FormRequest
             }
 
             $this->validateHostPathSource($validator);
+            $this->validateAlertSizeRanges($validator);
         });
     }
 
@@ -107,6 +122,21 @@ class BackupJobRequest extends FormRequest
             app(ValidateHostPathMount::class)->handle($hostPath);
         } catch (Throwable $exception) {
             $validator->errors()->add('host_path', str($exception->getMessage() ?: 'Host path could not be mounted by Docker.')->limit(500)->toString());
+        }
+    }
+
+    private function validateAlertSizeRanges(Validator $validator): void
+    {
+        foreach ($this->input('alert_configs', []) as $index => $alertConfig) {
+            $config = $alertConfig['config'] ?? [];
+
+            if (! array_key_exists('backup_size_out_of_range_min_bytes', $config) || ! array_key_exists('backup_size_out_of_range_max_bytes', $config)) {
+                continue;
+            }
+
+            if ((int) $config['backup_size_out_of_range_min_bytes'] > (int) $config['backup_size_out_of_range_max_bytes']) {
+                $validator->errors()->add('alert_configs.'.$index.'.config.backup_size_out_of_range_max_bytes', 'The maximum backup size must be greater than or equal to the minimum backup size.');
+            }
         }
     }
 }

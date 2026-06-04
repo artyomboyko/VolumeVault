@@ -96,6 +96,7 @@ class RunBackup
                 'status' => BackupJob::STATUS_ACTIVE,
                 'last_success_at' => $finishedAt,
                 'last_error' => null,
+                'last_error_at' => null,
                 'pause_reason' => null,
                 'next_run_at' => $this->scheduleCalculator->nextRunAt($job->schedule_type, $job->schedule_config ?? [], $finishedAt),
             ])->save();
@@ -118,6 +119,7 @@ class RunBackup
             $job->forceFill([
                 'status' => BackupJob::STATUS_ERROR,
                 'last_error' => $message,
+                'last_error_at' => $finishedAt,
                 'next_run_at' => $this->scheduleCalculator->nextRunAt($job->schedule_type, $job->schedule_config ?? [], $finishedAt),
             ])->save();
 

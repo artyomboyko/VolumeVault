@@ -28,6 +28,7 @@ class MarkMissingVolumeJobs
                 $job->forceFill([
                     'status' => BackupJob::STATUS_ERROR,
                     'last_error' => $message,
+                    'last_error_at' => now(),
                     'pause_reason' => $message,
                 ])->save();
 

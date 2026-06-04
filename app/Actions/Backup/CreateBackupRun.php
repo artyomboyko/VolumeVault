@@ -61,6 +61,7 @@ class CreateBackupRun
             $job->forceFill([
                 'next_run_at' => $this->scheduleCalculator->nextRunAt($job->schedule_type, $job->schedule_config ?? []),
                 'last_error' => null,
+                'last_error_at' => null,
             ])->save();
 
             ActivityLog::record('backup_run_queued', 'Backup run queued.', $run, [

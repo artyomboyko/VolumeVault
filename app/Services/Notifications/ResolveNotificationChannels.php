@@ -19,4 +19,16 @@ class ResolveNotificationChannels
             ->where('is_active', true)
             ->get();
     }
+
+    /** @return Collection<int, NotificationChannel> */
+    public function forJobAlerts(BackupJob $job): Collection
+    {
+        if (! $job->alert_notifications_enabled) {
+            return new Collection;
+        }
+
+        return $job->notificationChannels()
+            ->where('is_active', true)
+            ->get();
+    }
 }

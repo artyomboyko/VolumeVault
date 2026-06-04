@@ -1,6 +1,10 @@
 <?php
 
 return [
+    'advanced_alerting' => [
+        'title' => 'Advanced alerting',
+        'description' => 'VolumeVault can monitor backup jobs for stale backups, repeated failures, long-running error states, and unusual archive sizes.',
+    ],
     'keyboard_shortcuts' => [
         'title' => 'Klavesove zkratky',
         'description' => 'Na desktopu pouzijte Ctrl+K pro rychlou navigaci, zkratky s predponou g pro zobrazeni a / pro zamereni hledani v seznamech.',

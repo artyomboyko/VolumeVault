@@ -2,6 +2,11 @@
 
 namespace App\Services\Notifications;
 
+use App\Enums\AlertEventType;
+use App\Enums\AlertStatus;
+use App\Models\Alert;
+use App\Models\AlertEvent;
+use App\Models\BackupJob;
 use App\Models\BackupRun;
 use App\Models\NotificationChannel;
 use App\Services\Docker\DockerProcess;
@@ -35,6 +40,59 @@ class SendShoutrrrNotification
     public function sendTest(NotificationChannel $channel): DockerProcessResult
     {
         return $this->send($channel, 'VolumeVault test notification', 'If you see this message, this Shoutrrr channel works.');
+    }
+
+    public function sendAlert(Alert $alert): int
+    {
+        return $this->sendAlertNotification($alert, 'initial');
+    }
+
+    public function sendAlertReminder(Alert $alert): int
+    {
+        return $this->sendAlertNotification($alert, 'reminder');
+    }
+
+    public function sendAlertResolved(Alert $alert): int
+    {
+        return $this->sendAlertNotification($alert, 'resolved');
+    }
+
+    private function sendAlertNotification(Alert $alert, string $type): int
+    {
+        $alert->loadMissing('rule', 'subject');
+
+        if (! $alert->subject instanceof BackupJob) {
+            return 0;
+        }
+
+        $sent = 0;
+
+        foreach ($this->resolveNotificationChannels->forJobAlerts($alert->subject) as $channel) {
+            $result = $this->send(
+                $channel,
+                $this->alertTitle($alert, $type),
+                $this->alertMessage($alert, $type),
+            );
+
+            if (! $result->successful()) {
+                continue;
+            }
+
+            AlertEvent::record(
+                $alert,
+                $type === 'reminder' ? AlertEventType::ReminderSent : AlertEventType::Notified,
+                [
+                    'channel_id' => $channel->id,
+                    'channel' => $channel->name,
+                    'type' => $type,
+                    'trigger_count' => $alert->trigger_count,
+                ],
+            );
+
+            $sent++;
+        }
+
+        return $sent;
     }
 
     private function send(NotificationChannel $channel, string $title, string $message): DockerProcessResult
@@ -82,6 +140,15 @@ class SendShoutrrrNotification
         return $this->renderTemplate($channel->title_template, $run) ?: $default;
     }
 
+    private function alertTitle(Alert $alert, string $type): string
+    {
+        if ($type === 'resolved') {
+            return 'VolumeVault alert resolved';
+        }
+
+        return 'VolumeVault '.$alert->severity->value.' alert';
+    }
+
     private function backupRunMessage(BackupRun $run, NotificationChannel $channel): string
     {
         $customMessage = $this->renderTemplate($channel->body_template, $run);
@@ -109,6 +176,29 @@ class SendShoutrrrNotification
 
         if ($run->error_message) {
             $lines[] = 'Error: '.$run->error_message;
+        }
+
+        return implode("\n", $lines);
+    }
+
+    private function alertMessage(Alert $alert, string $type): string
+    {
+        $job = $alert->subject;
+        $lines = [
+            'Alert: '.$alert->rule->type->value,
+            'Status: '.($type === 'resolved' ? AlertStatus::Resolved->value : $alert->status->value),
+            'Severity: '.$alert->severity->value,
+            'Job: '.$job->name,
+            'Source: '.$job->sourceName(),
+            'Message: '.$alert->message,
+        ];
+
+        if ($type === 'reminder') {
+            $lines[] = 'Trigger count: '.$alert->trigger_count;
+        }
+
+        if ($alert->context) {
+            $lines[] = 'Context: '.$this->formatContext($alert->context);
         }
 
         return implode("\n", $lines);
@@ -148,5 +238,17 @@ class SendShoutrrrNotification
         $index = min((int) floor(log($bytes, 1024)), count($units) - 1);
 
         return round($bytes / (1024 ** $index), 1).' '.$units[$index];
+    }
+
+    private function formatContext(array $context): string
+    {
+        return collect($context)
+            ->reject(fn ($value, $key): bool => str_contains((string) $key, 'secret') || str_contains((string) $key, 'token'))
+            ->map(fn ($value, $key): string => $key.'='.match (true) {
+                is_bool($value) => $value ? 'true' : 'false',
+                is_scalar($value) => (string) $value,
+                default => json_encode($value, JSON_THROW_ON_ERROR),
+            })
+            ->implode(', ');
     }
 }

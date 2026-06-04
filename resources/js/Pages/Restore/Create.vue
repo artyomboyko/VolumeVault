@@ -45,7 +45,7 @@ const submit = () => form.post(`/backup-jobs/${props.job.id}/restore`);
             <p v-if="listError" class="mt-4 rounded-xl bg-rose-400/10 p-3 text-sm text-rose-100">{{ listError }}</p>
 
             <div v-if="backups.length" class="mt-5 space-y-3">
-                <label v-for="backup in backups" :key="backup.key" class="flex cursor-pointer items-start gap-3 rounded-xl border border-white/10 bg-white/5 p-4 hover:bg-white/10">
+                <label v-for="backup in backups" :key="backup.key" class="flex cursor-pointer items-start gap-3 rounded-xl border border-white/10 bg-white/5 p-4 hover:bg-slate-100 dark:hover:bg-white/10">
                     <input v-model="form.selected_backup_key" type="radio" :value="backup.key" class="mt-1 text-sky-400">
                     <span class="min-w-0 flex-1">
                         <span class="block break-all font-medium text-white">{{ backup.display_name || backup.key }}</span>

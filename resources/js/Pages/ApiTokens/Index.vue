@@ -117,7 +117,7 @@ const revoke = (id: number) => confirm('Revoke this API token?') && router.delet
                             </tr>
                         </thead>
                         <tbody class="divide-y divide-white/10">
-                            <tr v-for="token in tokens" :key="token.id" class="hover:bg-white/[0.03]">
+                            <tr v-for="token in tokens" :key="token.id" class="hover:bg-slate-100 dark:hover:bg-white/[0.03]">
                                 <td class="px-4 py-3 font-medium text-white">{{ token.name }}</td>
                                 <td class="px-4 py-3 text-slate-300">{{ token.user?.email || t('Deleted user') }}</td>
                                 <td class="px-4 py-3 text-slate-300">{{ token.abilities.join(', ') }}</td>
