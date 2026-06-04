@@ -250,6 +250,8 @@ class AlertSystemTest extends TestCase
                     'alert_rule_id' => $rule->id,
                     'enabled' => true,
                     'config' => [
+                        'check_interval_minutes' => 5,
+                        'cooldown_minutes' => 60,
                         'backup_size_out_of_range_min_bytes' => null,
                         'backup_size_out_of_range_max_bytes' => null,
                     ],
@@ -260,6 +262,8 @@ class AlertSystemTest extends TestCase
 
         $config = JobAlertConfig::where('backup_job_id', $job->id)->where('alert_rule_id', $rule->id)->firstOrFail()->config;
 
+        $this->assertArrayNotHasKey('check_interval_minutes', $config);
+        $this->assertSame(60, $config['cooldown_minutes']);
         $this->assertArrayNotHasKey('backup_size_out_of_range_min_bytes', $config);
         $this->assertArrayNotHasKey('backup_size_out_of_range_max_bytes', $config);
     }

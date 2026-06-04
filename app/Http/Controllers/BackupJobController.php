@@ -240,9 +240,25 @@ class BackupJobController extends Controller
                     ['alert_rule_id' => (int) $config['alert_rule_id']],
                     [
                         'enabled' => array_key_exists('enabled', $config) && $config['enabled'] !== null ? (bool) $config['enabled'] : null,
-                        'config' => array_filter($config['config'] ?? [], fn (mixed $value): bool => $value !== null),
+                        'config' => $this->jobAlertConfigPayload($config['config'] ?? []),
                     ],
                 );
             });
+    }
+
+    private function jobAlertConfigPayload(array $config): array
+    {
+        return collect($config)
+            ->only([
+                'cooldown_minutes',
+                'reminder_enabled',
+                'backup_too_old_days',
+                'job_never_succeeded_min_runs',
+                'job_in_error_days',
+                'backup_size_out_of_range_min_bytes',
+                'backup_size_out_of_range_max_bytes',
+            ])
+            ->filter(fn (mixed $value): bool => $value !== null)
+            ->all();
     }
 }

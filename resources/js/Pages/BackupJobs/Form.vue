@@ -29,6 +29,13 @@ const excludeExamples = [
     { label: 'Exclude node_modules', value: '(^|/)node_modules(/|$)' },
 ];
 const alertConfigOverrides = new Map((props.job?.alert_configs || []).map((config: any) => [config.alert_rule_id, config]));
+const jobAlertConfig = (rule: any, override: any) => {
+    const config = { ...rule.config, ...(override?.config || {}) };
+
+    delete config.check_interval_minutes;
+
+    return config;
+};
 const initialAlertConfigs = props.alertRules.map((rule) => {
     const override = alertConfigOverrides.get(rule.id) as any;
 
@@ -36,7 +43,7 @@ const initialAlertConfigs = props.alertRules.map((rule) => {
         alert_rule_id: rule.id,
         type: rule.type,
         enabled: override?.enabled ?? rule.enabled,
-        config: { ...rule.config, ...(override?.config || {}) },
+        config: jobAlertConfig(rule, override),
     };
 });
 
@@ -423,11 +430,7 @@ const submit = () => {
                                 </button>
                             </div>
 
-                            <div class="mt-4 grid gap-4 md:grid-cols-3">
-                                <label class="space-y-2">
-                                    <span class="label">{{ t('Check interval') }}</span>
-                                    <input v-model.number="alertConfig.config.check_interval_minutes" class="input" type="number" min="1">
-                                </label>
+                            <div class="mt-4 grid gap-4 md:grid-cols-2">
                                 <label class="space-y-2">
                                     <span class="label">{{ t('Cooldown') }}</span>
                                     <input v-model.number="alertConfig.config.cooldown_minutes" class="input" type="number" min="0">
