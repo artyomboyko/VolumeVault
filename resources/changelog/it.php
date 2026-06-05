@@ -13,6 +13,10 @@ return [
         'title' => 'Navigazione mobile migliorata',
         'description' => "L'intestazione mobile ora usa un pulsante menu compatto e un pannello di navigazione strutturato invece di impilare tutti i link nell'intestazione.",
     ],
+    'alert_rule_pause_and_size_fixes' => [
+        'title' => 'Alert rule fixes',
+        'description' => 'Clearing the maximum backup size is accepted again, and paused jobs no longer keep stale or never-succeeded alerts active.',
+    ],
     'keyboard_shortcuts' => [
         'title' => 'Scorciatoie da tastiera',
         'description' => 'Su desktop, usa Ctrl+K per la navigazione rapida, scorciatoie con prefisso g per le viste e / per focalizzare la ricerca nelle liste.',

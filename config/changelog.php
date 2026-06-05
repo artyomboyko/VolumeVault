@@ -14,6 +14,10 @@ return [
             'type' => 'change',
             'key' => 'mobile_navigation_redesign',
         ],
+        [
+            'type' => 'change',
+            'key' => 'alert_rule_pause_and_size_fixes',
+        ],
     ],
     'releases' => [
         'v1.6.0' => [

@@ -16,6 +16,7 @@ class JobNeverSucceededCheck implements AlertCheckAction
         $findings = [];
 
         BackupJob::query()
+            ->where('status', '!=', BackupJob::STATUS_PAUSED)
             ->whereNull('last_success_at')
             ->with('alertConfigs')
             ->withCount(['runs as completed_runs_count' => function ($query): void {

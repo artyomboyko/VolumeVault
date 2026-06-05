@@ -42,6 +42,10 @@ class UpdateAlertRulesRequest extends FormRequest
                     continue;
                 }
 
+                if ($config['backup_size_out_of_range_min_bytes'] === null || $config['backup_size_out_of_range_min_bytes'] === '' || $config['backup_size_out_of_range_max_bytes'] === null || $config['backup_size_out_of_range_max_bytes'] === '') {
+                    continue;
+                }
+
                 if ((int) $config['backup_size_out_of_range_min_bytes'] > (int) $config['backup_size_out_of_range_max_bytes']) {
                     $validator->errors()->add('rules.'.$index.'.config.backup_size_out_of_range_max_bytes', 'The maximum backup size must be greater than or equal to the minimum backup size.');
                 }

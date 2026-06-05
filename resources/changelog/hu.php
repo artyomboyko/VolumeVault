@@ -13,6 +13,10 @@ return [
         'title' => 'Tovabbfejlesztett mobil navigacio',
         'description' => 'A mobil fejlec most kompakt menugombot es strukturalt navigacios panelt hasznal, ahelyett hogy minden hivatkozast a fejlecbe zsufolna.',
     ],
+    'alert_rule_pause_and_size_fixes' => [
+        'title' => 'Alert rule fixes',
+        'description' => 'Clearing the maximum backup size is accepted again, and paused jobs no longer keep stale or never-succeeded alerts active.',
+    ],
     'keyboard_shortcuts' => [
         'title' => 'Billentyuparancsok',
         'description' => 'Desktopon hasznalja a Ctrl+K-t gyors navigaciohoz, a g elotagu parancsokat a nezetekhez es a / jelet a listakereses fokuszalashoz.',
