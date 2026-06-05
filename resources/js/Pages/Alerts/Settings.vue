@@ -145,7 +145,7 @@ const submit = () => form.put('/alerts/settings');
                                 <input
                                     class="input min-w-0"
                                     type="number"
-                                    min="0"
+                                    min="1"
                                     step="0.01"
                                     :value="sizeInputValue(rule.config, 'backup_size_out_of_range_max_bytes', selectedSizeUnit(rule, 'backup_size_out_of_range_max_bytes'))"
                                     @input="updateSizeThreshold(rule.config, 'backup_size_out_of_range_max_bytes', inputValue($event), selectedSizeUnit(rule, 'backup_size_out_of_range_max_bytes'))"
