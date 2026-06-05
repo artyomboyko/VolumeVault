@@ -501,7 +501,7 @@ const submit = () => {
                                             <input
                                                 class="input min-w-0"
                                                 type="number"
-                                                min="0"
+                                                min="1"
                                                 step="0.01"
                                                 :value="sizeInputValue(alertConfig.config, 'backup_size_out_of_range_max_bytes', selectedAlertSizeUnit(alertConfig, 'backup_size_out_of_range_max_bytes'))"
                                                 @input="updateSizeThreshold(alertConfig.config, 'backup_size_out_of_range_max_bytes', inputValue($event), selectedAlertSizeUnit(alertConfig, 'backup_size_out_of_range_max_bytes'))"
@@ -510,6 +510,7 @@ const submit = () => {
                                                 <option v-for="unit in sizeUnits" :key="unit.label" :value="unit.label">{{ unit.label }}</option>
                                             </select>
                                         </span>
+                                        <span v-if="form.errors[`alert_configs.${index}.config.backup_size_out_of_range_max_bytes`]" class="text-sm text-rose-300">{{ form.errors[`alert_configs.${index}.config.backup_size_out_of_range_max_bytes`] }}</span>
                                     </label>
                                 </template>
                             </div>
