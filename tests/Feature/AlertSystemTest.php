@@ -60,6 +60,23 @@ class AlertSystemTest extends TestCase
         ]);
     }
 
+    public function test_backup_too_old_alert_resolves_when_job_is_paused(): void
+    {
+        $job = $this->backupJob([
+            'last_success_at' => now()->subDays(8),
+        ]);
+        $rule = $this->enabledRule(AlertType::BackupTooOld, ['backup_too_old_days' => 7]);
+
+        app(RunAllAlertChecks::class)->handle($rule);
+        $alert = Alert::firstOrFail();
+
+        $job->forceFill(['status' => BackupJob::STATUS_PAUSED])->save();
+
+        app(RunAllAlertChecks::class)->handle($rule);
+
+        $this->assertSame(AlertStatus::Resolved, $alert->fresh()->status);
+    }
+
     public function test_job_never_succeeded_alert_uses_finished_run_threshold(): void
     {
         $job = $this->backupJob(['last_success_at' => null]);
@@ -75,6 +92,25 @@ class AlertSystemTest extends TestCase
 
         app(RunAllAlertChecks::class)->handle($rule);
         $this->assertSame(AlertStatus::Active, Alert::firstOrFail()->status);
+    }
+
+    public function test_job_never_succeeded_alert_resolves_when_job_is_paused(): void
+    {
+        $job = $this->backupJob(['last_success_at' => null]);
+        $rule = $this->enabledRule(AlertType::JobNeverSucceeded, ['job_never_succeeded_min_runs' => 3]);
+
+        BackupRun::create(['backup_job_id' => $job->id, 'status' => BackupRun::STATUS_FAILED, 'trigger' => BackupRun::TRIGGER_SCHEDULED]);
+        BackupRun::create(['backup_job_id' => $job->id, 'status' => BackupRun::STATUS_FAILED, 'trigger' => BackupRun::TRIGGER_SCHEDULED]);
+        BackupRun::create(['backup_job_id' => $job->id, 'status' => BackupRun::STATUS_FAILED, 'trigger' => BackupRun::TRIGGER_SCHEDULED]);
+
+        app(RunAllAlertChecks::class)->handle($rule);
+        $alert = Alert::firstOrFail();
+
+        $job->forceFill(['status' => BackupJob::STATUS_PAUSED])->save();
+
+        app(RunAllAlertChecks::class)->handle($rule);
+
+        $this->assertSame(AlertStatus::Resolved, $alert->fresh()->status);
     }
 
     public function test_job_in_error_too_long_uses_last_error_at(): void
@@ -346,7 +382,7 @@ class AlertSystemTest extends TestCase
         $this->assertSame(AlertStatus::Active, Alert::firstOrFail()->status);
     }
 
-    public function test_alert_settings_update_omits_null_optional_config_values(): void
+    public function test_alert_settings_update_allows_cleared_max_backup_size(): void
     {
         app(EnsureAlertRules::class)->handle();
         $rule = AlertRule::where('type', AlertType::BackupSizeOutOfRange->value)->firstOrFail();
@@ -360,7 +396,7 @@ class AlertSystemTest extends TestCase
                         'check_interval_minutes' => 60,
                         'cooldown_minutes' => 1440,
                         'reminder_enabled' => false,
-                        'backup_size_out_of_range_min_bytes' => null,
+                        'backup_size_out_of_range_min_bytes' => 1024,
                         'backup_size_out_of_range_max_bytes' => null,
                     ],
                 ]],
@@ -370,7 +406,7 @@ class AlertSystemTest extends TestCase
 
         $config = $rule->fresh()->config;
 
-        $this->assertArrayNotHasKey('backup_size_out_of_range_min_bytes', $config);
+        $this->assertSame(1024, $config['backup_size_out_of_range_min_bytes']);
         $this->assertArrayNotHasKey('backup_size_out_of_range_max_bytes', $config);
     }
 
@@ -424,7 +460,7 @@ class AlertSystemTest extends TestCase
             ->assertSessionHasErrors('settings.storage_limit_critical_bytes');
     }
 
-    public function test_job_alert_config_update_omits_null_optional_overrides(): void
+    public function test_job_alert_config_update_allows_cleared_max_backup_size_override(): void
     {
         app(EnsureAlertRules::class)->handle();
         $job = $this->backupJob();
@@ -448,7 +484,7 @@ class AlertSystemTest extends TestCase
                     'config' => [
                         'check_interval_minutes' => 5,
                         'cooldown_minutes' => 60,
-                        'backup_size_out_of_range_min_bytes' => null,
+                        'backup_size_out_of_range_min_bytes' => 1024,
                         'backup_size_out_of_range_max_bytes' => null,
                     ],
                 ]],
@@ -460,7 +496,7 @@ class AlertSystemTest extends TestCase
 
         $this->assertArrayNotHasKey('check_interval_minutes', $config);
         $this->assertSame(60, $config['cooldown_minutes']);
-        $this->assertArrayNotHasKey('backup_size_out_of_range_min_bytes', $config);
+        $this->assertSame(1024, $config['backup_size_out_of_range_min_bytes']);
         $this->assertArrayNotHasKey('backup_size_out_of_range_max_bytes', $config);
     }
 

@@ -13,6 +13,10 @@ return [
         'title' => 'Verbeterde mobiele navigatie',
         'description' => 'De mobiele kop gebruikt nu een compacte menuknop en een gestructureerd navigatiepaneel in plaats van alle links in de kop te stapelen.',
     ],
+    'alert_rule_pause_and_size_fixes' => [
+        'title' => 'Alert rule fixes',
+        'description' => 'Clearing the maximum backup size is accepted again, and paused jobs no longer keep stale or never-succeeded alerts active.',
+    ],
     'keyboard_shortcuts' => [
         'title' => 'Sneltoetsen',
         'description' => 'Gebruik op desktop Ctrl+K voor snelle navigatie, g-sneltoetsen voor weergaven en / om zoeken in lijsten te focussen.',

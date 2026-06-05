@@ -13,6 +13,10 @@ return [
         'title' => 'Улучшенная мобильная навигация',
         'description' => 'Мобильная шапка теперь использует компактную кнопку меню и структурированную панель навигации вместо размещения всех ссылок в шапке.',
     ],
+    'alert_rule_pause_and_size_fixes' => [
+        'title' => 'Alert rule fixes',
+        'description' => 'Clearing the maximum backup size is accepted again, and paused jobs no longer keep stale or never-succeeded alerts active.',
+    ],
     'keyboard_shortcuts' => [
         'title' => 'Горячие клавиши',
         'description' => 'На десктопе используйте Ctrl+K для быстрой навигации, сочетания с префиксом g для разделов и / для фокуса поиска в списках.',
