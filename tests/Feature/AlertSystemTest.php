@@ -195,6 +195,47 @@ class AlertSystemTest extends TestCase
         $this->assertSame(AlertStatus::Resolved, $alert->fresh()->status);
     }
 
+    public function test_resolved_alert_notifications_use_neutral_message_without_stale_context(): void
+    {
+        $directory = $this->storageLimitDirectory('resolved-message');
+        File::put($directory.'/archive.tar.gz', str_repeat('x', 2048));
+        $this->localDestination($directory, ['storage_limit_warning_bytes' => 1024]);
+        $rule = $this->enabledRule(AlertType::DestinationStorageLimit);
+        $channel = NotificationChannel::create([
+            'name' => 'Storage alerts',
+            'service' => NotificationChannel::SERVICE_ADVANCED,
+            'url' => 'ntfy://ntfy.sh/storage',
+            'notification_level' => NotificationChannel::LEVEL_ERROR,
+        ]);
+        $rule->notificationChannels()->attach($channel);
+        $dockerProcess = new class extends DockerProcess
+        {
+            public array $messages = [];
+
+            public function run(array $command, int $timeout = 300, array $environment = []): DockerProcessResult
+            {
+                $messageIndex = array_search('--message', $command, true);
+
+                if (is_int($messageIndex)) {
+                    $this->messages[] = (string) ($command[$messageIndex + 1] ?? '');
+                }
+
+                return new DockerProcessResult($command, 0, 'ok', '');
+            }
+        };
+        $this->app->instance(DockerProcess::class, $dockerProcess);
+
+        app(RunAllAlertChecks::class)->handle($rule);
+        File::cleanDirectory($directory);
+        app(RunAllAlertChecks::class)->handle($rule);
+
+        $resolvedMessage = $dockerProcess->messages[1] ?? '';
+
+        $this->assertStringContainsString('Message: Alert condition is resolved.', $resolvedMessage);
+        $this->assertStringNotContainsString('Context:', $resolvedMessage);
+        $this->assertStringNotContainsString('is using 2 KB of backup storage', $resolvedMessage);
+    }
+
     public function test_destination_storage_limit_alert_uses_rule_notification_channels(): void
     {
         $directory = $this->storageLimitDirectory('notify');

@@ -217,13 +217,13 @@ class SendShoutrrrNotification
             $lines[] = 'Target: '.$subject->targetLabel();
         }
 
-        $lines[] = 'Message: '.$alert->message;
+        $lines[] = 'Message: '.($type === 'resolved' ? 'Alert condition is resolved.' : $alert->message);
 
         if ($type === 'reminder') {
             $lines[] = 'Trigger count: '.$alert->trigger_count;
         }
 
-        if ($alert->context) {
+        if ($type !== 'resolved' && $alert->context) {
             $lines[] = 'Context: '.$this->formatContext($alert->context);
         }
 
