@@ -45,20 +45,20 @@ class BackupSizeOutOfRangeCheck implements AlertCheckAction
                     return;
                 }
 
-                $minBytes = max(0, (int) ($effective['config']['backup_size_out_of_range_min_bytes'] ?? 1024));
-                $maxBytes = (int) ($effective['config']['backup_size_out_of_range_max_bytes'] ?? 10737418240);
+                $minBytes = $this->threshold($effective['config'], 'backup_size_out_of_range_min_bytes', 1024);
+                $maxBytes = $this->threshold($effective['config'], 'backup_size_out_of_range_max_bytes', 10737418240);
 
-                if ($maxBytes < $minBytes) {
+                if ($minBytes !== null && $maxBytes !== null && $maxBytes < $minBytes) {
                     return;
                 }
 
                 $size = (int) $run->backup_size_bytes;
 
-                if ($size >= $minBytes && $size <= $maxBytes) {
+                if (($minBytes === null || $size >= $minBytes) && ($maxBytes === null || $size <= $maxBytes)) {
                     return;
                 }
 
-                $critical = ($minBytes > 0 && $size < ($minBytes / 2)) || ($maxBytes > 0 && $size > ($maxBytes * 2));
+                $critical = ($minBytes !== null && $minBytes > 0 && $size < ($minBytes / 2)) || ($maxBytes !== null && $maxBytes > 0 && $size > ($maxBytes * 2));
 
                 $findings[] = [
                     'subject' => $job,
@@ -75,6 +75,20 @@ class BackupSizeOutOfRangeCheck implements AlertCheckAction
             });
 
         return $findings;
+    }
+
+    /** @param array<string, mixed> $config */
+    private function threshold(array $config, string $key, int $default): ?int
+    {
+        if (! array_key_exists($key, $config)) {
+            return $default;
+        }
+
+        if ($config[$key] === null) {
+            return null;
+        }
+
+        return max(0, (int) $config[$key]);
     }
 
     private function formatBytes(int $bytes): string

@@ -15,7 +15,7 @@ return [
     ],
     'alert_rule_pause_and_size_fixes' => [
         'title' => 'Alert rule fixes',
-        'description' => 'Clearing the maximum backup size is accepted again, and paused jobs no longer keep stale or never-succeeded alerts active.',
+        'description' => 'Alert thresholds now preserve cleared maximums, paused jobs stay out of automated error alerts, critical escalations notify immediately, and disabled per-job overrides no longer go stale.',
     ],
     'keyboard_shortcuts' => [
         'title' => 'Горячие клавиши',

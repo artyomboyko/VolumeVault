@@ -15,7 +15,7 @@ return [
     ],
     'alert_rule_pause_and_size_fixes' => [
         'title' => "Correctifs d'alertes",
-        'description' => 'Effacer la taille maximale de sauvegarde est de nouveau accepte, et les taches en pause ne gardent plus les alertes de sauvegarde ancienne ou jamais reussie actives.',
+        'description' => 'Les seuils d alerte conservent les maximums effaces, les taches en pause restent hors des alertes d erreur automatiques, les escalades critiques notifient immediatement et les overrides par tache desactives ne deviennent plus obsoletes.',
     ],
     'keyboard_shortcuts' => [
         'title' => 'Raccourcis clavier',
