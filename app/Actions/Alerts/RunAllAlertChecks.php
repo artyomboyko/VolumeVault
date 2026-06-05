@@ -3,6 +3,7 @@
 namespace App\Actions\Alerts;
 
 use App\Enums\AlertEventType;
+use App\Enums\AlertSeverity;
 use App\Enums\AlertStatus;
 use App\Enums\AlertType;
 use App\Models\ActivityLog;
@@ -61,6 +62,7 @@ class RunAllAlertChecks
             'subject_id' => $subject->getKey(),
         ]);
         $wasInactive = ! $alert->exists || $alert->status !== AlertStatus::Active;
+        $previousSeverity = $alert->exists ? $alert->severity : null;
 
         $alert->forceFill([
             'status' => AlertStatus::Active,
@@ -86,7 +88,18 @@ class RunAllAlertChecks
             return;
         }
 
+        if ($this->severityEscalated($previousSeverity, $alert->severity)) {
+            $this->notifyInitial($alert);
+
+            return;
+        }
+
         $this->notifyReminderIfDue($alert, $rule);
+    }
+
+    private function severityEscalated(?AlertSeverity $previousSeverity, AlertSeverity $currentSeverity): bool
+    {
+        return $previousSeverity === AlertSeverity::Warning && $currentSeverity === AlertSeverity::Critical;
     }
 
     /** @param array<string, bool> $activeSubjectKeys */

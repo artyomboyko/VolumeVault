@@ -171,6 +171,27 @@ class AlertSystemTest extends TestCase
         $this->assertSame($run->id, $alert->context['backup_run_id']);
     }
 
+    public function test_backup_size_alert_allows_unbounded_maximum(): void
+    {
+        $job = $this->backupJob();
+        $rule = $this->enabledRule(AlertType::BackupSizeOutOfRange, [
+            'backup_size_out_of_range_min_bytes' => 1024,
+            'backup_size_out_of_range_max_bytes' => null,
+        ]);
+
+        BackupRun::create([
+            'backup_job_id' => $job->id,
+            'status' => BackupRun::STATUS_SUCCESS,
+            'trigger' => BackupRun::TRIGGER_SCHEDULED,
+            'backup_size_bytes' => 20 * 1024 * 1024 * 1024,
+            'finished_at' => now(),
+        ]);
+
+        app(RunAllAlertChecks::class)->handle($rule);
+
+        $this->assertSame(0, Alert::count());
+    }
+
     public function test_destination_storage_limit_alert_uses_destination_thresholds_and_delta(): void
     {
         $directory = $this->storageLimitDirectory('delta');
@@ -197,6 +218,37 @@ class AlertSystemTest extends TestCase
         $this->assertSame(5120, $alert->context['used_bytes']);
         $this->assertSame(2048, $alert->context['previous_used_bytes']);
         $this->assertSame(3072, $alert->context['delta_bytes']);
+    }
+
+    public function test_alert_escalation_sends_notification_without_reminders(): void
+    {
+        $directory = $this->storageLimitDirectory('escalation');
+        File::put($directory.'/archive.tar.gz', str_repeat('x', 2048));
+        $this->localDestination($directory, [
+            'storage_limit_warning_bytes' => 1024,
+            'storage_limit_critical_bytes' => 4096,
+        ]);
+        $rule = $this->enabledRule(AlertType::DestinationStorageLimit, [
+            'reminder_enabled' => false,
+        ]);
+        $channel = NotificationChannel::create([
+            'name' => 'Storage alerts',
+            'service' => NotificationChannel::SERVICE_ADVANCED,
+            'url' => 'ntfy://ntfy.sh/storage',
+            'notification_level' => NotificationChannel::LEVEL_ERROR,
+        ]);
+        $rule->notificationChannels()->attach($channel);
+
+        $dockerProcess = Mockery::mock(DockerProcess::class);
+        $dockerProcess->shouldReceive('run')->twice()->andReturn(new DockerProcessResult([], 0, 'ok', ''));
+        $this->app->instance(DockerProcess::class, $dockerProcess);
+
+        app(RunAllAlertChecks::class)->handle($rule);
+        File::put($directory.'/larger.tar.gz', str_repeat('x', 3072));
+        app(RunAllAlertChecks::class)->handle($rule);
+
+        $this->assertSame(AlertSeverity::Critical, Alert::firstOrFail()->severity);
+        $this->assertSame(2, Alert::firstOrFail()->events()->where('event_type', AlertEventType::Notified->value)->count());
     }
 
     public function test_disabled_destination_storage_limit_alert_does_not_trigger(): void
@@ -407,7 +459,11 @@ class AlertSystemTest extends TestCase
         $config = $rule->fresh()->config;
 
         $this->assertSame(1024, $config['backup_size_out_of_range_min_bytes']);
-        $this->assertArrayNotHasKey('backup_size_out_of_range_max_bytes', $config);
+        $this->assertNull($config['backup_size_out_of_range_max_bytes']);
+
+        app(EnsureAlertRules::class)->handle();
+
+        $this->assertNull($rule->fresh()->config['backup_size_out_of_range_max_bytes']);
     }
 
     public function test_alert_settings_update_syncs_destination_alert_notification_channels(): void
@@ -497,7 +553,44 @@ class AlertSystemTest extends TestCase
         $this->assertArrayNotHasKey('check_interval_minutes', $config);
         $this->assertSame(60, $config['cooldown_minutes']);
         $this->assertSame(1024, $config['backup_size_out_of_range_min_bytes']);
-        $this->assertArrayNotHasKey('backup_size_out_of_range_max_bytes', $config);
+        $this->assertNull($config['backup_size_out_of_range_max_bytes']);
+    }
+
+    public function test_job_alert_configs_are_cleared_when_custom_alert_settings_are_disabled(): void
+    {
+        app(EnsureAlertRules::class)->handle();
+        $job = $this->backupJob(['use_custom_alert_settings' => true]);
+        $rule = AlertRule::where('type', AlertType::BackupTooOld->value)->firstOrFail();
+        JobAlertConfig::create([
+            'backup_job_id' => $job->id,
+            'alert_rule_id' => $rule->id,
+            'enabled' => true,
+            'config' => ['backup_too_old_days' => 14],
+        ]);
+
+        $this->actingAs(User::factory()->admin()->create())
+            ->put('/backup-jobs/'.$job->id, [
+                'name' => $job->name,
+                'source_type' => BackupJob::SOURCE_TYPE_DOCKER_VOLUME,
+                'volume_name' => $job->volume_name,
+                'backup_destination_id' => $job->backup_destination_id,
+                'schedule_type' => $job->schedule_type,
+                'schedule_config' => $job->schedule_config,
+                'notifications_enabled' => true,
+                'notification_channel_ids' => [],
+                'use_custom_alert_settings' => false,
+                'alert_notifications_enabled' => true,
+                'alert_configs' => [[
+                    'alert_rule_id' => $rule->id,
+                    'enabled' => true,
+                    'config' => ['backup_too_old_days' => 30],
+                ]],
+            ])
+            ->assertSessionHasNoErrors()
+            ->assertRedirect(route('backup-jobs.index'));
+
+        $this->assertFalse($job->fresh()->use_custom_alert_settings);
+        $this->assertSame(0, JobAlertConfig::where('backup_job_id', $job->id)->count());
     }
 
     private function enabledRule(AlertType $type, array $config = []): AlertRule

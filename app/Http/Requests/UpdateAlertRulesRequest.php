@@ -53,7 +53,7 @@ class UpdateAlertRulesRequest extends FormRequest
         });
     }
 
-    /** @return array<int, array{id: int, enabled: bool, notification_channel_ids: array<int, int>, config: array<string, bool|int>}> */
+    /** @return array<int, array{id: int, enabled: bool, notification_channel_ids: array<int, int>, config: array<string, bool|int|null>}> */
     public function alertRules(): array
     {
         return collect($this->validated('rules'))
@@ -67,7 +67,7 @@ class UpdateAlertRulesRequest extends FormRequest
             ->all();
     }
 
-    /** @return array<string, bool|int> */
+    /** @return array<string, bool|int|null> */
     private function normalizeConfig(array $config): array
     {
         return collect([
@@ -79,8 +79,8 @@ class UpdateAlertRulesRequest extends FormRequest
             'job_in_error_days',
             'backup_size_out_of_range_min_bytes',
             'backup_size_out_of_range_max_bytes',
-        ])->filter(fn (string $key): bool => array_key_exists($key, $config) && $config[$key] !== null)
-            ->mapWithKeys(fn (string $key): array => [$key => $key === 'reminder_enabled' ? (bool) $config[$key] : (int) $config[$key]])
+        ])->filter(fn (string $key): bool => array_key_exists($key, $config))
+            ->mapWithKeys(fn (string $key): array => [$key => $config[$key] === null ? null : ($key === 'reminder_enabled' ? (bool) $config[$key] : (int) $config[$key])])
             ->all();
     }
 

@@ -234,6 +234,12 @@ class BackupJobController extends Controller
 
     private function syncAlertConfigs(BackupJob $job, BackupJobRequest $request): void
     {
+        if (! $request->boolean('use_custom_alert_settings')) {
+            $job->alertConfigs()->delete();
+
+            return;
+        }
+
         if (! $request->has('alert_configs')) {
             return;
         }
@@ -262,7 +268,6 @@ class BackupJobController extends Controller
                 'backup_size_out_of_range_min_bytes',
                 'backup_size_out_of_range_max_bytes',
             ])
-            ->filter(fn (mixed $value): bool => $value !== null)
             ->all();
     }
 }

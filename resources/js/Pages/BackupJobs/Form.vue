@@ -161,13 +161,22 @@ const summary = computed(() => {
     return `Cron: ${form.schedule_config.expression || ''}`;
 });
 
+const submissionPayload = (data: any) => {
+    if (data.use_custom_alert_settings) return data;
+
+    const payload = { ...data };
+    delete payload.alert_configs;
+
+    return payload;
+};
+
 const submit = () => {
     if (editing.value) {
-        form.put(`/backup-jobs/${props.job.id}`);
+        form.transform(submissionPayload).put(`/backup-jobs/${props.job.id}`);
         return;
     }
 
-    form.post('/backup-jobs');
+    form.transform(submissionPayload).post('/backup-jobs');
 };
 </script>
 

@@ -24,13 +24,17 @@ class MarkMissingVolumeJobs
             ->get()
             ->each(function (BackupJob $job) use (&$affected): void {
                 $message = 'Docker volume not found: '.$job->volume_name;
-
-                $job->forceFill([
-                    'status' => BackupJob::STATUS_ERROR,
+                $payload = [
                     'last_error' => $message,
                     'last_error_at' => now(),
-                    'pause_reason' => $message,
-                ])->save();
+                ];
+
+                if ($job->status !== BackupJob::STATUS_PAUSED) {
+                    $payload['status'] = BackupJob::STATUS_ERROR;
+                    $payload['pause_reason'] = $message;
+                }
+
+                $job->forceFill($payload)->save();
 
                 ActivityLog::record('missing_volume_detected', $message, $job, [
                     'volume_name' => $job->volume_name,
