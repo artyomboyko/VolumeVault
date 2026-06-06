@@ -234,9 +234,13 @@ class BackupJobController extends Controller
 
     private function syncAlertConfigs(BackupJob $job, BackupJobRequest $request): void
     {
-        if (! $request->boolean('use_custom_alert_settings')) {
+        if ($request->has('use_custom_alert_settings') && ! $request->boolean('use_custom_alert_settings')) {
             $job->alertConfigs()->delete();
 
+            return;
+        }
+
+        if (! $job->use_custom_alert_settings) {
             return;
         }
 
