@@ -171,6 +171,32 @@ class AlertSystemTest extends TestCase
         $this->assertSame($run->id, $alert->context['backup_run_id']);
     }
 
+    public function test_backup_size_alert_resolves_when_job_is_paused(): void
+    {
+        $job = $this->backupJob();
+        $rule = $this->enabledRule(AlertType::BackupSizeOutOfRange, [
+            'backup_size_out_of_range_min_bytes' => 1024,
+            'backup_size_out_of_range_max_bytes' => 4096,
+        ]);
+
+        BackupRun::create([
+            'backup_job_id' => $job->id,
+            'status' => BackupRun::STATUS_SUCCESS,
+            'trigger' => BackupRun::TRIGGER_SCHEDULED,
+            'backup_size_bytes' => 128,
+            'finished_at' => now(),
+        ]);
+
+        app(RunAllAlertChecks::class)->handle($rule);
+        $alert = Alert::firstOrFail();
+
+        $job->forceFill(['status' => BackupJob::STATUS_PAUSED])->save();
+
+        app(RunAllAlertChecks::class)->handle($rule);
+
+        $this->assertSame(AlertStatus::Resolved, $alert->fresh()->status);
+    }
+
     public function test_backup_size_alert_allows_unbounded_maximum(): void
     {
         $job = $this->backupJob();

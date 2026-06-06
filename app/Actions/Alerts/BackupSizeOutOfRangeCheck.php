@@ -30,6 +30,7 @@ class BackupSizeOutOfRangeCheck implements AlertCheckAction
 
         BackupJob::query()
             ->whereIn('id', $latestRuns->keys()->all())
+            ->where('status', '!=', BackupJob::STATUS_PAUSED)
             ->with('alertConfigs')
             ->get()
             ->each(function (BackupJob $job) use ($rule, $latestRuns, &$findings): void {
