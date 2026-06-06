@@ -55,7 +55,7 @@ const destroyUser = (id: number) => {
                         </tr>
                     </thead>
                     <tbody class="divide-y divide-white/10">
-                        <tr v-for="user in users" :key="user.id" class="hover:bg-slate-100 dark:hover:bg-white/[0.03]">
+                        <tr v-for="user in users" :key="user.id" class="hover:bg-white/[0.03]">
                             <td class="px-4 py-3 font-medium text-white">{{ user.name }}</td>
                             <td class="px-4 py-3 text-slate-300">{{ user.email }}</td>
                             <td class="px-4 py-3 text-slate-300">{{ user.role }}</td>

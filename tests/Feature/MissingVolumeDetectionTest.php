@@ -37,29 +37,6 @@ class MissingVolumeDetectionTest extends TestCase
         $this->assertSame('Docker volume not found: missing_volume', $job->pause_reason);
     }
 
-    public function test_paused_job_referencing_missing_volume_stays_paused(): void
-    {
-        $job = BackupJob::create([
-            'name' => 'Nightly',
-            'volume_name' => 'missing_volume',
-            'backup_destination_id' => $this->destination()->id,
-            'schedule_type' => BackupJob::SCHEDULE_DAILY,
-            'schedule_config' => ['time' => '02:00'],
-            'cron_expression' => '0 2 * * *',
-            'status' => BackupJob::STATUS_PAUSED,
-            'pause_reason' => 'Paused manually.',
-        ]);
-
-        app(MarkMissingVolumeJobs::class)->handle(['missing_volume']);
-
-        $job->refresh();
-
-        $this->assertSame(BackupJob::STATUS_PAUSED, $job->status);
-        $this->assertSame('Docker volume not found: missing_volume', $job->last_error);
-        $this->assertNotNull($job->last_error_at);
-        $this->assertSame('Paused manually.', $job->pause_reason);
-    }
-
     public function test_sync_removes_missing_volume_without_jobs(): void
     {
         DockerVolume::create(['name' => 'orphaned_volume', 'exists' => true]);

@@ -143,7 +143,7 @@ const jobsHref = (volumeName: string) => `/backup-jobs?search=${encodeURICompone
                             </tr>
                         </thead>
                         <tbody class="divide-y divide-white/10">
-                            <tr v-for="volume in stack.volumes" :key="volume.id" class="hover:bg-slate-100 dark:hover:bg-white/[0.03]">
+                            <tr v-for="volume in stack.volumes" :key="volume.id" class="hover:bg-white/[0.03]">
                                 <td class="px-4 py-3 font-medium text-white">{{ volume.name }}</td>
                                 <td class="px-4 py-3 text-slate-300">{{ volume.driver || t('Unknown') }}</td>
                                 <td class="px-4 py-3"><StatusBadge :status="volume.exists ? 'active' : 'error'" /></td>

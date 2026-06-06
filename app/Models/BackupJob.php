@@ -7,7 +7,6 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
-use Illuminate\Database\Eloquent\Relations\MorphMany;
 
 class BackupJob extends Model
 {
@@ -44,14 +43,11 @@ class BackupJob extends Model
         'cron_expression',
         'status',
         'notifications_enabled',
-        'use_custom_alert_settings',
-        'alert_notifications_enabled',
         'pause_reason',
         'last_run_at',
         'next_run_at',
         'last_success_at',
         'last_error',
-        'last_error_at',
         'retention_days',
         'retention_count',
         'backup_exclude_regexp',
@@ -60,8 +56,6 @@ class BackupJob extends Model
 
     protected $attributes = [
         'notifications_enabled' => true,
-        'use_custom_alert_settings' => false,
-        'alert_notifications_enabled' => true,
     ];
 
     protected $appends = [
@@ -75,12 +69,9 @@ class BackupJob extends Model
             'last_run_at' => 'datetime',
             'next_run_at' => 'datetime',
             'last_success_at' => 'datetime',
-            'last_error_at' => 'datetime',
             'retention_days' => 'integer',
             'retention_count' => 'integer',
             'notifications_enabled' => 'boolean',
-            'use_custom_alert_settings' => 'boolean',
-            'alert_notifications_enabled' => 'boolean',
             'stop_containers_before_backup' => 'boolean',
         ];
     }
@@ -130,15 +121,5 @@ class BackupJob extends Model
     public function notificationChannels(): BelongsToMany
     {
         return $this->belongsToMany(NotificationChannel::class)->withTimestamps();
-    }
-
-    public function alertConfigs(): HasMany
-    {
-        return $this->hasMany(JobAlertConfig::class);
-    }
-
-    public function alerts(): MorphMany
-    {
-        return $this->morphMany(Alert::class, 'subject');
     }
 }

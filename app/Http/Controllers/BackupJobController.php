@@ -2,18 +2,14 @@
 
 namespace App\Http\Controllers;
 
-use App\Actions\Alerts\EnsureAlertRules;
 use App\Actions\Backup\CreateBackupRun;
-use App\Enums\AlertType;
 use App\Http\Requests\BackupJobRequest;
 use App\Jobs\RunBackupJob;
 use App\Models\ActivityLog;
-use App\Models\AlertRule;
 use App\Models\BackupDestination;
 use App\Models\BackupJob;
 use App\Models\BackupRun;
 use App\Models\DockerVolume;
-use App\Models\JobAlertConfig;
 use App\Models\NotificationChannel;
 use App\Services\Scheduling\BackupScheduleCalculator;
 use Illuminate\Http\Request;
@@ -23,10 +19,7 @@ use Inertia\Response;
 
 class BackupJobController extends Controller
 {
-    public function __construct(
-        private readonly BackupScheduleCalculator $scheduleCalculator,
-        private readonly EnsureAlertRules $ensureAlertRules,
-    ) {}
+    public function __construct(private readonly BackupScheduleCalculator $scheduleCalculator) {}
 
     public function index(): Response
     {
@@ -47,7 +40,6 @@ class BackupJobController extends Controller
     {
         $job = BackupJob::create($this->payload($request));
         $this->syncNotificationChannels($job, $request, true);
-        $this->syncAlertConfigs($job, $request);
 
         ActivityLog::record('backup_job_created', 'Backup job created.', $job);
 
@@ -71,7 +63,7 @@ class BackupJobController extends Controller
 
     public function edit(BackupJob $backupJob): Response
     {
-        $backupJob->load(['destination', 'notificationChannels', 'alertConfigs']);
+        $backupJob->load(['destination', 'notificationChannels']);
 
         return Inertia::render('BackupJobs/Form', [
             ...$this->formProps(),
@@ -83,7 +75,6 @@ class BackupJobController extends Controller
     {
         $backupJob->update($this->payload($request, $backupJob->status, $backupJob));
         $this->syncNotificationChannels($backupJob, $request, false);
-        $this->syncAlertConfigs($backupJob, $request);
 
         return redirect()->route('backup-jobs.index')->with('success', 'Backup job updated.');
     }
@@ -123,7 +114,6 @@ class BackupJobController extends Controller
             'status' => BackupJob::STATUS_ACTIVE,
             'pause_reason' => null,
             'last_error' => null,
-            'last_error_at' => null,
             'next_run_at' => $this->scheduleCalculator->nextRunAt($backupJob->schedule_type, $backupJob->schedule_config ?? []),
         ])->save();
 
@@ -132,18 +122,12 @@ class BackupJobController extends Controller
 
     private function formProps(): array
     {
-        $this->ensureAlertRules->handle();
-
         return [
             'job' => null,
             'volumes' => DockerVolume::where('exists', true)->orderBy('name')->get(['name']),
             'destinations' => BackupDestination::where('is_active', true)->orderBy('name')->get()->map->safeForFrontend(),
             'notificationChannels' => NotificationChannel::with('backupJobs')->orderBy('name')->get()->map->safeForFrontend(),
             'defaultNotificationChannelIds' => $this->defaultNotificationChannelIds(),
-            'alertRules' => AlertRule::where('type', '!=', AlertType::DestinationStorageLimit->value)
-                ->orderBy('id')
-                ->get()
-                ->map(fn (AlertRule $rule): array => $this->serializeAlertRule($rule)),
         ];
     }
 
@@ -166,8 +150,6 @@ class BackupJobController extends Controller
             'cron_expression' => $this->scheduleCalculator->cronExpression($scheduleType, $scheduleConfig),
             'status' => $status ?: BackupJob::STATUS_ACTIVE,
             'notifications_enabled' => $request->has('notifications_enabled') ? $request->boolean('notifications_enabled') : (bool) ($job?->notifications_enabled ?? true),
-            'use_custom_alert_settings' => $request->has('use_custom_alert_settings') ? $request->boolean('use_custom_alert_settings') : (bool) ($job?->use_custom_alert_settings ?? false),
-            'alert_notifications_enabled' => $request->has('alert_notifications_enabled') ? $request->boolean('alert_notifications_enabled') : (bool) ($job?->alert_notifications_enabled ?? true),
             'next_run_at' => $this->scheduleCalculator->nextRunAt($scheduleType, $scheduleConfig),
             'retention_days' => $request->input('retention_days'),
             'retention_count' => $request->input('retention_count'),
@@ -178,28 +160,13 @@ class BackupJobController extends Controller
 
     private function serializeJob(BackupJob $job): array
     {
-        $job->loadMissing('notificationChannels', 'alertConfigs');
+        $job->loadMissing('notificationChannels');
 
         return [
             ...$job->toArray(),
             'destination' => $job->destination?->safeForFrontend(),
             'notification_channel_ids' => $job->notificationChannels->pluck('id')->values()->all(),
-            'alert_configs' => $job->alertConfigs->map(fn (JobAlertConfig $config): array => [
-                'alert_rule_id' => $config->alert_rule_id,
-                'enabled' => $config->enabled,
-                'config' => $config->config ?? [],
-            ])->values()->all(),
             'schedule_summary' => $this->scheduleCalculator->summary($job->schedule_type, $job->schedule_config ?? []),
-        ];
-    }
-
-    private function serializeAlertRule(AlertRule $rule): array
-    {
-        return [
-            'id' => $rule->id,
-            'type' => $rule->type->value,
-            'enabled' => $rule->enabled,
-            'config' => $rule->config ?? [],
         ];
     }
 
@@ -230,48 +197,5 @@ class BackupJobController extends Controller
         $id = NotificationChannel::where('is_default', true)->orderBy('id')->value('id');
 
         return $id ? [(int) $id] : [];
-    }
-
-    private function syncAlertConfigs(BackupJob $job, BackupJobRequest $request): void
-    {
-        if ($request->has('use_custom_alert_settings') && ! $request->boolean('use_custom_alert_settings')) {
-            $job->alertConfigs()->delete();
-
-            return;
-        }
-
-        if (! $job->use_custom_alert_settings) {
-            return;
-        }
-
-        if (! $request->has('alert_configs')) {
-            return;
-        }
-
-        collect($request->input('alert_configs', []))
-            ->each(function (array $config) use ($job): void {
-                $job->alertConfigs()->updateOrCreate(
-                    ['alert_rule_id' => (int) $config['alert_rule_id']],
-                    [
-                        'enabled' => array_key_exists('enabled', $config) && $config['enabled'] !== null ? (bool) $config['enabled'] : null,
-                        'config' => $this->jobAlertConfigPayload($config['config'] ?? []),
-                    ],
-                );
-            });
-    }
-
-    private function jobAlertConfigPayload(array $config): array
-    {
-        return collect($config)
-            ->only([
-                'cooldown_minutes',
-                'reminder_enabled',
-                'backup_too_old_days',
-                'job_never_succeeded_min_runs',
-                'job_in_error_days',
-                'backup_size_out_of_range_min_bytes',
-                'backup_size_out_of_range_max_bytes',
-            ])
-            ->all();
     }
 }

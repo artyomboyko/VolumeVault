@@ -1,8 +1,6 @@
 <?php
 
 use App\Http\Controllers\ApiTokenController;
-use App\Http\Controllers\AlertController;
-use App\Http\Controllers\AlertRuleController;
 use App\Http\Controllers\AvailableUpdateController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\BackupJobController;
@@ -55,13 +53,9 @@ Route::middleware('auth')->group(function () {
     Route::get('/volumes', [VolumeController::class, 'index'])->name('volumes.index');
     Route::post('/volumes/sync', [VolumeController::class, 'sync'])->middleware('admin')->name('volumes.sync');
     Route::get('/stacks', [StackController::class, 'index'])->name('stacks.index');
-    Route::get('/alerts', [AlertController::class, 'index'])->name('alerts.index');
 
     Route::resource('backup-jobs', BackupJobController::class)->only(['index']);
     Route::middleware('admin')->group(function () {
-        Route::get('/alerts/settings', [AlertRuleController::class, 'edit'])->name('alerts.settings.edit');
-        Route::put('/alerts/settings', [AlertRuleController::class, 'update'])->name('alerts.settings.update');
-
         Route::resource('backup-jobs', BackupJobController::class)->except(['index', 'show']);
         Route::post('/backup-jobs/{backupJob}/run', [BackupJobController::class, 'runNow'])->name('backup-jobs.run');
         Route::post('/backup-jobs/{backupJob}/pause', [BackupJobController::class, 'pause'])->name('backup-jobs.pause');
@@ -86,8 +80,6 @@ Route::middleware('auth')->group(function () {
         Route::get('/backup-jobs/{backupJob}/backups', [RestoreController::class, 'listBackups'])->name('backup-jobs.backups');
         Route::post('/backup-jobs/{backupJob}/restore', [RestoreController::class, 'store'])->name('backup-jobs.restore.store');
     });
-
-    Route::get('/alerts/{alert}', [AlertController::class, 'show'])->name('alerts.show');
 
     Route::resource('backup-jobs', BackupJobController::class)->only(['show']);
 

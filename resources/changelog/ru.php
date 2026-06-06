@@ -1,22 +1,6 @@
 <?php
 
 return [
-    'advanced_alerting' => [
-        'title' => 'Advanced alerting',
-        'description' => 'VolumeVault can monitor backup jobs for stale backups, repeated failures, long-running error states, and unusual archive sizes.',
-    ],
-    'destination_storage_limit_alerts' => [
-        'title' => 'Оповещения о лимите хранилища назначения',
-        'description' => 'Назначения резервных копий теперь могут задавать абсолютные пороги предупреждения и критического уровня с отдельными каналами уведомлений.',
-    ],
-    'mobile_navigation_redesign' => [
-        'title' => 'Улучшенная мобильная навигация',
-        'description' => 'Мобильная шапка теперь использует компактную кнопку меню и структурированную панель навигации вместо размещения всех ссылок в шапке.',
-    ],
-    'alert_rule_pause_and_size_fixes' => [
-        'title' => 'Alert rule fixes',
-        'description' => 'Alert thresholds now preserve cleared maximums, paused jobs stay out of automated error alerts, critical escalations notify immediately, and disabled per-job overrides no longer go stale.',
-    ],
     'keyboard_shortcuts' => [
         'title' => 'Горячие клавиши',
         'description' => 'На десктопе используйте Ctrl+K для быстрой навигации, сочетания с префиксом g для разделов и / для фокуса поиска в списках.',

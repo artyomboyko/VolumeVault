@@ -54,17 +54,6 @@ class DestinationStorage
             ->all();
     }
 
-    /** @return array{used_bytes: int, object_count: int} */
-    public function storageUsage(BackupDestination $destination): array
-    {
-        $objects = $this->listAllObjects($destination);
-
-        return [
-            'used_bytes' => (int) collect($objects)->sum(fn (array $object): int => (int) ($object['size'] ?? 0)),
-            'object_count' => count($objects),
-        ];
-    }
-
     public function upload(BackupDestination $destination, string $sourcePath, string $filename, ?string $directory = null): string
     {
         return match ($destination->provider) {
@@ -97,60 +86,23 @@ class DestinationStorage
         };
     }
 
-    private function listAllObjects(BackupDestination $destination): array
-    {
-        return match ($destination->provider) {
-            BackupDestination::PROVIDER_AWS_S3,
-            BackupDestination::PROVIDER_CLOUDFLARE_R2,
-            BackupDestination::PROVIDER_CUSTOM_S3 => $this->listS3($destination, PHP_INT_MAX),
-            BackupDestination::PROVIDER_WEBDAV => $this->listWebDav($destination, PHP_INT_MAX),
-            BackupDestination::PROVIDER_SSH => $this->listSftp($destination, PHP_INT_MAX),
-            BackupDestination::PROVIDER_AZURE_BLOB => $this->listAzure($destination, PHP_INT_MAX),
-            BackupDestination::PROVIDER_DROPBOX => $this->listDropbox($destination, PHP_INT_MAX),
-            BackupDestination::PROVIDER_GOOGLE_DRIVE => $this->listGoogleDrive($destination, PHP_INT_MAX),
-            BackupDestination::PROVIDER_LOCAL => $this->listLocal($destination),
-            default => throw new RuntimeException('Unsupported backup destination provider.'),
-        };
-    }
-
     private function listS3(BackupDestination $destination, int $maxKeys = 1000): array
     {
-        $client = $this->s3ClientFactory->make($destination);
-        $prefix = trim((string) $destination->setting('path_prefix'), '/');
-        $objects = [];
-        $continuationToken = null;
+        $result = $this->s3ClientFactory->make($destination)->listObjectsV2([
+            'Bucket' => $destination->setting('bucket'),
+            'Prefix' => trim((string) $destination->setting('path_prefix'), '/'),
+            'MaxKeys' => $maxKeys,
+        ]);
 
-        do {
-            $remaining = $maxKeys - count($objects);
-            $params = [
-                'Bucket' => $destination->setting('bucket'),
-                'Prefix' => $prefix,
-                'MaxKeys' => min(max($remaining, 1), 1000),
-            ];
-
-            if ($continuationToken) {
-                $params['ContinuationToken'] = $continuationToken;
-            }
-
-            $result = $client->listObjectsV2($params);
-
-            foreach ($result['Contents'] ?? [] as $object) {
-                if (count($objects) >= $maxKeys) {
-                    break;
-                }
-
-                $objects[] = [
-                    'key' => (string) $object['Key'],
-                    'display_name' => (string) $object['Key'],
-                    'size' => (int) ($object['Size'] ?? 0),
-                    'last_modified' => isset($object['LastModified']) ? $object['LastModified']->format(DATE_ATOM) : null,
-                ];
-            }
-
-            $continuationToken = ($result['IsTruncated'] ?? false) ? (string) ($result['NextContinuationToken'] ?? '') : null;
-        } while ($continuationToken && count($objects) < $maxKeys);
-
-        return $objects;
+        return collect($result['Contents'] ?? [])
+            ->map(fn (array $object) => [
+                'key' => (string) $object['Key'],
+                'display_name' => (string) $object['Key'],
+                'size' => (int) ($object['Size'] ?? 0),
+                'last_modified' => isset($object['LastModified']) ? $object['LastModified']->format(DATE_ATOM) : null,
+            ])
+            ->values()
+            ->all();
     }
 
     private function uploadS3(BackupDestination $destination, string $sourcePath, string $filename, ?string $directory): string
@@ -376,42 +328,27 @@ class DestinationStorage
 
     private function listAzure(BackupDestination $destination, int $limit = 1000): array
     {
+        $response = $this->azureRequest($destination, 'GET', '', [
+            'restype' => 'container',
+            'comp' => 'list',
+            'maxresults' => (string) $limit,
+        ]);
+
+        $xml = simplexml_load_string($response->body());
+
+        if ($xml === false) {
+            throw new RuntimeException('Unable to parse Azure Blob response.');
+        }
+
         $objects = [];
-        $marker = null;
-
-        do {
-            $query = [
-                'restype' => 'container',
-                'comp' => 'list',
-                'maxresults' => (string) min(max($limit - count($objects), 1), 5000),
+        foreach ($xml->Blobs->Blob ?? [] as $blob) {
+            $objects[] = [
+                'key' => (string) $blob->Name,
+                'display_name' => (string) $blob->Name,
+                'size' => (int) $blob->Properties->{'Content-Length'},
+                'last_modified' => date(DATE_ATOM, strtotime((string) $blob->Properties->{'Last-Modified'})),
             ];
-
-            if ($marker) {
-                $query['marker'] = $marker;
-            }
-
-            $response = $this->azureRequest($destination, 'GET', '', $query);
-            $xml = simplexml_load_string($response->body());
-
-            if ($xml === false) {
-                throw new RuntimeException('Unable to parse Azure Blob response.');
-            }
-
-            foreach ($xml->Blobs->Blob ?? [] as $blob) {
-                if (count($objects) >= $limit) {
-                    break;
-                }
-
-                $objects[] = [
-                    'key' => (string) $blob->Name,
-                    'display_name' => (string) $blob->Name,
-                    'size' => (int) $blob->Properties->{'Content-Length'},
-                    'last_modified' => date(DATE_ATOM, strtotime((string) $blob->Properties->{'Last-Modified'})),
-                ];
-            }
-
-            $marker = isset($xml->NextMarker) ? (string) $xml->NextMarker : '';
-        } while ($marker !== '' && count($objects) < $limit);
+        }
 
         return $objects;
     }
@@ -652,51 +589,29 @@ class DestinationStorage
 
     private function listGoogleDrive(BackupDestination $destination, int $limit = 1000): array
     {
-        $token = $this->googleDriveToken($destination);
-        $objects = [];
-        $pageToken = null;
+        $response = Http::withToken($this->googleDriveToken($destination))->get($this->googleDriveEndpoint($destination).'/files', [
+            'q' => "'".$destination->setting('folder_id')."' in parents and trashed = false",
+            'fields' => 'files(id,name,size,modifiedTime,mimeType)',
+            'orderBy' => 'modifiedTime desc',
+            'pageSize' => $limit,
+            'supportsAllDrives' => 'true',
+            'includeItemsFromAllDrives' => 'true',
+        ]);
 
-        do {
-            $query = [
-                'q' => "'".$destination->setting('folder_id')."' in parents and trashed = false",
-                'fields' => 'nextPageToken,files(id,name,size,modifiedTime,mimeType)',
-                'orderBy' => 'modifiedTime desc',
-                'pageSize' => min(max($limit - count($objects), 1), 1000),
-                'supportsAllDrives' => 'true',
-                'includeItemsFromAllDrives' => 'true',
-            ];
+        if ($response->failed()) {
+            throw new RuntimeException('Google Drive request failed with HTTP '.$response->status().'.');
+        }
 
-            if ($pageToken) {
-                $query['pageToken'] = $pageToken;
-            }
-
-            $response = Http::withToken($token)->get($this->googleDriveEndpoint($destination).'/files', $query);
-
-            if ($response->failed()) {
-                throw new RuntimeException('Google Drive request failed with HTTP '.$response->status().'.');
-            }
-
-            foreach ($response->json('files') ?? [] as $file) {
-                if (count($objects) >= $limit) {
-                    break;
-                }
-
-                if (($file['mimeType'] ?? null) === 'application/vnd.google-apps.folder') {
-                    continue;
-                }
-
-                $objects[] = [
-                    'key' => 'gdrive:'.$file['id'],
-                    'display_name' => (string) $file['name'],
-                    'size' => (int) ($file['size'] ?? 0),
-                    'last_modified' => isset($file['modifiedTime']) ? date(DATE_ATOM, strtotime($file['modifiedTime'])) : null,
-                ];
-            }
-
-            $pageToken = $response->json('nextPageToken');
-        } while ($pageToken && count($objects) < $limit);
-
-        return $objects;
+        return collect($response->json('files') ?? [])
+            ->reject(fn (array $file) => ($file['mimeType'] ?? null) === 'application/vnd.google-apps.folder')
+            ->map(fn (array $file) => [
+                'key' => 'gdrive:'.$file['id'],
+                'display_name' => (string) $file['name'],
+                'size' => (int) ($file['size'] ?? 0),
+                'last_modified' => isset($file['modifiedTime']) ? date(DATE_ATOM, strtotime($file['modifiedTime'])) : null,
+            ])
+            ->values()
+            ->all();
     }
 
     private function uploadGoogleDrive(BackupDestination $destination, string $sourcePath, string $filename): string

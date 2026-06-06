@@ -5,7 +5,6 @@ namespace App\Http\Requests;
 use App\Models\BackupDestination;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
-use Illuminate\Validation\Validator;
 
 class StoreDestinationRequest extends FormRequest
 {
@@ -36,26 +35,7 @@ class StoreDestinationRequest extends FormRequest
             'secrets' => ['nullable', 'array'],
             'settings.*' => ['nullable'],
             'secrets.*' => ['nullable'],
-            'settings.storage_limit_warning_bytes' => ['nullable', 'integer', 'min:0'],
-            'settings.storage_limit_critical_bytes' => ['nullable', 'integer', 'min:0'],
         ];
-    }
-
-    public function withValidator(Validator $validator): void
-    {
-        $validator->after(function (Validator $validator): void {
-            $this->validateStorageLimits($validator);
-        });
-    }
-
-    private function validateStorageLimits(Validator $validator): void
-    {
-        $warning = $this->input('settings.storage_limit_warning_bytes');
-        $critical = $this->input('settings.storage_limit_critical_bytes');
-
-        if ($warning !== null && $warning !== '' && $critical !== null && $critical !== '' && (int) $warning > (int) $critical) {
-            $validator->errors()->add('settings.storage_limit_critical_bytes', 'The critical storage limit must be greater than or equal to the warning storage limit.');
-        }
     }
 
     private function providerRules(bool $secretsRequired): array
