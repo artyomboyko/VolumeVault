@@ -7,6 +7,7 @@ use App\Models\AlertRule;
 use App\Models\BackupJob;
 use App\Models\BackupRun;
 use App\Support\FormatBytes;
+use Illuminate\Database\Eloquent\Collection;
 
 class BackupSizeOutOfRangeCheck implements AlertCheckAction
 {
@@ -14,14 +15,7 @@ class BackupSizeOutOfRangeCheck implements AlertCheckAction
 
     public function handle(AlertRule $rule): array
     {
-        $latestRuns = BackupRun::query()
-            ->where('status', BackupRun::STATUS_SUCCESS)
-            ->whereNotNull('backup_size_bytes')
-            ->orderByDesc('finished_at')
-            ->orderByDesc('created_at')
-            ->get()
-            ->unique('backup_job_id')
-            ->keyBy('backup_job_id');
+        $latestRuns = $this->latestSuccessfulRuns();
 
         if ($latestRuns->isEmpty()) {
             return [];
@@ -77,6 +71,26 @@ class BackupSizeOutOfRangeCheck implements AlertCheckAction
             });
 
         return $findings;
+    }
+
+    /** @return Collection<int, BackupRun> */
+    private function latestSuccessfulRuns(): Collection
+    {
+        $subquery = BackupRun::query()
+            ->select('backup_job_id', \DB::raw('MAX(finished_at) as max_finished_at'))
+            ->where('status', BackupRun::STATUS_SUCCESS)
+            ->whereNotNull('backup_size_bytes')
+            ->groupBy('backup_job_id');
+
+        return BackupRun::query()
+            ->joinSub($subquery, 'latest', function ($join): void {
+                $join->on('backup_runs.backup_job_id', '=', 'latest.backup_job_id')
+                    ->on('backup_runs.finished_at', '=', 'latest.max_finished_at');
+            })
+            ->where('backup_runs.status', BackupRun::STATUS_SUCCESS)
+            ->whereNotNull('backup_runs.backup_size_bytes')
+            ->get()
+            ->keyBy('backup_job_id');
     }
 
     /** @param array<string, mixed> $config */

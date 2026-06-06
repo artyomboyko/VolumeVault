@@ -73,4 +73,8 @@ return [
         'title' => 'Prima versione stabile',
         'description' => 'VolumeVault e stato lanciato con backup pianificati, ripristini sicuri, destinazioni cifrate, notifiche, utenti, token API e salvataggi installazione.',
     ],
+    'pagination_with_user_preference' => [
+        'title' => 'Liste paginate con preferenza per pagina',
+        'description' => 'Tutte le viste elenco ora supportano la paginazione con elementi configurabili per pagina (10, 20, 50, 100, o Tutti). Puoi impostare il tuo predefinito nelle impostazioni del profilo.',
+    ],
 ];

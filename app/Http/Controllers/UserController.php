@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Concerns\PaginateWithPreference;
 use App\Models\ActivityLog;
 use App\Models\User;
 use Illuminate\Http\Request;
@@ -13,10 +14,28 @@ use Inertia\Response;
 
 class UserController extends Controller
 {
-    public function index(): Response
+    use PaginateWithPreference;
+
+    public function index(Request $request): Response
     {
+        $perPage = $this->perPageForRequest($request);
+
+        $query = User::query()
+            ->latest()
+            ->select(['id', 'name', 'email', 'role', 'locale', 'created_at', 'updated_at']);
+
+        if ($search = $request->input('search')) {
+            $query->where(function ($q) use ($search) {
+                $q->where('name', 'like', "%{$search}%")
+                    ->orWhere('email', 'like', "%{$search}%");
+            });
+        }
+
+        $users = $perPage > 0 ? $query->paginate($perPage) : $query->get();
+
         return Inertia::render('Users/Index', [
-            'users' => User::latest()->get(['id', 'name', 'email', 'role', 'locale', 'created_at', 'updated_at']),
+            'users' => $users,
+            'defaultPerPage' => $perPage,
         ]);
     }
 

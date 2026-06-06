@@ -11,11 +11,14 @@ use Inertia\Response;
 
 class ProfileController extends Controller
 {
+    public const VALID_PER_PAGE_VALUES = [10, 20, 50, 100, 0];
+
     public function edit(Request $request): Response
     {
         return Inertia::render('Profile/Edit', [
-            'profileUser' => $request->user()->only(['id', 'name', 'email', 'locale']),
+            'profileUser' => $request->user()->only(['id', 'name', 'email', 'locale', 'default_per_page']),
             'locales' => User::SUPPORTED_LOCALES,
+            'perPageOptions' => self::VALID_PER_PAGE_VALUES,
         ]);
     }
 
@@ -27,6 +30,7 @@ class ProfileController extends Controller
             'name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'email', 'max:255', Rule::unique('users', 'email')->ignore($user)],
             'locale' => ['required', 'string', Rule::in(User::SUPPORTED_LOCALES)],
+            'default_per_page' => ['required', 'integer', Rule::in(self::VALID_PER_PAGE_VALUES)],
             'password' => ['nullable', 'confirmed', Password::defaults()],
         ]);
 

@@ -436,5 +436,11 @@
   "notified": "benachrichtigt",
   "reminder_sent": "erinnerung gesendet",
   "More information": "Weitere Informationen",
-  "Toggle notification channel": "Benachrichtigungskanal umschalten"
+  "Toggle notification channel": "Benachrichtigungskanal umschalten",
+  "Default items per page": "Standard-Eintraege pro Seite",
+  "Per page": "Pro Seite",
+  "Previous": "Zurueck",
+  "Next": "Weiter",
+  "All": "Alle",
+  "Pagination": "Seitennummerierung"
 }

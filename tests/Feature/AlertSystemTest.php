@@ -348,8 +348,11 @@ class AlertSystemTest extends TestCase
         Cache::forget('destination_storage_usage_bytes_'.$destination->id);
         app(RunAllAlertChecks::class)->handle($rule);
 
-        $resolvedMessage = $dockerProcess->messages[1] ?? '';
+        $resolvedMessage = collect($dockerProcess->messages)->first(
+            fn (string $msg) => str_contains($msg, 'Alert condition is resolved')
+        );
 
+        $this->assertNotNull($resolvedMessage, 'Expected a resolved notification to be sent.');
         $this->assertStringContainsString('Message: Alert condition is resolved.', $resolvedMessage);
         $this->assertStringNotContainsString('Context:', $resolvedMessage);
         $this->assertStringNotContainsString('is using 2 KB of backup storage', $resolvedMessage);

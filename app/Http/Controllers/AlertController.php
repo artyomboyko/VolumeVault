@@ -2,21 +2,48 @@
 
 namespace App\Http\Controllers;
 
+use App\Concerns\PaginateWithPreference;
 use App\Models\Alert;
 use App\Models\AlertEvent;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Inertia\Response;
 
 class AlertController extends Controller
 {
-    public function index(): Response
+    use PaginateWithPreference;
+
+    public function index(Request $request): Response
     {
+        $perPage = $this->perPageForRequest($request);
+
+        $query = Alert::with(['rule', 'subject']);
+
+        if ($search = $request->input('search')) {
+            $query->where(function ($q) use ($search): void {
+                $q->where('message', 'like', "%{$search}%")
+                    ->orWhereHas('rule', fn ($q) => $q->where('type', 'like', "%{$search}%"));
+            });
+        }
+
+        if ($status = $request->input('status')) {
+            $query->where('status', $status);
+        }
+
+        if ($severity = $request->input('severity')) {
+            $query->where('severity', $severity);
+        }
+
+        $query->orderByRaw('COALESCE(last_triggered_at, created_at) DESC');
+
+        $paginator = $perPage > 0
+            ? $query->paginate($perPage)->through(fn (Alert $alert): array => $this->serializeAlert($alert))
+            : $query->get()->map(fn (Alert $alert): array => $this->serializeAlert($alert));
+
         return Inertia::render('Alerts/Index', [
-            'alerts' => Alert::with(['rule', 'subject'])
-                ->orderByRaw('COALESCE(last_triggered_at, created_at) DESC')
-                ->get()
-                ->map(fn (Alert $alert): array => $this->serializeAlert($alert)),
+            'alerts' => $paginator,
+            'defaultPerPage' => $request->user()->default_per_page ?? 10,
         ]);
     }
 

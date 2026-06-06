@@ -436,5 +436,11 @@
   "notified": "notified",
   "reminder_sent": "reminder sent",
   "More information": "More information",
-  "Toggle notification channel": "Toggle notification channel"
+  "Toggle notification channel": "Toggle notification channel",
+  "Default items per page": "Default items per page",
+  "Per page": "Per page",
+  "Previous": "Previous",
+  "Next": "Next",
+  "All": "All",
+  "Pagination": "Pagination"
 }

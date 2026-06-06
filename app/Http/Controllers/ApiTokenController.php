@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Concerns\PaginateWithPreference;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
@@ -12,23 +13,45 @@ use Laravel\Sanctum\PersonalAccessToken;
 
 class ApiTokenController extends Controller
 {
-    public function index(): Response
+    use PaginateWithPreference;
+
+    public function index(Request $request): Response
     {
+        $perPage = $this->perPageForRequest($request);
+        $users = User::orderBy('name')->get(['id', 'name', 'email', 'role']);
+
+        $query = PersonalAccessToken::query()
+            ->with('tokenable:id,name,email,role')
+            ->latest();
+
+        if ($search = $request->input('search')) {
+            $query->where('name', 'like', "%{$search}%");
+        }
+
+        $tokens = $perPage > 0
+            ? $query->paginate($perPage)->through(fn (PersonalAccessToken $token) => [
+                'id' => $token->id,
+                'name' => $token->name,
+                'abilities' => $token->abilities,
+                'last_used_at' => $token->last_used_at,
+                'expires_at' => $token->expires_at,
+                'created_at' => $token->created_at,
+                'user' => $token->tokenable?->only(['id', 'name', 'email', 'role']),
+            ])
+            : $query->get()->map(fn (PersonalAccessToken $token) => [
+                'id' => $token->id,
+                'name' => $token->name,
+                'abilities' => $token->abilities,
+                'last_used_at' => $token->last_used_at,
+                'expires_at' => $token->expires_at,
+                'created_at' => $token->created_at,
+                'user' => $token->tokenable?->only(['id', 'name', 'email', 'role']),
+            ]);
+
         return Inertia::render('ApiTokens/Index', [
-            'users' => User::orderBy('name')->get(['id', 'name', 'email', 'role']),
-            'tokens' => PersonalAccessToken::query()
-                ->with('tokenable:id,name,email,role')
-                ->latest()
-                ->get()
-                ->map(fn (PersonalAccessToken $token) => [
-                    'id' => $token->id,
-                    'name' => $token->name,
-                    'abilities' => $token->abilities,
-                    'last_used_at' => $token->last_used_at,
-                    'expires_at' => $token->expires_at,
-                    'created_at' => $token->created_at,
-                    'user' => $token->tokenable?->only(['id', 'name', 'email', 'role']),
-                ]),
+            'users' => $users,
+            'tokens' => $tokens,
+            'defaultPerPage' => $request->user()->default_per_page ?? 10,
         ]);
     }
 

@@ -35,6 +35,7 @@ class HandleInertiaRequests extends Middleware
                     'role' => $request->user()->role,
                     'locale' => $request->user()->locale,
                     'theme' => $request->user()->theme ?: User::DEFAULT_THEME,
+                    'default_per_page' => $request->user()->default_per_page ?? 10,
                     'is_admin' => $request->user()->isAdmin(),
                 ] : null,
             ],

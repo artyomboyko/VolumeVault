@@ -73,4 +73,8 @@ return [
         'title' => 'First stable release',
         'description' => 'VolumeVault launched with scheduled backups, safe restores, encrypted destinations, notifications, users, API tokens, and installation saves.',
     ],
+    'pagination_with_user_preference' => [
+        'title' => 'Paginated lists with per-page preference',
+        'description' => 'All list views now support pagination with configurable items per page (10, 20, 50, 100, or All). You can set your default in Profile settings.',
+    ],
 ];

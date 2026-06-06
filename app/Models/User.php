@@ -40,6 +40,7 @@ class User extends Authenticatable
         'role',
         'locale',
         'theme',
+        'default_per_page',
         'last_seen_app_version',
         'last_seen_changelog_id',
         'last_dismissed_available_version',
@@ -65,6 +66,7 @@ class User extends Authenticatable
         return [
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
+            'default_per_page' => 'integer',
         ];
     }
 

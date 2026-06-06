@@ -436,5 +436,11 @@
   "notified": "notificato",
   "reminder_sent": "promemoria inviato",
   "More information": "Maggiori informazioni",
-  "Toggle notification channel": "Attiva o disattiva canale di notifica"
+  "Toggle notification channel": "Attiva o disattiva canale di notifica",
+  "Default items per page": "Elementi per pagina predefiniti",
+  "Per page": "Per pagina",
+  "Previous": "Precedente",
+  "Next": "Successivo",
+  "All": "Tutti",
+  "Pagination": "Paginazione"
 }

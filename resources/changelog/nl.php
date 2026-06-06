@@ -73,4 +73,8 @@ return [
         'title' => 'Eerste stabiele release',
         'description' => 'VolumeVault werd gelanceerd met geplande back-ups, veilige restores, versleutelde bestemmingen, meldingen, gebruikers, API-tokens en installatiesaves.',
     ],
+    'pagination_with_user_preference' => [
+        'title' => 'Gepagineerde lijsten met per-pagina-voorkeur',
+        'description' => 'Alle lijstweergaven ondersteunen nu paginering met configureerbaar aantal items per pagina (10, 20, 50, 100, of Alle). U kunt uw standaard instellen in de profielinstellingen.',
+    ],
 ];

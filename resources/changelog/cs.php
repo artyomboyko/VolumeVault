@@ -73,4 +73,8 @@ return [
         'title' => 'Prvni stabilni vydani',
         'description' => 'VolumeVault byl spusten s planovanymi zalohami, bezpecnymi obnovami, sifrovanymi cili, oznamenimi, uzivateli, API tokeny a instalacnimi zalohami.',
     ],
+    'pagination_with_user_preference' => [
+        'title' => 'Strankovane seznamy s preferencemi na stranku',
+        'description' => 'Vsechny pohledy seznamu nyni podporuji strankovani s konfigurovatelnym poctem polozek na stranku (10, 20, 50, 100 nebo Vse). Vyzchozi hodnotu nastavite v nastaveni profilu.',
+    ],
 ];

@@ -29,7 +29,7 @@ class EnsureAlertRules
         });
     }
 
-    /** @return array<string, bool|int> */
+    /** @return array<string, bool|int|null> */
     public function defaultConfig(AlertType $type): array
     {
         $defaults = config('volumevault.alerts.defaults', []);
@@ -54,8 +54,8 @@ class EnsureAlertRules
             ],
             AlertType::BackupSizeOutOfRange => [
                 ...$common,
-                'backup_size_out_of_range_min_bytes' => (int) ($defaults['backup_size_out_of_range_min_bytes'] ?? 1024),
-                'backup_size_out_of_range_max_bytes' => (int) ($defaults['backup_size_out_of_range_max_bytes'] ?? 10737418240),
+                'backup_size_out_of_range_min_bytes' => $defaults['backup_size_out_of_range_min_bytes'] ?? 1024,
+                'backup_size_out_of_range_max_bytes' => $defaults['backup_size_out_of_range_max_bytes'] ?? 10737418240,
             ],
             AlertType::DestinationStorageLimit => $common,
         };

@@ -436,5 +436,11 @@
   "notified": "gemeld",
   "reminder_sent": "herinnering verzonden",
   "More information": "Meer informatie",
-  "Toggle notification channel": "Meldingskanaal wisselen"
+  "Toggle notification channel": "Meldingskanaal wisselen",
+  "Default items per page": "Standaard items per pagina",
+  "Per page": "Per pagina",
+  "Previous": "Vorige",
+  "Next": "Volgende",
+  "All": "Alle",
+  "Pagination": "Paginering"
 }

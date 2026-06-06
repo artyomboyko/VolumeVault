@@ -436,5 +436,11 @@
   "notified": "notifiee",
   "reminder_sent": "rappel envoye",
   "More information": "Plus d'informations",
-  "Toggle notification channel": "Basculer le canal de notification"
+  "Toggle notification channel": "Basculer le canal de notification",
+  "Default items per page": "Elements par page par defaut",
+  "Per page": "Par page",
+  "Previous": "Precedent",
+  "Next": "Suivant",
+  "All": "Tous",
+  "Pagination": "Pagination"
 }

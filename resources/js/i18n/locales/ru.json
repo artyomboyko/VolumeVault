@@ -436,5 +436,11 @@
   "notified": "уведомлено",
   "reminder_sent": "напоминание отправлено",
   "More information": "Подробнее",
-  "Toggle notification channel": "Переключить канал уведомлений"
+  "Toggle notification channel": "Переключить канал уведомлений",
+  "Default items per page": "Элементов на страницу по умолчанию",
+  "Per page": "На страницу",
+  "Previous": "Назад",
+  "Next": "Вперёд",
+  "All": "Все",
+  "Pagination": "Постраничная навигация"
 }

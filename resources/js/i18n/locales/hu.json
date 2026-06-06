@@ -436,5 +436,11 @@
   "notified": "ertesitve",
   "reminder_sent": "emlekezteto elkuldve",
   "More information": "Tovabbi informacio",
-  "Toggle notification channel": "Ertesitesi csatorna valtasa"
+  "Toggle notification channel": "Ertesitesi csatorna valtasa",
+  "Default items per page": "Alapertelmezett elemek oldalankent",
+  "Per page": "Oldalankent",
+  "Previous": "Elozo",
+  "Next": "Kovetkezo",
+  "All": "Összes",
+  "Pagination": "Lapozas"
 }

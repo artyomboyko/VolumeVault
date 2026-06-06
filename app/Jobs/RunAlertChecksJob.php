@@ -49,7 +49,7 @@ class RunAlertChecksJob implements ShouldQueue
                 }
 
                 $runAllAlertChecks->handle($rule);
-                Cache::put($cacheKey, now(), now()->addMinutes($interval));
+                Cache::put($cacheKey, now(), now()->addMinutes($interval * 2));
             });
     }
 }

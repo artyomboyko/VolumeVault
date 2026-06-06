@@ -436,5 +436,11 @@
   "notified": "notifikovano",
   "reminder_sent": "pripomenuti odeslano",
   "More information": "Vice informaci",
-  "Toggle notification channel": "Prepnout notifikacni kanal"
+  "Toggle notification channel": "Prepnout notifikacni kanal",
+  "Default items per page": "Vychozi polozek na stranku",
+  "Per page": "Na stranku",
+  "Previous": "Predchozi",
+  "Next": "Dalsi",
+  "All": "Vse",
+  "Pagination": "Strankovani"
 }

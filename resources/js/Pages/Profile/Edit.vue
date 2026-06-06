@@ -10,16 +10,20 @@ const props = defineProps<{
         name: string;
         email: string;
         locale: string;
+        default_per_page: number;
     };
     locales: string[];
+    perPageOptions: number[];
 }>();
 
 const { t } = useI18n();
 const languageName = (locale: string) => languageNames[locale as keyof typeof languageNames] || locale;
+const perPageLabel = (value: number) => value === 0 ? t('All') : String(value);
 const form = useForm({
     name: props.profileUser.name,
     email: props.profileUser.email,
     locale: props.profileUser.locale,
+    default_per_page: props.profileUser.default_per_page,
     password: '',
     password_confirmation: '',
 });
@@ -56,6 +60,16 @@ const submit = () => form.put('/profile');
                     </option>
                 </select>
                 <span v-if="form.errors.locale" class="text-sm text-rose-300">{{ form.errors.locale }}</span>
+            </label>
+
+            <label class="space-y-2">
+                <span class="label">{{ t('Default items per page') }}</span>
+                <select v-model="form.default_per_page" class="input">
+                    <option v-for="option in perPageOptions" :key="option" :value="option">
+                        {{ perPageLabel(option) }}
+                    </option>
+                </select>
+                <span v-if="form.errors.default_per_page" class="text-sm text-rose-300">{{ form.errors.default_per_page }}</span>
             </label>
 
             <div class="grid gap-4 sm:grid-cols-2">

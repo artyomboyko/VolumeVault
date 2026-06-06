@@ -73,4 +73,8 @@ return [
         'title' => 'Elso stabil kiadas',
         'description' => 'A VolumeVault utemezett mentesekkel, biztonsagos visszaallitasokkal, titkositott celokkal, ertesitesekkel, felhasznalokkal, API tokenekkel es telepitesi mentesekkel indult.',
     ],
+    'pagination_with_user_preference' => [
+        'title' => 'Lapozott listak oldalankenti beallitassal',
+        'description' => 'Az osszes listanézet mostmar tamogatja a lapozast konfiguralhato elemekkel oldalankent (10, 20, 50, 100, vagy Osszes). Alapertelmezett beallitasat a profil beallitasokban adhatja meg.',
+    ],
 ];

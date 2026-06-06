@@ -1,12 +1,38 @@
 <script setup lang="ts">
 import ActionIcon from '@/Components/ActionIcon.vue';
 import AppLayout from '@/Layouts/AppLayout.vue';
+import Pagination from '@/Components/Pagination.vue';
 import { Head, Link, router } from '@inertiajs/vue3';
 import { useI18n } from '@/i18n';
+import { ref } from 'vue';
+import { initialSearchFromUrl } from '@/Composables/useListFilters';
 
-defineProps<{ channels: any[] }>();
+interface PaginatedData<T> {
+    data: T[];
+    meta: { current_page: number; per_page: number; total: number; last_page: number };
+}
+
+const props = defineProps<{
+    channels: PaginatedData<any>;
+    defaultPerPage: number;
+}>();
 
 const { t, formatDate } = useI18n();
+const search = ref(initialSearchFromUrl());
+
+const applyFilters = () => {
+    router.get('/notifications', {
+        search: search.value || undefined,
+        per_page: props.channels.meta.per_page === 0 ? 'all' : props.channels.meta.per_page,
+    }, { preserveState: true, replace: true });
+};
+
+let searchTimeout: ReturnType<typeof setTimeout>;
+const onSearchInput = () => {
+    clearTimeout(searchTimeout);
+    searchTimeout = setTimeout(applyFilters, 300);
+};
+
 const destroyChannel = (id: number) => confirm(t('Delete this notification channel?')) && router.delete(`/notifications/${id}`);
 const testChannel = (id: number) => router.post(`/notifications/${id}/test`);
 const toggleChannelActive = (channel: any) => router.patch(`/notifications/${channel.id}/active`, { is_active: !channel.is_active }, { preserveScroll: true });
@@ -30,9 +56,9 @@ const toggleChannelActive = (channel: any) => router.patch(`/notifications/${cha
         </div>
 
         <div class="card overflow-hidden">
-            <div v-if="channels.length">
+            <div v-if="channels.data.length">
                 <div class="divide-y divide-white/10 md:hidden">
-                    <article v-for="channel in channels" :key="channel.id" class="space-y-4 p-4">
+                    <article v-for="channel in channels.data" :key="channel.id" class="space-y-4 p-4">
                         <div class="flex items-start justify-between gap-3">
                             <div class="min-w-0">
                                 <div class="flex flex-wrap items-center gap-2">
@@ -81,7 +107,7 @@ const toggleChannelActive = (channel: any) => router.patch(`/notifications/${cha
                         </tr>
                     </thead>
                     <tbody class="divide-y divide-white/10">
-                        <tr v-for="channel in channels" :key="channel.id" class="hover:bg-slate-100 dark:hover:bg-white/[0.03]">
+                        <tr v-for="channel in channels.data" :key="channel.id" class="hover:bg-slate-100 dark:hover:bg-white/[0.03]">
                             <td class="px-4 py-3 font-medium text-white">
                                 <div class="flex flex-wrap items-center gap-2">
                                     <span>{{ channel.name }}</span>
@@ -119,6 +145,7 @@ const toggleChannelActive = (channel: any) => router.patch(`/notifications/${cha
                     </tbody>
                 </table>
                 </div>
+                <Pagination :data="channels" base-url="/notifications" :extra-params="{ search: search || undefined }" />
             </div>
             <div v-else class="p-10 text-center">
                 <p class="text-lg font-semibold">{{ t('No notification channels yet.') }}</p>

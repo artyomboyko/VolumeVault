@@ -139,7 +139,7 @@ class DestinationStorageLimitCheck implements AlertCheckAction
     /** @return array{previous_used_bytes: int|null, delta_bytes: int|null} */
     private function recordUsageDelta(BackupDestination $destination, int $usedBytes): array
     {
-        $cacheKey = 'destination_storage_usage_'.$destination->id;
+        $cacheKey = 'destination_storage_delta_baseline_'.$destination->id;
         $previousUsedBytes = Cache::get($cacheKey);
 
         Cache::put($cacheKey, $usedBytes, now()->addDays(30));

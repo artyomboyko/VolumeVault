@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Actions\Alerts\EnsureAlertRules;
 use App\Actions\Backup\CreateBackupRun;
+use App\Concerns\PaginateWithPreference;
 use App\Enums\AlertType;
 use App\Http\Requests\BackupJobRequest;
 use App\Jobs\RunBackupJob;
@@ -23,18 +24,43 @@ use Inertia\Response;
 
 class BackupJobController extends Controller
 {
+    use PaginateWithPreference;
+
     public function __construct(
         private readonly BackupScheduleCalculator $scheduleCalculator,
         private readonly EnsureAlertRules $ensureAlertRules,
     ) {}
 
-    public function index(): Response
+    public function index(Request $request): Response
     {
+        $perPage = $this->perPageForRequest($request);
+
+        $query = BackupJob::with(['destination', 'notificationChannels']);
+
+        if ($search = $request->input('search')) {
+            $query->where(function ($q) use ($search): void {
+                $q->where('name', 'like', "%{$search}%")
+                    ->orWhereHas('destination', fn ($q) => $q->where('name', 'like', "%{$search}%"));
+            });
+        }
+
+        if ($status = $request->input('status')) {
+            $query->where('status', $status);
+        }
+
+        if ($destination = $request->input('destination')) {
+            $query->whereHas('destination', fn ($q) => $q->where('name', $destination));
+        }
+
+        $query->latest();
+
+        $paginator = $perPage > 0
+            ? $query->paginate($perPage)->through(fn (BackupJob $job): array => $this->serializeJob($job))
+            : $query->get()->map(fn (BackupJob $job): array => $this->serializeJob($job));
+
         return Inertia::render('BackupJobs/Index', [
-            'jobs' => BackupJob::with(['destination', 'notificationChannels'])
-                ->latest()
-                ->get()
-                ->map(fn (BackupJob $job) => $this->serializeJob($job)),
+            'jobs' => $paginator,
+            'defaultPerPage' => $request->user()->default_per_page ?? 10,
         ]);
     }
 

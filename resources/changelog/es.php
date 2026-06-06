@@ -73,4 +73,8 @@ return [
         'title' => 'Primera version estable',
         'description' => 'VolumeVault se lanzo con copias programadas, restauraciones seguras, destinos cifrados, notificaciones, usuarios, tokens API y copias de instalacion.',
     ],
+    'pagination_with_user_preference' => [
+        'title' => 'Listas paginadas con preferencia por pagina',
+        'description' => 'Todas las vistas de lista ahora soportan paginacion con configuracion de elementos por pagina (10, 20, 50, 100, o Todos). Puede establecer su predeterminado en la configuracion del perfil.',
+    ],
 ];

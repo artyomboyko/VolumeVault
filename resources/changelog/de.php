@@ -73,4 +73,8 @@ return [
         'title' => 'Erstes stabiles Release',
         'description' => 'VolumeVault startete mit geplanten Backups, sicheren Wiederherstellungen, verschluesselten Zielen, Benachrichtigungen, Benutzern, API-Tokens und Installationssicherungen.',
     ],
+    'pagination_with_user_preference' => [
+        'title' => 'Seitenisierte Listen mit Seiteneinstellung',
+        'description' => 'Alle Listenansichten unterstuetzen jetzt Seitennummern mit konfigurierbaren Eintraegen pro Seite (10, 20, 50, 100 oder Alle). Sie koennen Ihren Standard in den Profileinstellungen festlegen.',
+    ],
 ];

@@ -11,6 +11,10 @@ return [
             'key' => 'destination_storage_limit_alerts',
         ],
         [
+            'type' => 'feature',
+            'key' => 'pagination_with_user_preference',
+        ],
+        [
             'type' => 'change',
             'key' => 'mobile_navigation_redesign',
         ],
