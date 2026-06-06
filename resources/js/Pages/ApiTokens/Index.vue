@@ -1,12 +1,18 @@
 <script setup lang="ts">
 import ActionIcon from '@/Components/ActionIcon.vue';
+import Pagination from '@/Components/Pagination.vue';
 import AppLayout from '@/Layouts/AppLayout.vue';
 import { Head, router, useForm, usePage } from '@inertiajs/vue3';
 import { useI18n } from '@/i18n';
 
+interface PaginatedData<T> {
+    data: T[];
+    meta: { current_page: number; per_page: number; total: number; last_page: number };
+}
+
 defineProps<{
     users: any[];
-    tokens: any[];
+    tokens: PaginatedData<any>;
 }>();
 
 const page = usePage();
@@ -84,8 +90,8 @@ const revoke = (id: number) => confirm('Revoke this API token?') && router.delet
                     <p class="mt-1 text-sm text-slate-400">Secrets are stored hashed and cannot be recovered.</p>
                 </div>
                 <div class="md:hidden">
-                    <div v-if="tokens.length" class="divide-y divide-white/10">
-                        <article v-for="token in tokens" :key="token.id" class="space-y-4 p-4">
+                    <div v-if="tokens.data.length" class="divide-y divide-white/10">
+                        <article v-for="token in tokens.data" :key="token.id" class="space-y-4 p-4">
                             <div class="flex items-start justify-between gap-3">
                                 <div class="min-w-0">
                                     <h3 class="break-words font-semibold text-white">{{ token.name }}</h3>
@@ -117,7 +123,7 @@ const revoke = (id: number) => confirm('Revoke this API token?') && router.delet
                             </tr>
                         </thead>
                         <tbody class="divide-y divide-white/10">
-                            <tr v-for="token in tokens" :key="token.id" class="hover:bg-slate-100 dark:hover:bg-white/[0.03]">
+                            <tr v-for="token in tokens.data" :key="token.id" class="hover:bg-slate-100 dark:hover:bg-white/[0.03]">
                                 <td class="px-4 py-3 font-medium text-white">{{ token.name }}</td>
                                 <td class="px-4 py-3 text-slate-300">{{ token.user?.email || t('Deleted user') }}</td>
                                 <td class="px-4 py-3 text-slate-300">{{ token.abilities.join(', ') }}</td>
@@ -127,12 +133,13 @@ const revoke = (id: number) => confirm('Revoke this API token?') && router.delet
                                     <ActionIcon label="Revoke" icon="token" variant="danger" @click="revoke(token.id)" />
                                 </td>
                             </tr>
-                            <tr v-if="tokens.length === 0">
+                            <tr v-if="tokens.data.length === 0">
                                 <td colspan="6" class="px-4 py-8 text-center text-slate-400">No API tokens yet.</td>
                             </tr>
                         </tbody>
                     </table>
                 </div>
+                <Pagination :data="tokens" base-url="/api-tokens" />
             </div>
         </div>
     </AppLayout>

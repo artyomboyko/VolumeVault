@@ -31,10 +31,8 @@ class UserController extends Controller
             });
         }
 
-        $users = $perPage > 0 ? $query->paginate($perPage) : $query->get();
-
         return Inertia::render('Users/Index', [
-            'users' => $users,
+            'users' => $this->paginateForInertia($query, $perPage),
             'defaultPerPage' => $perPage,
         ]);
     }

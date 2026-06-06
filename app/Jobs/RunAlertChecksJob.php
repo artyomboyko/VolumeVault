@@ -36,7 +36,6 @@ class RunAlertChecksJob implements ShouldQueue
         $ensureAlertRules->handle();
 
         AlertRule::query()
-            ->where('enabled', true)
             ->orderBy('id')
             ->get()
             ->each(function (AlertRule $rule) use ($runAllAlertChecks): void {

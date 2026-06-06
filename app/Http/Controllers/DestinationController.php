@@ -28,12 +28,8 @@ class DestinationController extends Controller
 
         $query->latest();
 
-        $paginator = $perPage > 0
-            ? $query->paginate($perPage)->through(fn (BackupDestination $d): array => $d->safeForFrontend())
-            : $query->get()->map(fn (BackupDestination $d): array => $d->safeForFrontend());
-
         return Inertia::render('Destinations/Index', [
-            'destinations' => $paginator,
+            'destinations' => $this->paginateForInertia($query, $perPage, fn (BackupDestination $d): array => $d->safeForFrontend()),
             'defaultPerPage' => $request->user()->default_per_page ?? 10,
         ]);
     }

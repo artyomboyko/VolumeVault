@@ -1,10 +1,16 @@
 <script setup lang="ts">
 import ActionIcon from '@/Components/ActionIcon.vue';
+import Pagination from '@/Components/Pagination.vue';
 import AppLayout from '@/Layouts/AppLayout.vue';
 import { Head, Link, router, usePage } from '@inertiajs/vue3';
 import { languageNames, useI18n } from '@/i18n';
 
-defineProps<{ users: any[] }>();
+interface PaginatedData<T> {
+    data: T[];
+    meta: { current_page: number; per_page: number; total: number; last_page: number };
+}
+
+defineProps<{ users: PaginatedData<any> }>();
 
 const page = usePage();
 const { t, formatDate } = useI18n();
@@ -24,7 +30,7 @@ const destroyUser = (id: number) => {
 
         <div class="card overflow-hidden">
             <div class="md:hidden">
-                <article v-for="user in users" :key="user.id" class="space-y-4 border-b border-white/10 p-4 last:border-b-0">
+                <article v-for="user in users.data" :key="user.id" class="space-y-4 border-b border-white/10 p-4 last:border-b-0">
                     <div class="flex items-start justify-between gap-3">
                         <div class="min-w-0">
                             <h2 class="break-words font-semibold text-white">{{ user.name }}</h2>
@@ -55,7 +61,7 @@ const destroyUser = (id: number) => {
                         </tr>
                     </thead>
                     <tbody class="divide-y divide-white/10">
-                        <tr v-for="user in users" :key="user.id" class="hover:bg-slate-100 dark:hover:bg-white/[0.03]">
+                        <tr v-for="user in users.data" :key="user.id" class="hover:bg-slate-100 dark:hover:bg-white/[0.03]">
                             <td class="px-4 py-3 font-medium text-white">{{ user.name }}</td>
                             <td class="px-4 py-3 text-slate-300">{{ user.email }}</td>
                             <td class="px-4 py-3 text-slate-300">{{ user.role }}</td>
@@ -71,6 +77,7 @@ const destroyUser = (id: number) => {
                     </tbody>
                 </table>
             </div>
+            <Pagination :data="users" base-url="/users" />
         </div>
     </AppLayout>
 </template>

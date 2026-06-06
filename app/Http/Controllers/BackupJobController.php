@@ -54,12 +54,8 @@ class BackupJobController extends Controller
 
         $query->latest();
 
-        $paginator = $perPage > 0
-            ? $query->paginate($perPage)->through(fn (BackupJob $job): array => $this->serializeJob($job))
-            : $query->get()->map(fn (BackupJob $job): array => $this->serializeJob($job));
-
         return Inertia::render('BackupJobs/Index', [
-            'jobs' => $paginator,
+            'jobs' => $this->paginateForInertia($query, $perPage, fn (BackupJob $job): array => $this->serializeJob($job)),
             'defaultPerPage' => $request->user()->default_per_page ?? 10,
         ]);
     }

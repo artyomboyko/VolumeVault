@@ -26,12 +26,8 @@ class NotificationChannelController extends Controller
             $query->where('name', 'like', "%{$search}%");
         }
         $query->latest();
-        $paginator = $perPage > 0
-            ? $query->paginate($perPage)->through(fn (NotificationChannel $c): array => $c->safeForFrontend())
-            : $query->get()->map(fn (NotificationChannel $c): array => $c->safeForFrontend());
-
         return Inertia::render('Notifications/Index', [
-            'channels' => $paginator,
+            'channels' => $this->paginateForInertia($query, $perPage, fn (NotificationChannel $c): array => $c->safeForFrontend()),
             'defaultPerPage' => $request->user()->default_per_page ?? 10,
         ]);
     }

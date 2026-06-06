@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Concerns\PaginateWithPreference;
+use App\Enums\AlertType;
 use App\Models\Alert;
 use App\Models\AlertEvent;
 use Illuminate\Database\Eloquent\Model;
@@ -35,14 +36,18 @@ class AlertController extends Controller
             $query->where('severity', $severity);
         }
 
+        if ($type = $request->input('type')) {
+            $types = array_column(AlertType::cases(), 'value');
+
+            if (in_array($type, $types, true)) {
+                $query->whereHas('rule', fn ($q) => $q->where('type', $type));
+            }
+        }
+
         $query->orderByRaw('COALESCE(last_triggered_at, created_at) DESC');
 
-        $paginator = $perPage > 0
-            ? $query->paginate($perPage)->through(fn (Alert $alert): array => $this->serializeAlert($alert))
-            : $query->get()->map(fn (Alert $alert): array => $this->serializeAlert($alert));
-
         return Inertia::render('Alerts/Index', [
-            'alerts' => $paginator,
+            'alerts' => $this->paginateForInertia($query, $perPage, fn (Alert $alert): array => $this->serializeAlert($alert)),
             'defaultPerPage' => $request->user()->default_per_page ?? 10,
         ]);
     }

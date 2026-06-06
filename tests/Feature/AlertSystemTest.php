@@ -8,6 +8,7 @@ use App\Enums\AlertEventType;
 use App\Enums\AlertSeverity;
 use App\Enums\AlertStatus;
 use App\Enums\AlertType;
+use App\Jobs\RunAlertChecksJob;
 use App\Models\Alert;
 use App\Models\AlertRule;
 use App\Models\BackupDestination;
@@ -21,6 +22,7 @@ use App\Services\Docker\DockerProcessResult;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\File;
+use Inertia\Testing\AssertableInertia as Assert;
 use Mockery;
 use Tests\TestCase;
 
@@ -419,6 +421,65 @@ class AlertSystemTest extends TestCase
         app(RunAllAlertChecks::class)->handle($rule);
 
         $this->assertSame(AlertStatus::Active, Alert::firstOrFail()->status);
+    }
+
+    public function test_scheduled_alert_checks_include_enabled_job_overrides_for_disabled_global_rules(): void
+    {
+        Cache::flush();
+        $job = $this->backupJob([
+            'last_success_at' => now()->subDays(8),
+            'use_custom_alert_settings' => true,
+        ]);
+        $rule = $this->disabledRule(AlertType::BackupTooOld);
+        JobAlertConfig::create([
+            'backup_job_id' => $job->id,
+            'alert_rule_id' => $rule->id,
+            'enabled' => true,
+            'config' => ['backup_too_old_days' => 7],
+        ]);
+
+        app()->call([new RunAlertChecksJob, 'handle']);
+
+        $this->assertSame(AlertStatus::Active, Alert::firstOrFail()->status);
+    }
+
+    public function test_alert_index_filters_by_type(): void
+    {
+        $job = $this->backupJob(['last_success_at' => now()->subDays(8)]);
+        $oldBackupRule = $this->disabledRule(AlertType::BackupTooOld);
+        $neverSucceededRule = $this->disabledRule(AlertType::JobNeverSucceeded);
+        $otherJob = $this->backupJob(['name' => 'Other job']);
+
+        Alert::create([
+            'alert_rule_id' => $oldBackupRule->id,
+            'subject_type' => $job->getMorphClass(),
+            'subject_id' => $job->id,
+            'status' => AlertStatus::Active,
+            'severity' => AlertSeverity::Warning,
+            'message' => 'Backup too old.',
+            'trigger_count' => 1,
+            'first_triggered_at' => now(),
+            'last_triggered_at' => now(),
+        ]);
+        Alert::create([
+            'alert_rule_id' => $neverSucceededRule->id,
+            'subject_type' => $otherJob->getMorphClass(),
+            'subject_id' => $otherJob->id,
+            'status' => AlertStatus::Active,
+            'severity' => AlertSeverity::Critical,
+            'message' => 'Never succeeded.',
+            'trigger_count' => 1,
+            'first_triggered_at' => now(),
+            'last_triggered_at' => now(),
+        ]);
+
+        $this->actingAs(User::factory()->create())
+            ->get(route('alerts.index', ['type' => AlertType::BackupTooOld->value]))
+            ->assertOk()
+            ->assertInertia(fn (Assert $page) => $page
+                ->component('Alerts/Index')
+                ->has('alerts.data', 1)
+                ->where('alerts.data.0.type', AlertType::BackupTooOld->value));
     }
 
     public function test_alert_notifications_ignore_backup_notification_level(): void

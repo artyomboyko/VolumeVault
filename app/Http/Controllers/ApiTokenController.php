@@ -28,8 +28,10 @@ class ApiTokenController extends Controller
             $query->where('name', 'like', "%{$search}%");
         }
 
-        $tokens = $perPage > 0
-            ? $query->paginate($perPage)->through(fn (PersonalAccessToken $token) => [
+        $tokens = $this->paginateForInertia(
+            $query,
+            $perPage,
+            fn (PersonalAccessToken $token): array => [
                 'id' => $token->id,
                 'name' => $token->name,
                 'abilities' => $token->abilities,
@@ -37,16 +39,8 @@ class ApiTokenController extends Controller
                 'expires_at' => $token->expires_at,
                 'created_at' => $token->created_at,
                 'user' => $token->tokenable?->only(['id', 'name', 'email', 'role']),
-            ])
-            : $query->get()->map(fn (PersonalAccessToken $token) => [
-                'id' => $token->id,
-                'name' => $token->name,
-                'abilities' => $token->abilities,
-                'last_used_at' => $token->last_used_at,
-                'expires_at' => $token->expires_at,
-                'created_at' => $token->created_at,
-                'user' => $token->tokenable?->only(['id', 'name', 'email', 'role']),
-            ]);
+            ],
+        );
 
         return Inertia::render('ApiTokens/Index', [
             'users' => $users,
