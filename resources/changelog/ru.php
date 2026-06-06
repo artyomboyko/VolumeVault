@@ -1,6 +1,18 @@
 <?php
 
 return [
+    'advanced_alerting' => [
+        'title' => 'Advanced alerting',
+        'description' => 'VolumeVault can monitor backup jobs for stale backups, repeated failures, long-running error states, and unusual archive sizes.',
+    ],
+    'destination_storage_limit_alerts' => [
+        'title' => 'Оповещения о лимите хранилища назначения',
+        'description' => 'Назначения резервных копий теперь могут задавать абсолютные пороги предупреждения и критического уровня с отдельными каналами уведомлений.',
+    ],
+    'mobile_navigation_redesign' => [
+        'title' => 'Улучшенная мобильная навигация',
+        'description' => 'Мобильная шапка теперь использует компактную кнопку меню и структурированную панель навигации вместо размещения всех ссылок в шапке.',
+    ],
     'keyboard_shortcuts' => [
         'title' => 'Горячие клавиши',
         'description' => 'На десктопе используйте Ctrl+K для быстрой навигации, сочетания с префиксом g для разделов и / для фокуса поиска в списках.',
@@ -60,5 +72,9 @@ return [
     'first_stable_release' => [
         'title' => 'Первый стабильный релиз',
         'description' => 'VolumeVault запущен с запланированными копиями, безопасными восстановлениями, зашифрованными назначениями, уведомлениями, пользователями, API-токенами и сохранениями установки.',
+    ],
+    'pagination_with_user_preference' => [
+        'title' => 'Paginated lists with per-page preference',
+        'description' => 'All list views now support pagination with configurable items per page (10, 20, 50, 100, or All). You can set your default in Profile settings.',
     ],
 ];

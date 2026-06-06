@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\MorphMany;
 
 class BackupDestination extends Model
 {
@@ -187,6 +188,11 @@ class BackupDestination extends Model
     public function restoreRuns(): HasMany
     {
         return $this->hasMany(RestoreRun::class);
+    }
+
+    public function alerts(): MorphMany
+    {
+        return $this->morphMany(Alert::class, 'subject');
     }
 
     public function safeForFrontend(): array

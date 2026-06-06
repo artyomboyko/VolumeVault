@@ -1,6 +1,18 @@
 <?php
 
 return [
+    'advanced_alerting' => [
+        'title' => 'Advanced alerting',
+        'description' => 'VolumeVault can monitor backup jobs for stale backups, repeated failures, long-running error states, and unusual archive sizes.',
+    ],
+    'destination_storage_limit_alerts' => [
+        'title' => 'Cel tarhelykorlat riasztasok',
+        'description' => 'A mentesi celok most abszolut figyelmeztetesi es kritikus tarhelykuszoboket allithatnak be dedikalt ertesitesi csatornakkal.',
+    ],
+    'mobile_navigation_redesign' => [
+        'title' => 'Tovabbfejlesztett mobil navigacio',
+        'description' => 'A mobil fejlec most kompakt menugombot es strukturalt navigacios panelt hasznal, ahelyett hogy minden hivatkozast a fejlecbe zsufolna.',
+    ],
     'keyboard_shortcuts' => [
         'title' => 'Billentyuparancsok',
         'description' => 'Desktopon hasznalja a Ctrl+K-t gyors navigaciohoz, a g elotagu parancsokat a nezetekhez es a / jelet a listakereses fokuszalashoz.',
@@ -60,5 +72,9 @@ return [
     'first_stable_release' => [
         'title' => 'Elso stabil kiadas',
         'description' => 'A VolumeVault utemezett mentesekkel, biztonsagos visszaallitasokkal, titkositott celokkal, ertesitesekkel, felhasznalokkal, API tokenekkel es telepitesi mentesekkel indult.',
+    ],
+    'pagination_with_user_preference' => [
+        'title' => 'Lapozott listak oldalankenti beallitassal',
+        'description' => 'Az osszes listanézet mostmar tamogatja a lapozast konfiguralhato elemekkel oldalankent (10, 20, 50, 100, vagy Osszes). Alapertelmezett beallitasat a profil beallitasokban adhatja meg.',
     ],
 ];

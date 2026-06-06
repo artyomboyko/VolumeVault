@@ -2,6 +2,8 @@
 
 namespace App\Http\Middleware;
 
+use App\Enums\AlertStatus;
+use App\Models\Alert;
 use App\Models\User;
 use App\Services\Changelog\AvailableUpdateChecker;
 use App\Services\Changelog\Changelog;
@@ -33,6 +35,7 @@ class HandleInertiaRequests extends Middleware
                     'role' => $request->user()->role,
                     'locale' => $request->user()->locale,
                     'theme' => $request->user()->theme ?: User::DEFAULT_THEME,
+                    'default_per_page' => $request->user()->default_per_page ?? 10,
                     'is_admin' => $request->user()->isAdmin(),
                 ] : null,
             ],
@@ -55,6 +58,9 @@ class HandleInertiaRequests extends Middleware
             'availableUpdate' => fn () => $request->user()
                 ? app(AvailableUpdateChecker::class)->forUser($request->user())
                 : null,
+            'activeAlertCount' => fn () => $request->user()
+                ? Alert::where('status', AlertStatus::Active->value)->count()
+                : 0,
             'flash' => [
                 'success' => fn () => $request->session()->get('success'),
                 'error' => fn () => $request->session()->get('error'),

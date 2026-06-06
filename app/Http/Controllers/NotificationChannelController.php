@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Concerns\PaginateWithPreference;
 use App\Models\ActivityLog;
 use App\Models\NotificationChannel;
 use App\Services\Notifications\SendShoutrrrNotification;
@@ -15,13 +16,19 @@ use InvalidArgumentException;
 
 class NotificationChannelController extends Controller
 {
-    public function index(): Response
+    use PaginateWithPreference;
+
+    public function index(Request $request): Response
     {
+        $perPage = $this->perPageForRequest($request);
+        $query = NotificationChannel::with('backupJobs');
+        if ($search = $request->input('search')) {
+            $query->where('name', 'like', "%{$search}%");
+        }
+        $query->latest();
         return Inertia::render('Notifications/Index', [
-            'channels' => NotificationChannel::with('backupJobs')
-                ->latest()
-                ->get()
-                ->map->safeForFrontend(),
+            'channels' => $this->paginateForInertia($query, $perPage, fn (NotificationChannel $c): array => $c->safeForFrontend()),
+            'defaultPerPage' => $request->user()->default_per_page ?? 10,
         ]);
     }
 

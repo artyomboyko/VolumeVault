@@ -1,6 +1,7 @@
 <?php
 
 use App\Jobs\DispatchDueBackupJobsJob;
+use App\Jobs\RunAlertChecksJob;
 use App\Jobs\SyncDockerVolumesJob;
 use App\Models\User;
 use Illuminate\Foundation\Inspiring;
@@ -58,3 +59,4 @@ Artisan::command('volumevault:reset-password {email : The account email address}
 
 Schedule::job(new DispatchDueBackupJobsJob)->everyMinute()->withoutOverlapping();
 Schedule::job(new SyncDockerVolumesJob)->everyFiveMinutes()->withoutOverlapping();
+Schedule::job(new RunAlertChecksJob)->everyFiveMinutes()->withoutOverlapping();

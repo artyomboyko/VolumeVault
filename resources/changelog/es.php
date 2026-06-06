@@ -1,6 +1,18 @@
 <?php
 
 return [
+    'advanced_alerting' => [
+        'title' => 'Advanced alerting',
+        'description' => 'VolumeVault can monitor backup jobs for stale backups, repeated failures, long-running error states, and unusual archive sizes.',
+    ],
+    'destination_storage_limit_alerts' => [
+        'title' => 'Alertas de limite de almacenamiento',
+        'description' => 'Los destinos ahora pueden definir umbrales absolutos de advertencia y criticos con canales de notificacion dedicados.',
+    ],
+    'mobile_navigation_redesign' => [
+        'title' => 'Navegacion movil mejorada',
+        'description' => 'El encabezado movil ahora usa un boton de menu compacto y un panel de navegacion estructurado en lugar de apilar todos los enlaces en el encabezado.',
+    ],
     'keyboard_shortcuts' => [
         'title' => 'Atajos de teclado',
         'description' => 'En escritorio, use Ctrl+K para navegacion rapida, atajos con prefijo g para vistas y / para enfocar la busqueda de listas.',
@@ -60,5 +72,9 @@ return [
     'first_stable_release' => [
         'title' => 'Primera version estable',
         'description' => 'VolumeVault se lanzo con copias programadas, restauraciones seguras, destinos cifrados, notificaciones, usuarios, tokens API y copias de instalacion.',
+    ],
+    'pagination_with_user_preference' => [
+        'title' => 'Listas paginadas con preferencia por pagina',
+        'description' => 'Todas las vistas de lista ahora soportan paginacion con configuracion de elementos por pagina (10, 20, 50, 100, o Todos). Puede establecer su predeterminado en la configuracion del perfil.',
     ],
 ];

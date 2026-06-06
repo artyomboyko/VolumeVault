@@ -2,8 +2,9 @@
 import AppLayout from '@/Layouts/AppLayout.vue';
 import PasswordInput from '@/Components/PasswordInput.vue';
 import { Head, Link, useForm } from '@inertiajs/vue3';
-import { computed } from 'vue';
+import { computed, ref } from 'vue';
 import { useI18n } from '@/i18n';
+import { bestSizeUnit, bytesToUnitValue, sizeUnits, type SizeUnit, unitValueToBytes } from '@/Composables/useFormatBytes';
 
 type ProviderOption = {
     value: string;
@@ -20,6 +21,7 @@ const editing = computed(() => Boolean(props.destination));
 const { t } = useI18n();
 const settings = props.destination?.settings || {};
 const hasSecret = (field: string) => Boolean(props.destination?.has_secrets?.[field]);
+const storageLimitUnitSelections = ref<Record<string, SizeUnit>>({});
 
 const form = useForm({
     name: props.destination?.name || '',
@@ -50,6 +52,8 @@ const form = useForm({
         token_url: settings.token_url || '',
         archive_path: settings.archive_path || '',
         archive_mount_source: settings.archive_mount_source || '',
+        storage_limit_warning_bytes: settings.storage_limit_warning_bytes ?? null,
+        storage_limit_critical_bytes: settings.storage_limit_critical_bytes ?? null,
     },
     secrets: {
         username: '',
@@ -70,6 +74,19 @@ const selectedProvider = computed(() => props.providers.find((provider) => provi
 const isS3 = computed(() => ['aws_s3', 'cloudflare_r2', 'custom_s3'].includes(form.provider));
 const error = (key: string) => form.errors[key as keyof typeof form.errors];
 const secretHint = (field: string) => editing.value && hasSecret(field) ? 'Already saved. Leave blank to keep existing value.' : '';
+const settingValue = (key: string) => (form.settings as Record<string, any>)[key];
+const selectedStorageLimitUnit = (key: string): SizeUnit => storageLimitUnitSelections.value[key] || bestSizeUnit(settingValue(key));
+const sizeInputValue = (key: string, unit: SizeUnit) => bytesToUnitValue(settingValue(key), unit);
+const inputValue = (event: Event) => (event.target as HTMLInputElement).value;
+const selectValue = (event: Event) => (event.target as HTMLSelectElement).value as SizeUnit;
+const updateStorageLimitUnit = (key: string, unit: SizeUnit) => {
+    const currentUnit = selectedStorageLimitUnit(key);
+    const currentValue = sizeInputValue(key, currentUnit);
+
+    storageLimitUnitSelections.value[key] = unit;
+    (form.settings as Record<string, any>)[key] = unitValueToBytes(currentValue, unit);
+};
+const updateStorageLimitThreshold = (key: string, value: string, unit: SizeUnit) => (form.settings as Record<string, any>)[key] = unitValueToBytes(value, unit);
 
 const submit = () => {
     if (editing.value) {
@@ -303,6 +320,48 @@ const toggleDestinationActive = () => {
                 </div>
             </section>
 
+            <section class="rounded-2xl border border-white/10 bg-white/5 p-4 sm:p-5">
+                <div>
+                    <h2 class="text-lg font-semibold text-white">{{ t('Destination storage limits') }}</h2>
+                    <p class="mt-1 text-sm text-slate-400">{{ t('Configure absolute usage thresholds for the destination storage limit alert. Leave both empty to skip this destination.') }}</p>
+                </div>
+                <div class="mt-4 grid gap-4 sm:grid-cols-2">
+                    <label class="space-y-2">
+                        <span class="label">{{ t('Warning threshold') }}</span>
+                        <span class="flex gap-2">
+                            <input
+                                class="input min-w-0"
+                                type="number"
+                                min="0"
+                                step="0.01"
+                                :value="sizeInputValue('storage_limit_warning_bytes', selectedStorageLimitUnit('storage_limit_warning_bytes'))"
+                                @input="updateStorageLimitThreshold('storage_limit_warning_bytes', inputValue($event), selectedStorageLimitUnit('storage_limit_warning_bytes'))"
+                            >
+                            <select class="input w-24 shrink-0" :value="selectedStorageLimitUnit('storage_limit_warning_bytes')" @change="updateStorageLimitUnit('storage_limit_warning_bytes', selectValue($event))">
+                                <option v-for="unit in sizeUnits" :key="unit.label" :value="unit.label">{{ unit.label }}</option>
+                            </select>
+                        </span>
+                    </label>
+                    <label class="space-y-2">
+                        <span class="label">{{ t('Critical threshold') }}</span>
+                        <span class="flex gap-2">
+                            <input
+                                class="input min-w-0"
+                                type="number"
+                                min="0"
+                                step="0.01"
+                                :value="sizeInputValue('storage_limit_critical_bytes', selectedStorageLimitUnit('storage_limit_critical_bytes'))"
+                                @input="updateStorageLimitThreshold('storage_limit_critical_bytes', inputValue($event), selectedStorageLimitUnit('storage_limit_critical_bytes'))"
+                            >
+                            <select class="input w-24 shrink-0" :value="selectedStorageLimitUnit('storage_limit_critical_bytes')" @change="updateStorageLimitUnit('storage_limit_critical_bytes', selectValue($event))">
+                                <option v-for="unit in sizeUnits" :key="unit.label" :value="unit.label">{{ unit.label }}</option>
+                            </select>
+                        </span>
+                        <span v-if="error('settings.storage_limit_critical_bytes')" class="text-sm text-rose-300">{{ error('settings.storage_limit_critical_bytes') }}</span>
+                    </label>
+                </div>
+            </section>
+
             <div class="grid gap-3 sm:grid-cols-2">
                 <label v-if="isS3" class="flex items-center gap-3 rounded-xl border border-white/10 bg-white/5 p-4 text-sm">
                     <input v-model="form.use_path_style_endpoint" type="checkbox" class="rounded border-slate-600 bg-slate-950 text-sky-400">
@@ -316,8 +375,8 @@ const toggleDestinationActive = () => {
                     <button
                         type="button"
                         role="switch"
-                        class="relative mt-1 inline-flex h-7 w-12 shrink-0 items-center rounded-full border p-1 transition focus:outline-none focus:ring-2 focus:ring-sky-400/30"
-                        :class="form.is_active ? 'border-emerald-300/40 bg-emerald-400/30' : 'border-white/10 bg-slate-800'"
+                        class="relative mt-1 inline-flex h-7 w-12 shrink-0 items-center rounded-full border p-1 transition focus:outline-none focus:ring-2 focus:ring-sky-500/30 dark:focus:ring-sky-400/30"
+                        :class="form.is_active ? 'border-emerald-700 bg-emerald-600 dark:border-emerald-300/50 dark:bg-emerald-500/50' : 'border-slate-300 bg-slate-200 dark:border-white/10 dark:bg-slate-800'"
                         :aria-checked="form.is_active"
                         :aria-label="t('Destination active')"
                         @click="toggleDestinationActive"

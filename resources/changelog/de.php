@@ -1,6 +1,18 @@
 <?php
 
 return [
+    'advanced_alerting' => [
+        'title' => 'Advanced alerting',
+        'description' => 'VolumeVault can monitor backup jobs for stale backups, repeated failures, long-running error states, and unusual archive sizes.',
+    ],
+    'destination_storage_limit_alerts' => [
+        'title' => 'Speicherlimit-Warnungen fuer Ziele',
+        'description' => 'Backup-Ziele koennen jetzt absolute Warn- und kritische Speicherschwellen mit eigenen Benachrichtigungskanaelen festlegen.',
+    ],
+    'mobile_navigation_redesign' => [
+        'title' => 'Verbesserte mobile Navigation',
+        'description' => 'Die mobile Kopfzeile nutzt jetzt eine kompakte Menu-Schaltflaeche und ein strukturiertes Navigationspanel, statt alle Links in der Kopfzeile zu stapeln.',
+    ],
     'keyboard_shortcuts' => [
         'title' => 'Tastaturkuerzel',
         'description' => 'Auf dem Desktop nutzen Sie Ctrl+K fuer die Schnellnavigation, g-Kuerzel fuer Ansichten und / zum Fokussieren der Listensuche.',
@@ -60,5 +72,9 @@ return [
     'first_stable_release' => [
         'title' => 'Erstes stabiles Release',
         'description' => 'VolumeVault startete mit geplanten Backups, sicheren Wiederherstellungen, verschluesselten Zielen, Benachrichtigungen, Benutzern, API-Tokens und Installationssicherungen.',
+    ],
+    'pagination_with_user_preference' => [
+        'title' => 'Seitenisierte Listen mit Seiteneinstellung',
+        'description' => 'Alle Listenansichten unterstuetzen jetzt Seitennummern mit konfigurierbaren Eintraegen pro Seite (10, 20, 50, 100 oder Alle). Sie koennen Ihren Standard in den Profileinstellungen festlegen.',
     ],
 ];

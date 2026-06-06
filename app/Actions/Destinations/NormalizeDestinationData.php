@@ -20,6 +20,7 @@ class NormalizeDestinationData
         }
 
         $settings = $this->onlyProviderSettings($provider, $settings);
+        $settings = $this->normalizeStorageLimitSettings($settings);
         $submittedSecrets = $this->onlyProviderSecrets($provider, $submittedSecrets);
 
         $existingSettings = $destination && ! $providerChanged ? ($destination->settings ?: []) : [];
@@ -111,7 +112,20 @@ class NormalizeDestinationData
             default => [],
         };
 
-        return collect($settings)->only($allowed)->all();
+        return collect($settings)
+            ->only([...$allowed, 'storage_limit_warning_bytes', 'storage_limit_critical_bytes'])
+            ->all();
+    }
+
+    private function normalizeStorageLimitSettings(array $settings): array
+    {
+        foreach (['storage_limit_warning_bytes', 'storage_limit_critical_bytes'] as $key) {
+            if (array_key_exists($key, $settings) && $settings[$key] !== null && $settings[$key] !== '') {
+                $settings[$key] = (int) $settings[$key];
+            }
+        }
+
+        return $settings;
     }
 
     private function onlyProviderSecrets(string $provider, array $secrets): array

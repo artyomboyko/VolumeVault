@@ -42,6 +42,7 @@ type QuickNavItem = {
     shortcutLabel: string;
     shortcutSearchAliases: string[];
     description?: string;
+    badge?: number;
 };
 
 withDefaults(defineProps<{
@@ -60,6 +61,7 @@ const can = computed(() => (page.props.can || {}) as { manageSensitiveData?: boo
 const app = computed(() => (page.props.app || {}) as { version?: string });
 const updateSummary = computed(() => (page.props.updateSummary || null) as UpdateSummary | null);
 const availableUpdate = computed(() => (page.props.availableUpdate || null) as AvailableUpdate | null);
+const activeAlertCount = computed(() => Number(page.props.activeAlertCount || 0));
 const shouldShowUpdateSummary = computed(() => Boolean(updateSummary.value?.has_unread) && !page.url.startsWith('/changelog'));
 const updateLocale = (event: Event) => router.patch('/user/locale', { locale: (event.target as HTMLSelectElement).value }, { preserveScroll: true });
 const themeToggleLabel = computed(() => isDark.value ? t('Switch to light theme') : t('Switch to dark theme'));
@@ -71,6 +73,7 @@ const githubIssuesUrl = 'https://github.com/Darkdragon14/VolumeVault/issues';
 const snoozedUpdateSummaryStorageKey = 'volumevault.snoozed_update_summary_id';
 
 const openMenu = ref<'settings' | 'user' | null>(null);
+const isMobileNavOpen = ref(false);
 const showUpdateSummary = ref(false);
 const isQuickNavOpen = ref(false);
 const quickNavQuery = ref('');
@@ -91,6 +94,7 @@ const primaryNav = computed(() => [
     { label: t('Volumes'), href: '/volumes', shortcutKey: 'v' },
     { label: t('Stacks'), href: '/stacks', shortcutKey: 's' },
     { label: t('Backup jobs'), href: '/backup-jobs', shortcutKey: 'j' },
+    { label: t('Alerts'), href: '/alerts', shortcutKey: 'a', badge: activeAlertCount.value },
 ]);
 
 const settingsNav = computed(() => [
@@ -107,7 +111,7 @@ const settingsNav = computed(() => [
 const accountNav = computed(() => [
     { label: t('Edit profile'), href: '/profile', shortcutKey: 'p' },
     ...(can.value.manageUsers ? [
-        { label: t('API tokens'), href: '/api-tokens', shortcutKey: 'a' },
+        { label: t('API tokens'), href: '/api-tokens', shortcutKey: 't' },
     ] : []),
     { label: t('Changelog'), href: '/changelog', shortcutKey: 'c' },
 ]);
@@ -150,14 +154,25 @@ const filteredQuickNavItems = computed(() => {
 const quickNavShortcutMap = computed(() => new Map(quickNavItems.value.map((item) => [item.shortcutKey, item])));
 
 const hasActiveItem = (items: { href: string }[]) => items.some((item) => page.url.startsWith(item.href));
-const toggleMenu = (menu: 'settings' | 'user') => openMenu.value = openMenu.value === menu ? null : menu;
+const toggleMenu = (menu: 'settings' | 'user') => {
+    isMobileNavOpen.value = false;
+    openMenu.value = openMenu.value === menu ? null : menu;
+};
 const closeMenu = () => openMenu.value = null;
+const closeMobileNav = () => {
+    isMobileNavOpen.value = false;
+    closeMenu();
+};
+const toggleMobileNav = () => {
+    closeMenu();
+    isMobileNavOpen.value = !isMobileNavOpen.value;
+};
 const openQuickNav = () => {
     if (!auth.value.user || showUpdateSummary.value || !areKeyboardShortcutsEnabled.value) {
         return;
     }
 
-    closeMenu();
+    closeMobileNav();
     isQuickNavOpen.value = true;
 };
 const closeQuickNav = () => isQuickNavOpen.value = false;
@@ -272,10 +287,6 @@ const focusPageSearch = () => {
     return true;
 };
 const onGlobalKeydown = (event: KeyboardEvent) => {
-    if (!areKeyboardShortcutsEnabled.value) {
-        return;
-    }
-
     if (event.key === 'Escape') {
         clearPendingGoShortcut();
 
@@ -286,12 +297,22 @@ const onGlobalKeydown = (event: KeyboardEvent) => {
             return;
         }
 
-        closeMenu();
+        if (isMobileNavOpen.value || openMenu.value) {
+            event.preventDefault();
+            closeMobileNav();
+
+            return;
+        }
 
         if (showUpdateSummary.value) {
+            event.preventDefault();
             snoozeUpdateSummary();
         }
 
+        return;
+    }
+
+    if (!areKeyboardShortcutsEnabled.value) {
         return;
     }
 
@@ -391,7 +412,7 @@ const markUpdateSummarySeen = () => router.patch('/changelog/seen', {}, {
 
 const closeOnOutsideClick = (event: MouseEvent) => {
     if (headerRef.value && !headerRef.value.contains(event.target as Node)) {
-        closeMenu();
+        closeMobileNav();
     }
 };
 
@@ -439,144 +460,276 @@ watch(shouldShowUpdateSummary, (shouldShow) => {
 <template>
     <div class="app-shell">
         <header ref="headerRef" class="relative z-50 border-b border-white/10 bg-slate-950/70 backdrop-blur">
-            <div class="mx-auto flex max-w-7xl flex-col gap-4 px-4 py-4 sm:px-6 lg:flex-row lg:items-center lg:justify-between lg:px-8">
-                <Link href="/dashboard" class="flex min-w-0 items-center gap-3">
-                    <img :src="'/logo.png'" alt="" class="h-10 w-auto shrink-0 object-contain">
-                    <div class="min-w-0">
-                        <p class="text-lg font-bold tracking-tight">VolumeVault</p>
-                        <p class="text-xs text-slate-400">{{ t('Back up and restore Docker volumes') }}</p>
-                    </div>
-                </Link>
-                <nav class="flex min-w-0 flex-col gap-3 lg:flex-row lg:items-center">
-                    <div class="flex flex-wrap gap-2">
-                        <Link
-                            v-for="item in primaryNav"
-                            :key="item.href"
-                            :href="item.href"
-                            class="rounded-xl px-3 py-2 text-sm font-medium text-slate-300 transition hover:bg-white/10 hover:text-white"
-                            :class="{ 'bg-white/10 text-white': page.url.startsWith(item.href) }"
-                            @click="closeMenu"
-                        >
-                            {{ item.label }}
-                        </Link>
+            <div class="mx-auto max-w-7xl px-4 py-4 sm:px-6 lg:px-8">
+                <div class="flex items-center justify-between gap-3">
+                    <Link href="/dashboard" class="flex min-w-0 items-center gap-3" @click="closeMobileNav">
+                        <img :src="'/logo.png'" alt="" class="h-10 w-auto shrink-0 object-contain">
+                        <div class="min-w-0">
+                            <p class="truncate text-lg font-bold tracking-tight">VolumeVault</p>
+                            <p class="hidden text-xs text-slate-400 sm:block">{{ t('Back up and restore Docker volumes') }}</p>
+                        </div>
+                    </Link>
 
-                        <div v-if="settingsNav.length" class="relative">
+                    <button
+                        class="group inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl border border-white/10 bg-white/5 text-slate-200 transition hover:bg-slate-100 hover:text-slate-950 focus:outline-none focus:ring-2 focus:ring-sky-400/30 dark:hover:bg-white/10 dark:hover:text-white lg:hidden"
+                        type="button"
+                        :aria-label="isMobileNavOpen ? t('Close') : t('Navigation')"
+                        aria-controls="mobile-navigation"
+                        :aria-expanded="isMobileNavOpen"
+                        @click.stop="toggleMobileNav"
+                    >
+                        <span class="relative h-5 w-5" aria-hidden="true">
+                            <span class="absolute left-0 top-1 h-0.5 w-5 rounded-full bg-current transition" :class="{ 'translate-y-2 rotate-45': isMobileNavOpen }"></span>
+                            <span class="absolute left-0 top-2.5 h-0.5 w-5 rounded-full bg-current transition" :class="{ 'opacity-0': isMobileNavOpen }"></span>
+                            <span class="absolute left-0 top-4 h-0.5 w-5 rounded-full bg-current transition" :class="{ '-translate-y-2 -rotate-45': isMobileNavOpen }"></span>
+                        </span>
+                    </button>
+
+                    <nav class="hidden min-w-0 flex-col gap-3 lg:flex lg:flex-row lg:items-center" :aria-label="t('Navigation')">
+                        <div class="flex flex-wrap gap-2">
+                            <Link
+                                v-for="item in primaryNav"
+                                :key="item.href"
+                                :href="item.href"
+                                class="inline-flex items-center gap-2 rounded-xl px-3 py-2 text-sm font-medium text-slate-300 transition hover:bg-slate-100 hover:text-slate-950 dark:hover:bg-white/10 dark:hover:text-white"
+                                :class="{ 'bg-white/10 text-white': page.url.startsWith(item.href) }"
+                                @click="closeMenu"
+                            >
+                                <span>{{ item.label }}</span>
+                                <span v-if="item.badge" class="rounded-full bg-rose-400/20 px-2 py-0.5 text-xs text-rose-100">{{ item.badge }}</span>
+                            </Link>
+
+                            <div v-if="settingsNav.length" class="relative">
+                                <button
+                                    class="group inline-flex items-center gap-2 rounded-xl px-3 py-2 text-sm font-medium text-slate-300 transition hover:bg-slate-100 hover:text-slate-950 dark:hover:bg-white/10 dark:hover:text-white"
+                                    :class="{ 'bg-white/10 text-white': openMenu === 'settings' || hasActiveItem(settingsNav) }"
+                                    type="button"
+                                    aria-haspopup="menu"
+                                    :aria-expanded="openMenu === 'settings'"
+                                    @click.stop="toggleMenu('settings')"
+                                >
+                                    {{ t('Settings') }}
+                                    <span class="h-2 w-2 rotate-45 border-b-2 border-r-2 border-slate-500 transition group-hover:border-slate-300" aria-hidden="true"></span>
+                                </button>
+
+                                <div v-if="openMenu === 'settings'" class="fixed left-4 right-4 z-30 mt-2 overflow-hidden rounded-2xl border border-white/10 bg-slate-950 p-2 shadow-2xl shadow-black/40 sm:absolute sm:left-auto sm:right-0 sm:w-72" role="menu">
+                                    <Link
+                                        v-for="item in settingsNav"
+                                        :key="item.href"
+                                        :href="item.href"
+                                        class="block rounded-xl px-3 py-3 text-sm transition hover:bg-slate-100 dark:hover:bg-white/10"
+                                        :class="page.url.startsWith(item.href) ? 'bg-sky-400/10 text-sky-100' : 'text-slate-200'"
+                                        role="menuitem"
+                                        @click="closeMenu"
+                                    >
+                                        <span class="block font-semibold">{{ item.label }}</span>
+                                        <span class="mt-0.5 block text-xs text-slate-400">{{ item.description }}</span>
+                                    </Link>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div v-if="auth.user" class="relative">
                             <button
-                                class="group inline-flex items-center gap-2 rounded-xl px-3 py-2 text-sm font-medium text-slate-300 transition hover:bg-white/10 hover:text-white"
-                                :class="{ 'bg-white/10 text-white': openMenu === 'settings' || hasActiveItem(settingsNav) }"
+                                class="group flex w-full items-center gap-3 rounded-2xl border border-white/10 bg-white/5 px-3 py-2 text-left text-sm text-slate-200 transition hover:bg-slate-100 dark:hover:bg-white/10 lg:w-auto"
+                                :class="{ 'bg-white/10 text-white': openMenu === 'user' || page.url.startsWith('/profile') || page.url.startsWith('/api-tokens') || page.url.startsWith('/changelog') }"
                                 type="button"
                                 aria-haspopup="menu"
-                                :aria-expanded="openMenu === 'settings'"
-                                @click.stop="toggleMenu('settings')"
+                                :aria-expanded="openMenu === 'user'"
+                                @click.stop="toggleMenu('user')"
                             >
-                                {{ t('Settings') }}
+                                <span class="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-sky-400/15 font-bold uppercase text-sky-200">
+                                    {{ auth.user.name.slice(0, 1) }}
+                                </span>
+                                <span class="min-w-0 flex-1">
+                                    <span class="block truncate font-semibold text-white">{{ auth.user.name }}</span>
+                                    <span class="block truncate text-xs text-slate-400">{{ auth.user.role }}</span>
+                                </span>
                                 <span class="h-2 w-2 rotate-45 border-b-2 border-r-2 border-slate-500 transition group-hover:border-slate-300" aria-hidden="true"></span>
                             </button>
 
-                            <div v-if="openMenu === 'settings'" class="fixed left-4 right-4 z-30 mt-2 overflow-hidden rounded-2xl border border-white/10 bg-slate-950 p-2 shadow-2xl shadow-black/40 sm:absolute sm:left-auto sm:right-0 sm:w-72" role="menu">
+                            <div v-if="openMenu === 'user'" class="fixed left-4 right-4 z-30 mt-2 overflow-hidden rounded-2xl border border-white/10 bg-slate-950 p-2 shadow-2xl shadow-black/40 sm:absolute sm:left-auto sm:right-0 sm:w-80" role="menu">
+                                <div class="border-b border-white/10 px-3 py-3">
+                                    <p class="truncate text-sm font-semibold text-white">{{ auth.user.name }}</p>
+                                    <p class="truncate text-xs text-slate-400">{{ auth.user.email }}</p>
+                                </div>
+
+                                <Link href="/profile" class="mt-2 block rounded-xl px-3 py-3 text-sm font-medium text-slate-200 transition hover:bg-slate-100 dark:hover:bg-white/10" role="menuitem" @click="closeMenu">
+                                    {{ t('Edit profile') }}
+                                </Link>
+
+                                <Link v-if="can.manageUsers" href="/api-tokens" class="block rounded-xl px-3 py-3 text-sm font-medium text-slate-200 transition hover:bg-slate-100 dark:hover:bg-white/10" role="menuitem" @click="closeMenu">
+                                    {{ t('API tokens') }}
+                                </Link>
+
+                                <Link href="/changelog" class="block rounded-xl px-3 py-3 text-sm font-medium text-slate-200 transition hover:bg-slate-100 dark:hover:bg-white/10" role="menuitem" @click="closeMenu">
+                                    {{ t('Changelog') }}
+                                </Link>
+
+                                <div class="mt-2 rounded-xl border border-white/10 bg-white/[0.03] p-3">
+                                    <div class="flex items-center justify-between gap-3">
+                                        <span class="text-xs font-semibold uppercase tracking-wide text-slate-400">{{ t('Theme') }}</span>
+                                        <button
+                                            type="button"
+                                            role="switch"
+                                            class="relative inline-flex h-9 w-20 items-center rounded-full border border-white/10 bg-white/10 p-1 text-slate-400 transition focus:outline-none focus:ring-2 focus:ring-sky-500/30 dark:bg-slate-950/70 dark:focus:ring-sky-400/30"
+                                            :aria-checked="isDark"
+                                            :aria-label="themeToggleLabel"
+                                            :title="themeName"
+                                            @click="toggleTheme"
+                                        >
+                                            <span class="absolute left-1 top-1 h-7 w-7 rounded-full bg-white shadow-sm shadow-slate-300 transition-transform dark:translate-x-11 dark:bg-slate-800 dark:shadow-black/30" aria-hidden="true"></span>
+                                            <span class="relative z-10 flex h-7 w-7 items-center justify-center text-amber-500 transition dark:text-slate-500" aria-hidden="true">
+                                                <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                                    <circle cx="12" cy="12" r="4" />
+                                                    <path d="M12 2v2" />
+                                                    <path d="M12 20v2" />
+                                                    <path d="m4.93 4.93 1.41 1.41" />
+                                                    <path d="m17.66 17.66 1.41 1.41" />
+                                                    <path d="M2 12h2" />
+                                                    <path d="M20 12h2" />
+                                                    <path d="m6.34 17.66-1.41 1.41" />
+                                                    <path d="m19.07 4.93-1.41 1.41" />
+                                                </svg>
+                                            </span>
+                                            <span class="relative z-10 ml-auto flex h-7 w-7 items-center justify-center text-slate-400 transition dark:text-sky-200" aria-hidden="true">
+                                                <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                                    <path d="M12 3a6 6 0 0 0 9 7.8A9 9 0 1 1 12 3Z" />
+                                                </svg>
+                                            </span>
+                                        </button>
+                                    </div>
+                                </div>
+
+                                <div class="mt-2 rounded-xl border border-white/10 bg-white/[0.03] p-3">
+                                    <label class="mb-2 block text-xs font-semibold uppercase tracking-wide text-slate-400" for="locale-select">{{ t('Language') }}</label>
+                                    <select id="locale-select" class="input" :value="locale" @change="updateLocale">
+                                        <option v-for="availableLocale in locales" :key="availableLocale" :value="availableLocale">
+                                            {{ languageNames[availableLocale] }}
+                                        </option>
+                                    </select>
+                                </div>
+
+                                <Link href="/logout" method="post" as="button" class="mt-2 flex w-full rounded-xl px-3 py-3 text-left text-sm font-semibold text-rose-200 transition hover:bg-rose-500/10 hover:text-rose-100" role="menuitem">
+                                    {{ t('Logout') }}
+                                </Link>
+                            </div>
+                        </div>
+                    </nav>
+                </div>
+
+                <div v-if="isMobileNavOpen" id="mobile-navigation" class="mt-4 overflow-hidden rounded-3xl border border-white/10 bg-slate-950 p-3 shadow-2xl shadow-black/30 lg:hidden">
+                    <nav class="space-y-4" :aria-label="t('Navigation')">
+                        <section>
+                            <p class="px-2 text-xs font-semibold uppercase tracking-wide text-slate-500">{{ t('Navigation') }}</p>
+                            <div class="mt-2 grid gap-1">
+                                <Link
+                                    v-for="item in primaryNav"
+                                    :key="item.href"
+                                    :href="item.href"
+                                    class="flex items-center justify-between gap-3 rounded-2xl px-3 py-3 text-sm font-semibold transition hover:bg-slate-100 dark:hover:bg-white/10"
+                                    :class="page.url.startsWith(item.href) ? 'bg-sky-400/10 text-sky-100' : 'text-slate-200'"
+                                    @click="closeMobileNav"
+                                >
+                                    <span>{{ item.label }}</span>
+                                    <span v-if="item.badge" class="rounded-full bg-rose-400/20 px-2 py-0.5 text-xs text-rose-100">{{ item.badge }}</span>
+                                </Link>
+                            </div>
+                        </section>
+
+                        <section v-if="settingsNav.length">
+                            <p class="px-2 text-xs font-semibold uppercase tracking-wide text-slate-500">{{ t('Settings') }}</p>
+                            <div class="mt-2 grid gap-1">
                                 <Link
                                     v-for="item in settingsNav"
                                     :key="item.href"
                                     :href="item.href"
-                                    class="block rounded-xl px-3 py-3 text-sm transition hover:bg-white/10"
+                                    class="rounded-2xl px-3 py-3 text-sm transition hover:bg-slate-100 dark:hover:bg-white/10"
                                     :class="page.url.startsWith(item.href) ? 'bg-sky-400/10 text-sky-100' : 'text-slate-200'"
-                                    role="menuitem"
-                                    @click="closeMenu"
+                                    @click="closeMobileNav"
                                 >
                                     <span class="block font-semibold">{{ item.label }}</span>
                                     <span class="mt-0.5 block text-xs text-slate-400">{{ item.description }}</span>
                                 </Link>
                             </div>
-                        </div>
-                    </div>
+                        </section>
 
-                    <div v-if="auth.user" class="relative">
-                        <button
-                            class="group flex w-full items-center gap-3 rounded-2xl border border-white/10 bg-white/5 px-3 py-2 text-left text-sm text-slate-200 transition hover:bg-white/10 lg:w-auto"
-                            :class="{ 'bg-white/10 text-white': openMenu === 'user' || page.url.startsWith('/profile') || page.url.startsWith('/api-tokens') || page.url.startsWith('/changelog') }"
-                            type="button"
-                            aria-haspopup="menu"
-                            :aria-expanded="openMenu === 'user'"
-                            @click.stop="toggleMenu('user')"
-                        >
-                            <span class="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-sky-400/15 font-bold uppercase text-sky-200">
-                                {{ auth.user.name.slice(0, 1) }}
-                            </span>
-                            <span class="min-w-0 flex-1">
-                                <span class="block truncate font-semibold text-white">{{ auth.user.name }}</span>
-                                <span class="block truncate text-xs text-slate-400">{{ auth.user.role }}</span>
-                            </span>
-                            <span class="h-2 w-2 rotate-45 border-b-2 border-r-2 border-slate-500 transition group-hover:border-slate-300" aria-hidden="true"></span>
-                        </button>
-
-                        <div v-if="openMenu === 'user'" class="fixed left-4 right-4 z-30 mt-2 overflow-hidden rounded-2xl border border-white/10 bg-slate-950 p-2 shadow-2xl shadow-black/40 sm:absolute sm:left-auto sm:right-0 sm:w-80" role="menu">
-                            <div class="border-b border-white/10 px-3 py-3">
-                                <p class="truncate text-sm font-semibold text-white">{{ auth.user.name }}</p>
-                                <p class="truncate text-xs text-slate-400">{{ auth.user.email }}</p>
-                            </div>
-
-                            <Link href="/profile" class="mt-2 block rounded-xl px-3 py-3 text-sm font-medium text-slate-200 transition hover:bg-white/10" role="menuitem" @click="closeMenu">
-                                {{ t('Edit profile') }}
-                            </Link>
-
-                            <Link v-if="can.manageUsers" href="/api-tokens" class="block rounded-xl px-3 py-3 text-sm font-medium text-slate-200 transition hover:bg-white/10" role="menuitem" @click="closeMenu">
-                                {{ t('API tokens') }}
-                            </Link>
-
-                            <Link href="/changelog" class="block rounded-xl px-3 py-3 text-sm font-medium text-slate-200 transition hover:bg-white/10" role="menuitem" @click="closeMenu">
-                                {{ t('Changelog') }}
-                            </Link>
-
-                            <div class="mt-2 rounded-xl border border-white/10 bg-white/[0.03] p-3">
-                                <div class="flex items-center justify-between gap-3">
-                                    <span class="text-xs font-semibold uppercase tracking-wide text-slate-400">{{ t('Theme') }}</span>
-                                    <button
-                                        type="button"
-                                        role="switch"
-                                        class="relative inline-flex h-9 w-20 items-center rounded-full border border-white/10 bg-white/10 p-1 text-slate-400 transition focus:outline-none focus:ring-2 focus:ring-sky-400/30 dark:bg-slate-950/70"
-                                        :aria-checked="isDark"
-                                        :aria-label="themeToggleLabel"
-                                        :title="themeName"
-                                        @click="toggleTheme"
-                                    >
-                                        <span class="absolute left-1 top-1 h-7 w-7 rounded-full bg-white shadow-sm shadow-slate-300 transition-transform dark:translate-x-11 dark:bg-slate-800 dark:shadow-black/30" aria-hidden="true"></span>
-                                        <span class="relative z-10 flex h-7 w-7 items-center justify-center text-amber-500 transition dark:text-slate-500" aria-hidden="true">
-                                            <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                                <circle cx="12" cy="12" r="4" />
-                                                <path d="M12 2v2" />
-                                                <path d="M12 20v2" />
-                                                <path d="m4.93 4.93 1.41 1.41" />
-                                                <path d="m17.66 17.66 1.41 1.41" />
-                                                <path d="M2 12h2" />
-                                                <path d="M20 12h2" />
-                                                <path d="m6.34 17.66-1.41 1.41" />
-                                                <path d="m19.07 4.93-1.41 1.41" />
-                                            </svg>
-                                        </span>
-                                        <span class="relative z-10 ml-auto flex h-7 w-7 items-center justify-center text-slate-400 transition dark:text-sky-200" aria-hidden="true">
-                                            <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                                <path d="M12 3a6 6 0 0 0 9 7.8A9 9 0 1 1 12 3Z" />
-                                            </svg>
-                                        </span>
-                                    </button>
+                        <section v-if="auth.user" class="rounded-2xl border border-white/10 bg-white/[0.03] p-3">
+                            <div class="flex items-center gap-3">
+                                <span class="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-sky-400/15 font-bold uppercase text-sky-200">
+                                    {{ auth.user.name.slice(0, 1) }}
+                                </span>
+                                <div class="min-w-0">
+                                    <p class="truncate font-semibold text-white">{{ auth.user.name }}</p>
+                                    <p class="truncate text-xs text-slate-400">{{ auth.user.email }}</p>
                                 </div>
                             </div>
 
-                            <div class="mt-2 rounded-xl border border-white/10 bg-white/[0.03] p-3">
-                                <label class="mb-2 block text-xs font-semibold uppercase tracking-wide text-slate-400" for="locale-select">{{ t('Language') }}</label>
-                                <select id="locale-select" class="input" :value="locale" @change="updateLocale">
-                                    <option v-for="availableLocale in locales" :key="availableLocale" :value="availableLocale">
-                                        {{ languageNames[availableLocale] }}
-                                    </option>
-                                </select>
+                            <div class="mt-3 grid gap-1">
+                                <Link
+                                    v-for="item in accountNav"
+                                    :key="item.href"
+                                    :href="item.href"
+                                    class="rounded-xl px-3 py-3 text-sm font-medium transition hover:bg-slate-100 dark:hover:bg-white/10"
+                                    :class="page.url.startsWith(item.href) ? 'bg-sky-400/10 text-sky-100' : 'text-slate-200'"
+                                    @click="closeMobileNav"
+                                >
+                                    {{ item.label }}
+                                </Link>
                             </div>
 
-                            <Link href="/logout" method="post" as="button" class="mt-2 flex w-full rounded-xl px-3 py-3 text-left text-sm font-semibold text-rose-200 transition hover:bg-rose-500/10 hover:text-rose-100" role="menuitem">
+                            <div class="mt-3 grid gap-3 sm:grid-cols-2">
+                                <div class="rounded-xl border border-white/10 bg-white/[0.03] p-3">
+                                    <div class="flex items-center justify-between gap-3">
+                                        <span class="text-xs font-semibold uppercase tracking-wide text-slate-400">{{ t('Theme') }}</span>
+                                        <button
+                                            type="button"
+                                            role="switch"
+                                            class="relative inline-flex h-9 w-20 items-center rounded-full border border-white/10 bg-white/10 p-1 text-slate-400 transition focus:outline-none focus:ring-2 focus:ring-sky-500/30 dark:bg-slate-950/70 dark:focus:ring-sky-400/30"
+                                            :aria-checked="isDark"
+                                            :aria-label="themeToggleLabel"
+                                            :title="themeName"
+                                            @click="toggleTheme"
+                                        >
+                                            <span class="absolute left-1 top-1 h-7 w-7 rounded-full bg-white shadow-sm shadow-slate-300 transition-transform dark:translate-x-11 dark:bg-slate-800 dark:shadow-black/30" aria-hidden="true"></span>
+                                            <span class="relative z-10 flex h-7 w-7 items-center justify-center text-amber-500 transition dark:text-slate-500" aria-hidden="true">
+                                                <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                                    <circle cx="12" cy="12" r="4" />
+                                                    <path d="M12 2v2" />
+                                                    <path d="M12 20v2" />
+                                                    <path d="m4.93 4.93 1.41 1.41" />
+                                                    <path d="m17.66 17.66 1.41 1.41" />
+                                                    <path d="M2 12h2" />
+                                                    <path d="M20 12h2" />
+                                                    <path d="m6.34 17.66-1.41 1.41" />
+                                                    <path d="m19.07 4.93-1.41 1.41" />
+                                                </svg>
+                                            </span>
+                                            <span class="relative z-10 ml-auto flex h-7 w-7 items-center justify-center text-slate-400 transition dark:text-sky-200" aria-hidden="true">
+                                                <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                                    <path d="M12 3a6 6 0 0 0 9 7.8A9 9 0 1 1 12 3Z" />
+                                                </svg>
+                                            </span>
+                                        </button>
+                                    </div>
+                                </div>
+
+                                <div class="rounded-xl border border-white/10 bg-white/[0.03] p-3">
+                                    <label class="mb-2 block text-xs font-semibold uppercase tracking-wide text-slate-400" for="mobile-locale-select">{{ t('Language') }}</label>
+                                    <select id="mobile-locale-select" class="input" :value="locale" @change="updateLocale">
+                                        <option v-for="availableLocale in locales" :key="availableLocale" :value="availableLocale">
+                                            {{ languageNames[availableLocale] }}
+                                        </option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <Link href="/logout" method="post" as="button" class="mt-3 flex w-full rounded-xl px-3 py-3 text-left text-sm font-semibold text-rose-200 transition hover:bg-rose-500/10 hover:text-rose-100" @click="closeMobileNav">
                                 {{ t('Logout') }}
                             </Link>
-                        </div>
-                    </div>
-                </nav>
+                        </section>
+                    </nav>
+                </div>
             </div>
         </header>
 
@@ -612,7 +765,7 @@ watch(shouldShowUpdateSummary, (shouldShow) => {
                         :key="item.href"
                         type="button"
                         class="flex w-full items-center justify-between gap-3 rounded-2xl px-3 py-3 text-left transition"
-                        :class="index === selectedQuickNavIndex ? 'bg-sky-400/10 text-sky-100' : 'text-slate-200 hover:bg-white/10'"
+                        :class="index === selectedQuickNavIndex ? 'bg-sky-400/10 text-sky-100' : 'text-slate-200 hover:bg-slate-100 dark:hover:bg-white/10'"
                         @mouseenter="selectedQuickNavIndex = index"
                         @click="visitQuickNavItem(item)"
                     >
@@ -648,7 +801,7 @@ watch(shouldShowUpdateSummary, (shouldShow) => {
                             <h2 class="mt-1 text-xl font-bold text-white">{{ t('What changed in VolumeVault') }}</h2>
                             <p class="mt-2 text-sm text-slate-400">{{ t('VolumeVault was updated. Review the important changes before continuing.') }}</p>
                         </div>
-                        <button type="button" class="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-white/10 bg-white/5 text-slate-300 transition hover:bg-white/10 hover:text-white" :aria-label="t('Remind me later')" @click="snoozeUpdateSummary">
+                        <button type="button" class="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-white/10 bg-white/5 text-slate-300 transition hover:bg-slate-100 hover:text-slate-950 dark:hover:bg-white/10 dark:hover:text-white" :aria-label="t('Remind me later')" @click="snoozeUpdateSummary">
                             <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
                                 <path d="M18 6 6 18" />
                                 <path d="m6 6 12 12" />

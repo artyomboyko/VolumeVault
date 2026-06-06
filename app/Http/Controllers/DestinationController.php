@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Actions\Destinations\NormalizeDestinationData;
+use App\Concerns\PaginateWithPreference;
 use App\Http\Requests\StoreDestinationRequest;
 use App\Http\Requests\UpdateDestinationRequest;
 use App\Models\ActivityLog;
@@ -14,10 +15,22 @@ use Inertia\Response;
 
 class DestinationController extends Controller
 {
-    public function index(): Response
+    use PaginateWithPreference;
+
+    public function index(Request $request): Response
     {
+        $perPage = $this->perPageForRequest($request);
+        $query = BackupDestination::query();
+
+        if ($search = $request->input('search')) {
+            $query->where('name', 'like', "%{$search}%");
+        }
+
+        $query->latest();
+
         return Inertia::render('Destinations/Index', [
-            'destinations' => BackupDestination::latest()->get()->map->safeForFrontend(),
+            'destinations' => $this->paginateForInertia($query, $perPage, fn (BackupDestination $d): array => $d->safeForFrontend()),
+            'defaultPerPage' => $request->user()->default_per_page ?? 10,
         ]);
     }
 
