@@ -121,7 +121,7 @@ const onJobKeydown = (event: KeyboardEvent, id: number) => {
         <div class="card overflow-hidden">
             <div v-if="jobs.length">
                 <div v-if="filteredJobs.length" class="divide-y divide-white/10 md:hidden">
-                    <article v-for="job in filteredJobs" :key="job.id" class="space-y-4 p-4 cursor-pointer transition hover:bg-white/[0.03]" role="link" tabindex="0" @click="viewJob(job.id)" @keydown="onJobKeydown($event, job.id)">
+                    <article v-for="job in filteredJobs" :key="job.id" class="space-y-4 p-4 cursor-pointer transition hover:bg-slate-100 dark:hover:bg-white/[0.03]" role="link" tabindex="0" @click="viewJob(job.id)" @keydown="onJobKeydown($event, job.id)">
                         <div class="flex items-start justify-between gap-3">
                             <div class="min-w-0">
                                 <h2 class="break-words font-semibold text-white">{{ job.name }}</h2>
@@ -162,7 +162,7 @@ const onJobKeydown = (event: KeyboardEvent, id: number) => {
                         </tr>
                     </thead>
                     <tbody class="divide-y divide-white/10">
-                        <tr v-for="job in filteredJobs" :key="job.id" class="cursor-pointer hover:bg-white/[0.03]" role="link" tabindex="0" @click="viewJob(job.id)" @keydown="onJobKeydown($event, job.id)">
+                        <tr v-for="job in filteredJobs" :key="job.id" class="cursor-pointer hover:bg-slate-100 dark:hover:bg-white/[0.03]" role="link" tabindex="0" @click="viewJob(job.id)" @keydown="onJobKeydown($event, job.id)">
                             <td class="px-4 py-3 font-medium text-white">{{ job.name }}</td>
                             <td class="px-4 py-3 text-slate-300">{{ sourceLabel(job) }}</td>
                             <td class="px-4 py-3 text-slate-300">{{ job.destination?.name || t('Missing') }}</td>
