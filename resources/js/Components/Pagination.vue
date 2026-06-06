@@ -82,8 +82,12 @@ const visiblePages = computed(() => {
             <span class="text-slate-600">·</span>
             <label class="flex items-center gap-1.5">
                 <span>{{ t('Per page') }}</span>
-                <select :value="currentPerPage" class="rounded border border-white/10 bg-white/5 px-2 py-1 text-xs text-slate-200 focus:border-sky-500 focus:outline-none" @change="changePerPage">
-                    <option v-for="option in pageOptions" :key="option" :value="option">{{ perPageLabel(option) }}</option>
+                <select
+                    :value="currentPerPage"
+                    class="input !w-[5rem] !rounded-lg !px-2 !py-1 !text-xs dark:[color-scheme:dark]"
+                    @change="changePerPage"
+                >
+                    <option v-for="option in pageOptions" :key="option" :value="option" class="bg-white text-slate-950 dark:bg-slate-950 dark:text-slate-100">{{ perPageLabel(option) }}</option>
                 </select>
             </label>
         </div>

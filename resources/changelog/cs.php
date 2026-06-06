@@ -77,4 +77,12 @@ return [
         'title' => 'Strankovane seznamy s preferencemi na stranku',
         'description' => 'Vsechny pohledy seznamu nyni podporuji strankovani s konfigurovatelnym poctem polozek na stranku (10, 20, 50, 100 nebo Vse). Vyzchozi hodnotu nastavite v nastaveni profilu.',
     ],
+    'dark_pagination_menu' => [
+        'title' => 'Tmave menu strankovani',
+        'description' => 'Vyber poctu polozek na stranku si po otevreni nyni zachova tmavy vzhled a lepsi kontrast ve strankovanych seznamech.',
+    ],
+    'filter_toolbar_action_buttons' => [
+        'title' => 'Obnovena primarni tlacitka',
+        'description' => 'Primarni akcni tlacitka ted sdileji stejny modre oramovany styl v cele aplikaci ve svetlem i tmavem rezimu.',
+    ],
 ];

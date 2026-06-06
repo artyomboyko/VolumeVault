@@ -69,7 +69,7 @@ const jobsHref = (volumeName: string) => `/backup-jobs?search=${encodeURICompone
                         </button>
                     </div>
                 </div>
-                <Link href="/volumes" class="btn-secondary">{{ t('View volumes') }}</Link>
+                <Link href="/volumes" class="btn-primary shrink-0">{{ t('View volumes') }}</Link>
             </div>
         </template>
 

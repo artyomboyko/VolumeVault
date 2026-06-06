@@ -77,4 +77,12 @@ return [
         'title' => 'Paginated lists with per-page preference',
         'description' => 'All list views now support pagination with configurable items per page (10, 20, 50, 100, or All). You can set your default in Profile settings.',
     ],
+    'dark_pagination_menu' => [
+        'title' => 'Темное меню пагинации',
+        'description' => 'Список выбора количества элементов на страницу теперь сохраняет темную палитру при открытии, что улучшает контраст в списках с пагинацией.',
+    ],
+    'filter_toolbar_action_buttons' => [
+        'title' => 'Обновленные основные кнопки',
+        'description' => 'Основные кнопки действий теперь используют одинаковый голубой контурный стиль по всему приложению как в светлой, так и в темной теме.',
+    ],
 ];

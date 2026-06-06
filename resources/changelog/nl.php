@@ -77,4 +77,12 @@ return [
         'title' => 'Gepagineerde lijsten met per-pagina-voorkeur',
         'description' => 'Alle lijstweergaven ondersteunen nu paginering met configureerbaar aantal items per pagina (10, 20, 50, 100, of Alle). U kunt uw standaard instellen in de profielinstellingen.',
     ],
+    'dark_pagination_menu' => [
+        'title' => 'Donker paginatiemenu',
+        'description' => 'De keuzelijst voor items per pagina behoudt nu een donker thema wanneer die wordt geopend, met beter contrast in gepagineerde lijstweergaven.',
+    ],
+    'filter_toolbar_action_buttons' => [
+        'title' => 'Vernieuwde primaire knoppen',
+        'description' => 'Primaire actieknoppen delen nu in de hele applicatie dezelfde omlijnde blauwe stijl in zowel lichte als donkere modus.',
+    ],
 ];

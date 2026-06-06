@@ -80,7 +80,7 @@ const onAlertKeydown = (event: KeyboardEvent, id: number) => {
                         </button>
                     </div>
                 </div>
-                <Link v-if="can.manageSensitiveData" href="/alerts/settings" class="btn-primary">{{ t('Alert settings') }}</Link>
+                <Link v-if="can.manageSensitiveData" href="/alerts/settings" class="btn-primary shrink-0">{{ t('Alert settings') }}</Link>
             </div>
         </template>
 
