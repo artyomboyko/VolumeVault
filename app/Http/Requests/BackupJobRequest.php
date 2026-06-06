@@ -132,7 +132,7 @@ class BackupJobRequest extends FormRequest
             return $this->boolean('use_custom_alert_settings');
         }
 
-        $job = $this->route('backupJob');
+        $job = $this->route('backup_job');
 
         return $job instanceof BackupJob && $job->use_custom_alert_settings;
     }

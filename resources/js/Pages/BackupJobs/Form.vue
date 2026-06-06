@@ -90,6 +90,16 @@ const updateAlertSizeUnit = (alertConfig: any, key: string, unit: SizeUnit) => a
 const updateSizeThreshold = (config: any, key: string, value: string, unit: SizeUnit) => config[key] = unitValueToBytes(value, unit);
 const alertConfigError = (index: number, key: string) => form.errors[`alert_configs.${index}.config.${key}`];
 
+const alertSizeKeys = ['backup_size_out_of_range_min_bytes', 'backup_size_out_of_range_max_bytes'];
+for (const alertConfig of form.alert_configs) {
+    for (const key of alertSizeKeys) {
+        const sizeKey = alertSizeUnitKey(alertConfig.alert_rule_id, key);
+        if (!(sizeKey in alertSizeUnitSelections.value)) {
+            alertSizeUnitSelections.value[sizeKey] = bestSizeUnit(alertConfig.config[key]);
+        }
+    }
+}
+
 const filteredVolumes = computed(() => {
     if (!isDockerVolumeSource.value) return [];
 
@@ -361,7 +371,6 @@ const submit = () => {
                             :class="form.notification_channel_ids.includes(channel.id) ? 'border-emerald-700 bg-emerald-600 dark:border-emerald-300/50 dark:bg-emerald-500/50' : 'border-slate-300 bg-slate-200 dark:border-white/10 dark:bg-slate-800'"
                             :aria-checked="form.notification_channel_ids.includes(channel.id)"
                             :aria-label="t('Toggle notification channel')"
-                            :disabled="!form.notifications_enabled"
                             @click="toggleNotificationChannel(channel.id)"
                         >
                             <span class="h-5 w-5 rounded-full bg-white shadow-sm transition-transform" :class="form.notification_channel_ids.includes(channel.id) ? 'translate-x-5' : 'translate-x-0 bg-slate-400'"></span>
