@@ -1,25 +1,30 @@
 <?php
 
 return [
-    'unreleased' => [
-        [
-            'type' => 'feature',
-            'key' => 'advanced_alerting',
-        ],
-        [
-            'type' => 'feature',
-            'key' => 'destination_storage_limit_alerts',
-        ],
-        [
-            'type' => 'feature',
-            'key' => 'pagination_with_user_preference',
-        ],
-        [
-            'type' => 'change',
-            'key' => 'mobile_navigation_redesign',
-        ],
-    ],
+    'unreleased' => [],
     'releases' => [
+        'v1.7.0' => [
+            'date' => '2026-06-06',
+            'url' => 'https://github.com/Darkdragon14/VolumeVault/releases/tag/v1.7.0',
+            'items' => [
+                [
+                    'type' => 'feature',
+                    'key' => 'advanced_alerting',
+                ],
+                [
+                    'type' => 'feature',
+                    'key' => 'destination_storage_limit_alerts',
+                ],
+                [
+                    'type' => 'feature',
+                    'key' => 'pagination_with_user_preference',
+                ],
+                [
+                    'type' => 'change',
+                    'key' => 'mobile_navigation_redesign',
+                ],
+            ],
+        ],
         'v1.6.0' => [
             'date' => '2026-05-29',
             'url' => 'https://github.com/Darkdragon14/VolumeVault/releases/tag/v1.6.0',
