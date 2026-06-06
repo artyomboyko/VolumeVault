@@ -41,6 +41,7 @@ const inputValue = (event: Event) => (event.target as HTMLInputElement).value;
 const selectValue = (event: Event) => (event.target as HTMLSelectElement).value as SizeUnit;
 const updateSizeUnit = (rule: any, key: string, unit: SizeUnit) => sizeUnitSelections.value[sizeUnitKey(rule.id, key)] = unit;
 const updateSizeThreshold = (config: any, key: string, value: string, unit: SizeUnit) => config[key] = unitValueToBytes(value, unit);
+const ruleConfigError = (index: number, key: string) => form.errors[`rules.${index}.config.${key}`];
 const toggleRuleNotificationChannel = (rule: any, id: number) => {
     const ids = rule.notification_channel_ids as number[];
     rule.notification_channel_ids = ids.includes(id) ? ids.filter((channelId) => channelId !== id) : [...ids, id];
@@ -82,11 +83,13 @@ const submit = () => form.put('/alerts/settings');
                         <span class="label">{{ t('Check interval') }}</span>
                         <input v-model.number="rule.config.check_interval_minutes" class="input" type="number" min="1">
                         <p class="text-xs text-slate-500">{{ t('Minutes between checks for this alert type.') }}</p>
+                        <span v-if="ruleConfigError(index, 'check_interval_minutes')" class="text-sm text-rose-300">{{ ruleConfigError(index, 'check_interval_minutes') }}</span>
                     </label>
                     <label class="space-y-2">
                         <span class="label">{{ t('Cooldown') }}</span>
                         <input v-model.number="rule.config.cooldown_minutes" class="input" type="number" min="0">
                         <p class="text-xs text-slate-500">{{ t('Minutes between reminders.') }}</p>
+                        <span v-if="ruleConfigError(index, 'cooldown_minutes')" class="text-sm text-rose-300">{{ ruleConfigError(index, 'cooldown_minutes') }}</span>
                     </label>
                     <button
                         type="button"
@@ -106,6 +109,7 @@ const submit = () => form.put('/alerts/settings');
                             </span>
                             <span class="font-medium text-white">{{ rule.config.reminder_enabled ? t('Enabled') : t('Disabled') }}</span>
                         </span>
+                        <span v-if="ruleConfigError(index, 'reminder_enabled')" class="text-sm text-rose-300">{{ ruleConfigError(index, 'reminder_enabled') }}</span>
                     </button>
                 </div>
 
@@ -113,14 +117,17 @@ const submit = () => form.put('/alerts/settings');
                     <label v-if="rule.type === 'backup_too_old'" class="space-y-2">
                         <span class="label">{{ t('Days without success') }}</span>
                         <input v-model.number="rule.config.backup_too_old_days" class="input" type="number" min="1">
+                        <span v-if="ruleConfigError(index, 'backup_too_old_days')" class="text-sm text-rose-300">{{ ruleConfigError(index, 'backup_too_old_days') }}</span>
                     </label>
                     <label v-if="rule.type === 'job_never_succeeded'" class="space-y-2">
                         <span class="label">{{ t('Minimum finished runs') }}</span>
                         <input v-model.number="rule.config.job_never_succeeded_min_runs" class="input" type="number" min="1">
+                        <span v-if="ruleConfigError(index, 'job_never_succeeded_min_runs')" class="text-sm text-rose-300">{{ ruleConfigError(index, 'job_never_succeeded_min_runs') }}</span>
                     </label>
                     <label v-if="rule.type === 'job_in_error_too_long'" class="space-y-2">
                         <span class="label">{{ t('Days in error') }}</span>
                         <input v-model.number="rule.config.job_in_error_days" class="input" type="number" min="1">
+                        <span v-if="ruleConfigError(index, 'job_in_error_days')" class="text-sm text-rose-300">{{ ruleConfigError(index, 'job_in_error_days') }}</span>
                     </label>
                     <template v-if="rule.type === 'backup_size_out_of_range'">
                         <label class="space-y-2">
@@ -138,6 +145,7 @@ const submit = () => form.put('/alerts/settings');
                                     <option v-for="unit in sizeUnits" :key="unit.label" :value="unit.label">{{ unit.label }}</option>
                                 </select>
                             </span>
+                            <span v-if="ruleConfigError(index, 'backup_size_out_of_range_min_bytes')" class="text-sm text-rose-300">{{ ruleConfigError(index, 'backup_size_out_of_range_min_bytes') }}</span>
                         </label>
                         <label class="space-y-2">
                             <span class="label">{{ t('Maximum backup size') }}</span>
@@ -154,6 +162,7 @@ const submit = () => form.put('/alerts/settings');
                                     <option v-for="unit in sizeUnits" :key="unit.label" :value="unit.label">{{ unit.label }}</option>
                                 </select>
                             </span>
+                            <span v-if="ruleConfigError(index, 'backup_size_out_of_range_max_bytes')" class="text-sm text-rose-300">{{ ruleConfigError(index, 'backup_size_out_of_range_max_bytes') }}</span>
                         </label>
                     </template>
                 </div>
@@ -179,7 +188,6 @@ const submit = () => form.put('/alerts/settings');
                     </div>
                     <p v-else class="mt-4 rounded-xl border border-amber-300/30 bg-amber-300/10 p-3 text-sm text-amber-100">{{ t('Create a notification channel before enabling external notifications for this alert.') }}</p>
                 </section>
-                <span v-if="form.errors[`rules.${index}.config.backup_size_out_of_range_max_bytes`]" class="text-sm text-rose-300">{{ form.errors[`rules.${index}.config.backup_size_out_of_range_max_bytes`] }}</span>
             </section>
 
             <div class="flex flex-wrap gap-3">

@@ -88,6 +88,7 @@ const inputValue = (event: Event) => (event.target as HTMLInputElement).value;
 const selectValue = (event: Event) => (event.target as HTMLSelectElement).value as SizeUnit;
 const updateAlertSizeUnit = (alertConfig: any, key: string, unit: SizeUnit) => alertSizeUnitSelections.value[alertSizeUnitKey(alertConfig.alert_rule_id, key)] = unit;
 const updateSizeThreshold = (config: any, key: string, value: string, unit: SizeUnit) => config[key] = unitValueToBytes(value, unit);
+const alertConfigError = (index: number, key: string) => form.errors[`alert_configs.${index}.config.${key}`];
 
 const filteredVolumes = computed(() => {
     if (!isDockerVolumeSource.value) return [];
@@ -443,6 +444,7 @@ const submit = () => {
                                 <label class="space-y-2">
                                     <span class="label">{{ t('Cooldown') }}</span>
                                     <input v-model.number="alertConfig.config.cooldown_minutes" class="input" type="number" min="0">
+                                    <span v-if="alertConfigError(index, 'cooldown_minutes')" class="text-sm text-rose-300">{{ alertConfigError(index, 'cooldown_minutes') }}</span>
                                 </label>
                                 <button
                                     type="button"
@@ -462,6 +464,7 @@ const submit = () => {
                                         </span>
                                         <span class="font-medium text-white">{{ alertConfig.config.reminder_enabled ? t('Enabled') : t('Disabled') }}</span>
                                     </span>
+                                    <span v-if="alertConfigError(index, 'reminder_enabled')" class="text-sm text-rose-300">{{ alertConfigError(index, 'reminder_enabled') }}</span>
                                 </button>
                             </div>
 
@@ -469,14 +472,17 @@ const submit = () => {
                                 <label v-if="alertConfig.type === 'backup_too_old'" class="space-y-2">
                                     <span class="label">{{ t('Days without success') }}</span>
                                     <input v-model.number="alertConfig.config.backup_too_old_days" class="input" type="number" min="1">
+                                    <span v-if="alertConfigError(index, 'backup_too_old_days')" class="text-sm text-rose-300">{{ alertConfigError(index, 'backup_too_old_days') }}</span>
                                 </label>
                                 <label v-if="alertConfig.type === 'job_never_succeeded'" class="space-y-2">
                                     <span class="label">{{ t('Minimum finished runs') }}</span>
                                     <input v-model.number="alertConfig.config.job_never_succeeded_min_runs" class="input" type="number" min="1">
+                                    <span v-if="alertConfigError(index, 'job_never_succeeded_min_runs')" class="text-sm text-rose-300">{{ alertConfigError(index, 'job_never_succeeded_min_runs') }}</span>
                                 </label>
                                 <label v-if="alertConfig.type === 'job_in_error_too_long'" class="space-y-2">
                                     <span class="label">{{ t('Days in error') }}</span>
                                     <input v-model.number="alertConfig.config.job_in_error_days" class="input" type="number" min="1">
+                                    <span v-if="alertConfigError(index, 'job_in_error_days')" class="text-sm text-rose-300">{{ alertConfigError(index, 'job_in_error_days') }}</span>
                                 </label>
                                 <template v-if="alertConfig.type === 'backup_size_out_of_range'">
                                     <label class="space-y-2">
@@ -494,6 +500,7 @@ const submit = () => {
                                                 <option v-for="unit in sizeUnits" :key="unit.label" :value="unit.label">{{ unit.label }}</option>
                                             </select>
                                         </span>
+                                        <span v-if="alertConfigError(index, 'backup_size_out_of_range_min_bytes')" class="text-sm text-rose-300">{{ alertConfigError(index, 'backup_size_out_of_range_min_bytes') }}</span>
                                     </label>
                                     <label class="space-y-2">
                                         <span class="label">{{ t('Maximum backup size') }}</span>
@@ -510,7 +517,7 @@ const submit = () => {
                                                 <option v-for="unit in sizeUnits" :key="unit.label" :value="unit.label">{{ unit.label }}</option>
                                             </select>
                                         </span>
-                                        <span v-if="form.errors[`alert_configs.${index}.config.backup_size_out_of_range_max_bytes`]" class="text-sm text-rose-300">{{ form.errors[`alert_configs.${index}.config.backup_size_out_of_range_max_bytes`] }}</span>
+                                        <span v-if="alertConfigError(index, 'backup_size_out_of_range_max_bytes')" class="text-sm text-rose-300">{{ alertConfigError(index, 'backup_size_out_of_range_max_bytes') }}</span>
                                     </label>
                                 </template>
                             </div>

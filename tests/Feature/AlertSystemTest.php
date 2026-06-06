@@ -619,6 +619,107 @@ class AlertSystemTest extends TestCase
         $this->assertSame(0, JobAlertConfig::where('backup_job_id', $job->id)->count());
     }
 
+    public function test_job_update_without_custom_alert_toggle_preserves_existing_alert_overrides(): void
+    {
+        app(EnsureAlertRules::class)->handle();
+        $job = $this->backupJob(['use_custom_alert_settings' => true]);
+        $rule = AlertRule::where('type', AlertType::BackupTooOld->value)->firstOrFail();
+        JobAlertConfig::create([
+            'backup_job_id' => $job->id,
+            'alert_rule_id' => $rule->id,
+            'enabled' => true,
+            'config' => ['backup_too_old_days' => 14],
+        ]);
+
+        $this->actingAs(User::factory()->admin()->create())
+            ->put('/backup-jobs/'.$job->id, [
+                'name' => $job->name,
+                'source_type' => BackupJob::SOURCE_TYPE_DOCKER_VOLUME,
+                'volume_name' => $job->volume_name,
+                'backup_destination_id' => $job->backup_destination_id,
+                'schedule_type' => $job->schedule_type,
+                'schedule_config' => $job->schedule_config,
+                'notifications_enabled' => true,
+                'notification_channel_ids' => [],
+                'alert_notifications_enabled' => true,
+            ])
+            ->assertSessionHasNoErrors()
+            ->assertRedirect(route('backup-jobs.index'));
+
+        $this->assertTrue($job->fresh()->use_custom_alert_settings);
+        $this->assertSame(14, JobAlertConfig::where('backup_job_id', $job->id)->where('alert_rule_id', $rule->id)->firstOrFail()->config['backup_too_old_days']);
+    }
+
+    public function test_disabled_custom_alert_settings_ignore_invalid_alert_configs(): void
+    {
+        app(EnsureAlertRules::class)->handle();
+        $job = $this->backupJob(['use_custom_alert_settings' => true]);
+        $rule = AlertRule::where('type', AlertType::BackupSizeOutOfRange->value)->firstOrFail();
+        JobAlertConfig::create([
+            'backup_job_id' => $job->id,
+            'alert_rule_id' => $rule->id,
+            'enabled' => true,
+            'config' => ['backup_size_out_of_range_min_bytes' => 1024],
+        ]);
+
+        $this->actingAs(User::factory()->admin()->create())
+            ->put('/backup-jobs/'.$job->id, [
+                'name' => $job->name,
+                'source_type' => BackupJob::SOURCE_TYPE_DOCKER_VOLUME,
+                'volume_name' => $job->volume_name,
+                'backup_destination_id' => $job->backup_destination_id,
+                'schedule_type' => $job->schedule_type,
+                'schedule_config' => $job->schedule_config,
+                'notifications_enabled' => true,
+                'notification_channel_ids' => [],
+                'use_custom_alert_settings' => false,
+                'alert_notifications_enabled' => true,
+                'alert_configs' => [[
+                    'alert_rule_id' => $rule->id,
+                    'enabled' => true,
+                    'config' => [
+                        'backup_size_out_of_range_min_bytes' => 4096,
+                        'backup_size_out_of_range_max_bytes' => 1024,
+                    ],
+                ]],
+            ])
+            ->assertSessionHasNoErrors()
+            ->assertRedirect(route('backup-jobs.index'));
+
+        $this->assertFalse($job->fresh()->use_custom_alert_settings);
+        $this->assertSame(0, JobAlertConfig::where('backup_job_id', $job->id)->count());
+    }
+
+    public function test_enabled_custom_alert_settings_validate_invalid_alert_configs(): void
+    {
+        app(EnsureAlertRules::class)->handle();
+        $job = $this->backupJob();
+        $rule = AlertRule::where('type', AlertType::BackupSizeOutOfRange->value)->firstOrFail();
+
+        $this->actingAs(User::factory()->admin()->create())
+            ->put('/backup-jobs/'.$job->id, [
+                'name' => $job->name,
+                'source_type' => BackupJob::SOURCE_TYPE_DOCKER_VOLUME,
+                'volume_name' => $job->volume_name,
+                'backup_destination_id' => $job->backup_destination_id,
+                'schedule_type' => $job->schedule_type,
+                'schedule_config' => $job->schedule_config,
+                'notifications_enabled' => true,
+                'notification_channel_ids' => [],
+                'use_custom_alert_settings' => true,
+                'alert_notifications_enabled' => true,
+                'alert_configs' => [[
+                    'alert_rule_id' => $rule->id,
+                    'enabled' => true,
+                    'config' => [
+                        'backup_size_out_of_range_min_bytes' => 4096,
+                        'backup_size_out_of_range_max_bytes' => 1024,
+                    ],
+                ]],
+            ])
+            ->assertSessionHasErrors('alert_configs.0.config.backup_size_out_of_range_max_bytes');
+    }
+
     private function enabledRule(AlertType $type, array $config = []): AlertRule
     {
         $rule = $this->disabledRule($type);

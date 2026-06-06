@@ -23,11 +23,13 @@ class BackupJobRequest extends FormRequest
     {
         $sourceType = (string) ($this->input('source_type') ?: BackupJob::SOURCE_TYPE_DOCKER_VOLUME);
         $hostPath = app(HostPathPolicy::class)->normalize($this->input('host_path'));
+        $alertConfigs = $this->customAlertSettingsEnabled() ? $this->input('alert_configs') : null;
 
         $this->merge([
             'source_type' => $sourceType,
             'host_path' => $hostPath !== '' ? $hostPath : null,
             'volume_name' => $sourceType === BackupJob::SOURCE_TYPE_HOST_PATH ? null : $this->input('volume_name'),
+            'alert_configs' => $alertConfigs,
         ]);
     }
 
@@ -124,9 +126,20 @@ class BackupJobRequest extends FormRequest
         }
     }
 
+    private function customAlertSettingsEnabled(): bool
+    {
+        if ($this->has('use_custom_alert_settings')) {
+            return $this->boolean('use_custom_alert_settings');
+        }
+
+        $job = $this->route('backupJob');
+
+        return $job instanceof BackupJob && $job->use_custom_alert_settings;
+    }
+
     private function validateAlertSizeRanges(Validator $validator): void
     {
-        foreach ($this->input('alert_configs', []) as $index => $alertConfig) {
+        foreach ($this->input('alert_configs', []) ?? [] as $index => $alertConfig) {
             $config = $alertConfig['config'] ?? [];
 
             if (! array_key_exists('backup_size_out_of_range_min_bytes', $config) || ! array_key_exists('backup_size_out_of_range_max_bytes', $config)) {
