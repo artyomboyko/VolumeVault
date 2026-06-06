@@ -42,6 +42,17 @@ const selectValue = (event: Event) => (event.target as HTMLSelectElement).value 
 const updateSizeUnit = (rule: any, key: string, unit: SizeUnit) => sizeUnitSelections.value[sizeUnitKey(rule.id, key)] = unit;
 const updateSizeThreshold = (config: any, key: string, value: string, unit: SizeUnit) => config[key] = unitValueToBytes(value, unit);
 const ruleConfigError = (index: number, key: string) => form.errors[`rules.${index}.config.${key}`];
+
+const sizeKeys = ['backup_size_out_of_range_min_bytes', 'backup_size_out_of_range_max_bytes'];
+for (const rule of form.rules) {
+    for (const key of sizeKeys) {
+        const sizeKey = sizeUnitKey(rule.id, key);
+        if (!(sizeKey in sizeUnitSelections.value)) {
+            sizeUnitSelections.value[sizeKey] = bestSizeUnit(rule.config[key]);
+        }
+    }
+}
+
 const toggleRuleNotificationChannel = (rule: any, id: number) => {
     const ids = rule.notification_channel_ids as number[];
     rule.notification_channel_ids = ids.includes(id) ? ids.filter((channelId) => channelId !== id) : [...ids, id];
