@@ -1,17 +1,22 @@
 <?php
 
 return [
-    'unreleased' => [
-        [
-            'type' => 'change',
-            'key' => 'dark_pagination_menu',
-        ],
-        [
-            'type' => 'change',
-            'key' => 'filter_toolbar_action_buttons',
-        ],
-    ],
+    'unreleased' => [],
     'releases' => [
+        'v1.7.1' => [
+            'date' => '2026-06-06',
+            'url' => 'https://github.com/Darkdragon14/VolumeVault/releases/tag/v1.7.1',
+            'items' => [
+                [
+                    'type' => 'change',
+                    'key' => 'dark_pagination_menu',
+                ],
+                [
+                    'type' => 'change',
+                    'key' => 'filter_toolbar_action_buttons',
+                ],
+            ],
+        ],
         'v1.7.0' => [
             'date' => '2026-06-06',
             'url' => 'https://github.com/Darkdragon14/VolumeVault/releases/tag/v1.7.0',
