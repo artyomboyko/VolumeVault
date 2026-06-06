@@ -15,7 +15,22 @@ use Throwable;
 
 class DestinationStorageLimitCheck implements AlertCheckAction
 {
+    /** @var list<string> Subject keys that errored during the check */
+    private array $erroredSubjectKeys = [];
+
     public function __construct(private readonly DestinationStorage $destinationStorage) {}
+
+    /** @return array{findings: array, erroredSubjectKeys: list<string>} */
+    public function handleWithErrors(AlertRule $rule): array
+    {
+        $this->erroredSubjectKeys = [];
+        $findings = $this->handle($rule);
+
+        return [
+            'findings' => $findings,
+            'erroredSubjectKeys' => $this->erroredSubjectKeys,
+        ];
+    }
 
     public function handle(AlertRule $rule): array
     {
@@ -42,6 +57,8 @@ class DestinationStorageLimitCheck implements AlertCheckAction
                     ActivityLog::record('destination_storage_limit_check_failed', 'Destination storage limit check failed.', $destination, [
                         'error' => str($exception->getMessage())->limit(1000)->toString(),
                     ]);
+
+                    $this->erroredSubjectKeys[] = $destination->getMorphClass().':'.$destination->getKey();
 
                     if ($existing = $this->activeAlert($rule, $destination)) {
                         $findings[] = [

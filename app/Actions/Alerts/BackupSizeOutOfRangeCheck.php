@@ -89,7 +89,9 @@ class BackupSizeOutOfRangeCheck implements AlertCheckAction
             })
             ->where('backup_runs.status', BackupRun::STATUS_SUCCESS)
             ->whereNotNull('backup_runs.backup_size_bytes')
+            ->orderByDesc('backup_runs.id')
             ->get()
+            ->unique('backup_job_id')
             ->keyBy('backup_job_id');
     }
 

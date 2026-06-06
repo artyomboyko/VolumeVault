@@ -29,7 +29,15 @@ class RunAllAlertChecks
 
     public function handle(AlertRule $rule): void
     {
-        $findings = $this->checkAction($rule->type)->handle($rule);
+        if ($rule->type === AlertType::DestinationStorageLimit) {
+            $result = $this->destinationStorageLimitCheck->handleWithErrors($rule);
+            $findings = $result['findings'];
+            $erroredSubjectKeys = $result['erroredSubjectKeys'];
+        } else {
+            $findings = $this->checkAction($rule->type)->handle($rule);
+            $erroredSubjectKeys = [];
+        }
+
         $activeSubjectKeys = [];
 
         foreach ($findings as $finding) {
@@ -37,7 +45,7 @@ class RunAllAlertChecks
             $this->trigger($rule, $finding);
         }
 
-        $this->resolveMissing($rule, $activeSubjectKeys);
+        $this->resolveMissing($rule, $activeSubjectKeys, $erroredSubjectKeys);
     }
 
     private function checkAction(AlertType $type): AlertCheckAction
@@ -102,15 +110,17 @@ class RunAllAlertChecks
         return $previousSeverity === AlertSeverity::Warning && $currentSeverity === AlertSeverity::Critical;
     }
 
-    /** @param array<string, bool> $activeSubjectKeys */
-    private function resolveMissing(AlertRule $rule, array $activeSubjectKeys): void
+    /** @param array<string, bool> $activeSubjectKeys @param list<string> $erroredSubjectKeys */
+    private function resolveMissing(AlertRule $rule, array $activeSubjectKeys, array $erroredSubjectKeys = []): void
     {
         Alert::query()
             ->where('alert_rule_id', $rule->id)
             ->where('status', AlertStatus::Active->value)
             ->get()
-            ->each(function (Alert $alert) use ($activeSubjectKeys): void {
-                if (isset($activeSubjectKeys[$this->alertSubjectKey($alert)])) {
+            ->each(function (Alert $alert) use ($activeSubjectKeys, $erroredSubjectKeys): void {
+                $key = $this->alertSubjectKey($alert);
+
+                if (isset($activeSubjectKeys[$key]) || in_array($key, $erroredSubjectKeys, true)) {
                     return;
                 }
 
