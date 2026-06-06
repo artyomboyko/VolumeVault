@@ -77,4 +77,12 @@ return [
         'title' => 'Liste paginate con preferenza per pagina',
         'description' => 'Tutte le viste elenco ora supportano la paginazione con elementi configurabili per pagina (10, 20, 50, 100, o Tutti). Puoi impostare il tuo predefinito nelle impostazioni del profilo.',
     ],
+    'dark_pagination_menu' => [
+        'title' => 'Menu scuro di paginazione',
+        'description' => 'Il selettore degli elementi per pagina mantiene ora uno stile scuro quando viene aperto, con un contrasto migliore nelle viste elenco paginate.',
+    ],
+    'filter_toolbar_action_buttons' => [
+        'title' => 'Pulsanti primari rinnovati',
+        'description' => 'I pulsanti di azione principali condividono ora lo stesso stile azzurro delineato in tutta l applicazione, sia in tema chiaro sia scuro.',
+    ],
 ];

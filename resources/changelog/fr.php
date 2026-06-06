@@ -77,4 +77,12 @@ return [
         'title' => 'Listes paginees avec preference par page',
         'description' => "Toutes les vues listees supportent maintenant la pagination avec un nombre d'elements par page configurable (10, 20, 50, 100, ou Tous). Vous pouvez definir votre valeur par defaut dans les parametres du profil.",
     ],
+    'dark_pagination_menu' => [
+        'title' => 'Menu de pagination en theme sombre',
+        'description' => "Le menu du nombre d'elements par page conserve maintenant une palette adaptee au theme sombre lorsqu'il est ouvert, avec un meilleur contraste dans les vues paginees.",
+    ],
+    'filter_toolbar_action_buttons' => [
+        'title' => 'Boutons primaires harmonises',
+        'description' => 'Les boutons d action principaux partagent maintenant le meme style souligne bleu dans toute l application, en theme clair comme en theme sombre.',
+    ],
 ];

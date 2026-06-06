@@ -78,7 +78,7 @@ const onJobKeydown = (event: KeyboardEvent, id: number) => {
                         </button>
                     </div>
                 </div>
-                <Link v-if="can.runDockerActions" href="/backup-jobs/create" class="inline-flex shrink-0 items-center gap-2 rounded-xl border border-sky-300/30 bg-sky-400/10 px-3 py-2 text-sm font-semibold text-sky-100 transition hover:bg-sky-400/15 hover:text-sky-50">
+                <Link v-if="can.runDockerActions" href="/backup-jobs/create" class="btn-primary shrink-0 gap-2 px-3">
                     <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
                         <path d="M12 5v14" />
                         <path d="M5 12h14" />

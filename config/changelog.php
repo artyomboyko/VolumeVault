@@ -1,7 +1,16 @@
 <?php
 
 return [
-    'unreleased' => [],
+    'unreleased' => [
+        [
+            'type' => 'change',
+            'key' => 'dark_pagination_menu',
+        ],
+        [
+            'type' => 'change',
+            'key' => 'filter_toolbar_action_buttons',
+        ],
+    ],
     'releases' => [
         'v1.7.0' => [
             'date' => '2026-06-06',

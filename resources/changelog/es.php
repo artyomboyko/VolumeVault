@@ -77,4 +77,12 @@ return [
         'title' => 'Listas paginadas con preferencia por pagina',
         'description' => 'Todas las vistas de lista ahora soportan paginacion con configuracion de elementos por pagina (10, 20, 50, 100, o Todos). Puede establecer su predeterminado en la configuracion del perfil.',
     ],
+    'dark_pagination_menu' => [
+        'title' => 'Menu oscuro de paginacion',
+        'description' => 'El selector de elementos por pagina mantiene ahora una apariencia oscura al abrirse, con mejor contraste en las vistas de lista paginadas.',
+    ],
+    'filter_toolbar_action_buttons' => [
+        'title' => 'Botones primarios renovados',
+        'description' => 'Los botones de accion primarios ahora comparten el mismo estilo azul delineado en toda la aplicacion, tanto en modo claro como oscuro.',
+    ],
 ];

@@ -77,4 +77,12 @@ return [
         'title' => 'Seitenisierte Listen mit Seiteneinstellung',
         'description' => 'Alle Listenansichten unterstuetzen jetzt Seitennummern mit konfigurierbaren Eintraegen pro Seite (10, 20, 50, 100 oder Alle). Sie koennen Ihren Standard in den Profileinstellungen festlegen.',
     ],
+    'dark_pagination_menu' => [
+        'title' => 'Dunkles Paginationsmenue',
+        'description' => 'Das Auswahlfeld fuer Eintraege pro Seite behaelt jetzt beim Oeffnen eine dunkle Darstellung und besseren Kontrast in seitenisierten Listenansichten.',
+    ],
+    'filter_toolbar_action_buttons' => [
+        'title' => 'Aktualisierte Primaer-Schaltflaechen',
+        'description' => 'Primaere Aktionsschaltflaechen verwenden jetzt in der gesamten Anwendung denselben blau umrandeten Stil in heller und dunkler Darstellung.',
+    ],
 ];

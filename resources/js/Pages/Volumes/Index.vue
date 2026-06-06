@@ -70,7 +70,7 @@ const sync = () => router.post('/volumes/sync');
                         </button>
                     </div>
                 </div>
-                <button v-if="can.runDockerActions" class="btn-primary" @click="sync">{{ t('Sync volumes') }}</button>
+                <button v-if="can.runDockerActions" class="btn-primary shrink-0" @click="sync">{{ t('Sync volumes') }}</button>
             </div>
         </template>
 

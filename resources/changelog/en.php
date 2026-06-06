@@ -77,4 +77,12 @@ return [
         'title' => 'Paginated lists with per-page preference',
         'description' => 'All list views now support pagination with configurable items per page (10, 20, 50, 100, or All). You can set your default in Profile settings.',
     ],
+    'dark_pagination_menu' => [
+        'title' => 'Dark pagination menu',
+        'description' => 'The items-per-page dropdown now keeps a dark theme palette when its menu is open, improving contrast in paginated list views.',
+    ],
+    'filter_toolbar_action_buttons' => [
+        'title' => 'Refreshed primary buttons',
+        'description' => 'Primary action buttons now share the same outlined sky style in both light and dark mode across the application.',
+    ],
 ];

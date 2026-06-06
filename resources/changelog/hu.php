@@ -77,4 +77,12 @@ return [
         'title' => 'Lapozott listak oldalankenti beallitassal',
         'description' => 'Az osszes listanézet mostmar tamogatja a lapozast konfiguralhato elemekkel oldalankent (10, 20, 50, 100, vagy Osszes). Alapertelmezett beallitasat a profil beallitasokban adhatja meg.',
     ],
+    'dark_pagination_menu' => [
+        'title' => 'Sotet lapozasi menu',
+        'description' => 'Az oldalmennyiseg-valaszto megnyitva is megorzi a sotet megjelenest, jobb kontraszttal a lapozott listakban.',
+    ],
+    'filter_toolbar_action_buttons' => [
+        'title' => 'Megujult elsoleges gombok',
+        'description' => 'Az elsoleges muveletgombok most az alkalmazas egeszeben ugyanazt a kek keretes stilust kapjak vilagos es sotet temaban is.',
+    ],
 ];
