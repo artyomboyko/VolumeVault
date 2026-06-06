@@ -21,10 +21,8 @@ class AlertRuleController extends Controller
         ]);
     }
 
-    public function update(UpdateAlertRulesRequest $request, EnsureAlertRules $ensureAlertRules)
+    public function update(UpdateAlertRulesRequest $request)
     {
-        $ensureAlertRules->handle();
-
         foreach ($request->alertRules() as $rule) {
             $alertRule = AlertRule::findOrFail($rule['id']);
             $alertRule->update([

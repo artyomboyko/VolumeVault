@@ -57,12 +57,16 @@ class DestinationStorage
     /** @return array{used_bytes: int, object_count: int} */
     public function storageUsage(BackupDestination $destination): array
     {
-        $objects = $this->listAllObjects($destination);
+        $cacheKey = 'destination_storage_usage_bytes_'.$destination->id;
 
-        return [
-            'used_bytes' => (int) collect($objects)->sum(fn (array $object): int => (int) ($object['size'] ?? 0)),
-            'object_count' => count($objects),
-        ];
+        return \Illuminate\Support\Facades\Cache::remember($cacheKey, now()->addMinutes(30), function () use ($destination): array {
+            $objects = $this->listAllObjects($destination);
+
+            return [
+                'used_bytes' => (int) collect($objects)->sum(fn (array $object): int => (int) ($object['size'] ?? 0)),
+                'object_count' => count($objects),
+            ];
+        });
     }
 
     public function upload(BackupDestination $destination, string $sourcePath, string $filename, ?string $directory = null): string

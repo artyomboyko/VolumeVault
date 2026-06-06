@@ -19,6 +19,7 @@ use App\Models\User;
 use App\Services\Docker\DockerProcess;
 use App\Services\Docker\DockerProcessResult;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\File;
 use Mockery;
 use Tests\TestCase;
@@ -222,7 +223,7 @@ class AlertSystemTest extends TestCase
     {
         $directory = $this->storageLimitDirectory('delta');
         File::put($directory.'/first.tar.gz', str_repeat('x', 2048));
-        $this->localDestination($directory, [
+        $destination = $this->localDestination($directory, [
             'storage_limit_warning_bytes' => 1024,
             'storage_limit_critical_bytes' => 4096,
         ]);
@@ -237,6 +238,7 @@ class AlertSystemTest extends TestCase
 
         File::put($directory.'/second.tar.gz', str_repeat('x', 3072));
 
+        Cache::forget('destination_storage_usage_bytes_'.$destination->id);
         app(RunAllAlertChecks::class)->handle($rule);
 
         $alert->refresh();
@@ -250,7 +252,7 @@ class AlertSystemTest extends TestCase
     {
         $directory = $this->storageLimitDirectory('escalation');
         File::put($directory.'/archive.tar.gz', str_repeat('x', 2048));
-        $this->localDestination($directory, [
+        $destination = $this->localDestination($directory, [
             'storage_limit_warning_bytes' => 1024,
             'storage_limit_critical_bytes' => 4096,
         ]);
@@ -271,6 +273,7 @@ class AlertSystemTest extends TestCase
 
         app(RunAllAlertChecks::class)->handle($rule);
         File::put($directory.'/larger.tar.gz', str_repeat('x', 3072));
+        Cache::forget('destination_storage_usage_bytes_'.$destination->id);
         app(RunAllAlertChecks::class)->handle($rule);
 
         $this->assertSame(AlertSeverity::Critical, Alert::firstOrFail()->severity);
@@ -293,7 +296,7 @@ class AlertSystemTest extends TestCase
     {
         $directory = $this->storageLimitDirectory('resolve');
         File::put($directory.'/archive.tar.gz', str_repeat('x', 2048));
-        $this->localDestination($directory, [
+        $destination = $this->localDestination($directory, [
             'storage_limit_warning_bytes' => 1024,
             'storage_limit_critical_bytes' => 4096,
         ]);
@@ -304,6 +307,7 @@ class AlertSystemTest extends TestCase
 
         File::cleanDirectory($directory);
 
+        Cache::forget('destination_storage_usage_bytes_'.$destination->id);
         app(RunAllAlertChecks::class)->handle($rule);
 
         $this->assertSame(AlertStatus::Resolved, $alert->fresh()->status);
@@ -313,7 +317,7 @@ class AlertSystemTest extends TestCase
     {
         $directory = $this->storageLimitDirectory('resolved-message');
         File::put($directory.'/archive.tar.gz', str_repeat('x', 2048));
-        $this->localDestination($directory, ['storage_limit_warning_bytes' => 1024]);
+        $destination = $this->localDestination($directory, ['storage_limit_warning_bytes' => 1024]);
         $rule = $this->enabledRule(AlertType::DestinationStorageLimit);
         $channel = NotificationChannel::create([
             'name' => 'Storage alerts',
@@ -341,6 +345,7 @@ class AlertSystemTest extends TestCase
 
         app(RunAllAlertChecks::class)->handle($rule);
         File::cleanDirectory($directory);
+        Cache::forget('destination_storage_usage_bytes_'.$destination->id);
         app(RunAllAlertChecks::class)->handle($rule);
 
         $resolvedMessage = $dockerProcess->messages[1] ?? '';

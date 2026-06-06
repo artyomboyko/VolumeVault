@@ -13,10 +13,6 @@ return [
         'title' => 'Improved mobile navigation',
         'description' => 'The mobile header now uses a compact menu button and a structured navigation panel instead of stacking every link in the header.',
     ],
-    'alert_rule_pause_and_size_fixes' => [
-        'title' => 'Alert rule fixes',
-        'description' => 'Alert thresholds now preserve cleared maximums, paused jobs stay out of automated error alerts, critical escalations notify immediately, and disabled per-job overrides no longer go stale.',
-    ],
     'keyboard_shortcuts' => [
         'title' => 'Keyboard shortcuts',
         'description' => 'On desktop, use Ctrl+K for quick navigation, g-prefixed shortcuts for views, and / to focus list search.',

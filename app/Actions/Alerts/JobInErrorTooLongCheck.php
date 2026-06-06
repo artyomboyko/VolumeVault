@@ -18,7 +18,7 @@ class JobInErrorTooLongCheck implements AlertCheckAction
             ->where('status', BackupJob::STATUS_ERROR)
             ->whereNotNull('last_error_at')
             ->with('alertConfigs')
-            ->get()
+            ->cursor()
             ->each(function (BackupJob $job) use ($rule, &$findings): void {
                 $effective = $this->resolveEffectiveAlertConfig->handle($job, $rule);
 

@@ -22,7 +22,7 @@ class JobNeverSucceededCheck implements AlertCheckAction
             ->withCount(['runs as completed_runs_count' => function ($query): void {
                 $query->whereIn('status', [BackupRun::STATUS_SUCCESS, BackupRun::STATUS_FAILED]);
             }])
-            ->get()
+            ->cursor()
             ->each(function (BackupJob $job) use ($rule, &$findings): void {
                 $effective = $this->resolveEffectiveAlertConfig->handle($job, $rule);
 

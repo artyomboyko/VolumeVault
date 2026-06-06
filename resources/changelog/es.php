@@ -13,10 +13,6 @@ return [
         'title' => 'Navegacion movil mejorada',
         'description' => 'El encabezado movil ahora usa un boton de menu compacto y un panel de navegacion estructurado en lugar de apilar todos los enlaces en el encabezado.',
     ],
-    'alert_rule_pause_and_size_fixes' => [
-        'title' => 'Alert rule fixes',
-        'description' => 'Alert thresholds now preserve cleared maximums, paused jobs stay out of automated error alerts, critical escalations notify immediately, and disabled per-job overrides no longer go stale.',
-    ],
     'keyboard_shortcuts' => [
         'title' => 'Atajos de teclado',
         'description' => 'En escritorio, use Ctrl+K para navegacion rapida, atajos con prefijo g para vistas y / para enfocar la busqueda de listas.',

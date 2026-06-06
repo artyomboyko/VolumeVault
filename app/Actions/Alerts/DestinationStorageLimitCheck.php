@@ -9,6 +9,7 @@ use App\Models\Alert;
 use App\Models\AlertRule;
 use App\Models\BackupDestination;
 use App\Services\BackupDestinations\DestinationStorage;
+use App\Support\FormatBytes;
 use Illuminate\Support\Facades\Cache;
 use Throwable;
 
@@ -68,24 +69,24 @@ class DestinationStorageLimitCheck implements AlertCheckAction
                 $findings[] = [
                     'subject' => $destination,
                     'severity' => $severity,
-                    'message' => 'Destination "'.$destination->name.'" is using '.$this->formatBytes($usedBytes).' of backup storage.',
+                    'message' => 'Destination "'.$destination->name.'" is using '.FormatBytes::format($usedBytes).' of backup storage.',
                     'context' => [
                         'destination_id' => $destination->id,
                         'destination' => $destination->name,
                         'provider' => $destination->provider,
                         'target' => $destination->targetLabel(),
                         'used_bytes' => $usedBytes,
-                        'used' => $this->formatBytes($usedBytes),
+                        'used' => FormatBytes::format($usedBytes),
                         'warning_threshold_bytes' => $thresholds['warning'],
-                        'warning_threshold' => $thresholds['warning'] !== null ? $this->formatBytes($thresholds['warning']) : null,
+                        'warning_threshold' => $thresholds['warning'] !== null ? FormatBytes::format($thresholds['warning']) : null,
                         'critical_threshold_bytes' => $thresholds['critical'],
-                        'critical_threshold' => $thresholds['critical'] !== null ? $this->formatBytes($thresholds['critical']) : null,
+                        'critical_threshold' => $thresholds['critical'] !== null ? FormatBytes::format($thresholds['critical']) : null,
                         'threshold' => $severity === AlertSeverity::Critical ? 'critical' : 'warning',
                         'object_count' => (int) $usage['object_count'],
                         'previous_used_bytes' => $delta['previous_used_bytes'],
-                        'previous_used' => $delta['previous_used_bytes'] !== null ? $this->formatBytes($delta['previous_used_bytes']) : null,
+                        'previous_used' => $delta['previous_used_bytes'] !== null ? FormatBytes::format($delta['previous_used_bytes']) : null,
                         'delta_bytes' => $delta['delta_bytes'],
-                        'delta' => $delta['delta_bytes'] !== null ? $this->formatSignedBytes($delta['delta_bytes']) : null,
+                        'delta' => $delta['delta_bytes'] !== null ? FormatBytes::formatSigned($delta['delta_bytes']) : null,
                     ],
                 ];
             });
@@ -165,22 +166,4 @@ class DestinationStorageLimitCheck implements AlertCheckAction
             ->first();
     }
 
-    private function formatBytes(int $bytes): string
-    {
-        if ($bytes === 0) {
-            return '0 B';
-        }
-
-        $units = ['B', 'KB', 'MB', 'GB', 'TB'];
-        $index = min((int) floor(log($bytes, 1024)), count($units) - 1);
-
-        return round($bytes / (1024 ** $index), 1).' '.$units[$index];
-    }
-
-    private function formatSignedBytes(int $bytes): string
-    {
-        $prefix = $bytes > 0 ? '+' : ($bytes < 0 ? '-' : '');
-
-        return $prefix.$this->formatBytes(abs($bytes));
-    }
 }

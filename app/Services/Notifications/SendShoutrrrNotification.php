@@ -12,6 +12,7 @@ use App\Models\BackupRun;
 use App\Models\NotificationChannel;
 use App\Services\Docker\DockerProcess;
 use App\Services\Docker\DockerProcessResult;
+use App\Support\FormatBytes;
 use Illuminate\Database\Eloquent\Collection;
 
 class SendShoutrrrNotification
@@ -189,7 +190,7 @@ class SendShoutrrrNotification
         }
 
         if ($run->backup_size_bytes !== null) {
-            $lines[] = 'Backup size: '.$this->formatBytes($run->backup_size_bytes);
+            $lines[] = 'Backup size: '.FormatBytes::format($run->backup_size_bytes);
         }
 
         if ($run->error_message) {
@@ -247,23 +248,11 @@ class SendShoutrrrNotification
             'status' => $run->status,
             'trigger' => $run->trigger,
             'duration' => $run->duration_seconds !== null ? $run->duration_seconds.'s' : '',
-            'backup_size' => $run->backup_size_bytes !== null ? $this->formatBytes($run->backup_size_bytes) : '',
+            'backup_size' => $run->backup_size_bytes !== null ? FormatBytes::format($run->backup_size_bytes) : '',
             'error' => $run->error_message ?? '',
         ];
 
         return preg_replace_callback('/{{\s*([a-z_]+)\s*}}/i', fn ($matches) => $values[strtolower($matches[1])] ?? $matches[0], $template);
-    }
-
-    private function formatBytes(int $bytes): string
-    {
-        if ($bytes === 0) {
-            return '0 B';
-        }
-
-        $units = ['B', 'KB', 'MB', 'GB', 'TB'];
-        $index = min((int) floor(log($bytes, 1024)), count($units) - 1);
-
-        return round($bytes / (1024 ** $index), 1).' '.$units[$index];
     }
 
     private function formatContext(array $context): string

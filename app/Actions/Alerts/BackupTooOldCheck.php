@@ -18,7 +18,7 @@ class BackupTooOldCheck implements AlertCheckAction
             ->where('status', '!=', BackupJob::STATUS_PAUSED)
             ->whereNotNull('last_success_at')
             ->with('alertConfigs')
-            ->get()
+            ->cursor()
             ->each(function (BackupJob $job) use ($rule, &$findings): void {
                 $effective = $this->resolveEffectiveAlertConfig->handle($job, $rule);
 

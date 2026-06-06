@@ -13,10 +13,6 @@ return [
         'title' => 'Navigation mobile amelioree',
         'description' => "L'en-tete mobile utilise maintenant un bouton de menu compact et un panneau de navigation structure au lieu d'empiler tous les liens dans l'en-tete.",
     ],
-    'alert_rule_pause_and_size_fixes' => [
-        'title' => "Correctifs d'alertes",
-        'description' => 'Les seuils d alerte conservent les maximums effaces, les taches en pause restent hors des alertes d erreur automatiques, les escalades critiques notifient immediatement et les overrides par tache desactives ne deviennent plus obsoletes.',
-    ],
     'keyboard_shortcuts' => [
         'title' => 'Raccourcis clavier',
         'description' => 'Sur desktop, utilisez Ctrl+K pour la navigation rapide, les raccourcis commencant par g pour les vues et / pour cibler la recherche des listes.',

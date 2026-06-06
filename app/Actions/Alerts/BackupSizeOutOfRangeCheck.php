@@ -6,6 +6,7 @@ use App\Enums\AlertSeverity;
 use App\Models\AlertRule;
 use App\Models\BackupJob;
 use App\Models\BackupRun;
+use App\Support\FormatBytes;
 
 class BackupSizeOutOfRangeCheck implements AlertCheckAction
 {
@@ -68,7 +69,7 @@ class BackupSizeOutOfRangeCheck implements AlertCheckAction
                     'context' => [
                         'backup_run_id' => $run->id,
                         'backup_size_bytes' => $size,
-                        'backup_size' => $this->formatBytes($size),
+                        'backup_size' => FormatBytes::format($size),
                         'min_bytes' => $minBytes,
                         'max_bytes' => $maxBytes,
                     ],
@@ -92,15 +93,4 @@ class BackupSizeOutOfRangeCheck implements AlertCheckAction
         return max(0, (int) $config[$key]);
     }
 
-    private function formatBytes(int $bytes): string
-    {
-        if ($bytes === 0) {
-            return '0 B';
-        }
-
-        $units = ['B', 'KB', 'MB', 'GB', 'TB'];
-        $index = min((int) floor(log($bytes, 1024)), count($units) - 1);
-
-        return round($bytes / (1024 ** $index), 1).' '.$units[$index];
-    }
 }
