@@ -85,4 +85,8 @@ return [
         'title' => 'Boutons primaires harmonises',
         'description' => 'Les boutons d action principaux partagent maintenant le meme style souligne bleu dans toute l application, en theme clair comme en theme sombre.',
     ],
+    'shareable_filter_urls' => [
+        'title' => 'URLs de filtres partageables',
+        'description' => 'Les filtres des listes Volumes, Stacks, Taches de sauvegarde et Alertes sont maintenant refletes dans l URL, permettant de copier et partager des vues filtrees directement.',
+    ],
 ];

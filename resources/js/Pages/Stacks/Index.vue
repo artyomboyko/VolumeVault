@@ -6,16 +6,20 @@ import { Head, Link, usePage } from '@inertiajs/vue3';
 import { computed, ref } from 'vue';
 import { useI18n } from '@/i18n';
 import { formatBytes } from '@/Composables/useFormatBytes';
-import { initialSearchFromUrl, matchesSearch, useListFilters } from '@/Composables/useListFilters';
+import { matchesSearch, readFiltersFromUrl, useListFilters, useUrlFilters } from '@/Composables/useListFilters';
 
 const props = defineProps<{ stacks: any[] }>();
 
 const page = usePage();
 const can = page.props.can as { runDockerActions?: boolean };
 const { t, formatDate } = useI18n();
-const search = ref(initialSearchFromUrl());
+const search = ref('');
 const backupFilter = ref('');
 const filtersVisible = ref(false);
+
+readFiltersFromUrl({ search, backup_status: backupFilter });
+useUrlFilters({ search, backup_status: backupFilter }, { debounce: 300 });
+
 const { hasActiveFilters, resetFilters } = useListFilters([search, backupFilter]);
 const { activeFilterCount: activeAdvancedFilterCount } = useListFilters([backupFilter]);
 

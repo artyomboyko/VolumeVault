@@ -85,4 +85,8 @@ return [
         'title' => 'Pulsanti primari rinnovati',
         'description' => 'I pulsanti di azione principali condividono ora lo stesso stile azzurro delineato in tutta l applicazione, sia in tema chiaro sia scuro.',
     ],
+    'shareable_filter_urls' => [
+        'title' => 'URL filtri condivisibili',
+        'description' => 'I filtri delle liste Volumi, Stack, Processi backup e Avvisi ora sono riflessi nell URL, permettendo di copiare e condividere viste filtrate direttamente.',
+    ],
 ];

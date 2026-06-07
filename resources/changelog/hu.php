@@ -85,4 +85,8 @@ return [
         'title' => 'Megujult elsoleges gombok',
         'description' => 'Az elsoleges muveletgombok most az alkalmazas egeszeben ugyanazt a kek keretes stilust kapjak vilagos es sotet temaban is.',
     ],
+    'shareable_filter_urls' => [
+        'title' => 'Megoszthato szuro URL-ek',
+        'description' => 'A Kotekek, Stackek, Mentesi feladatok es Riasztasok listaszuroi mostmar megjelennek az URL-ben, igy a szurt nezeteket kozvetlenul masolhatja es megoszthatja.',
+    ],
 ];

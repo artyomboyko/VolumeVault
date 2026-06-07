@@ -85,4 +85,8 @@ return [
         'title' => 'Refreshed primary buttons',
         'description' => 'Primary action buttons now share the same outlined sky style in both light and dark mode across the application.',
     ],
+    'shareable_filter_urls' => [
+        'title' => 'Shareable filter URLs',
+        'description' => 'List filters on Volumes, Stacks, Backup Jobs, and Alerts are now reflected in the URL so you can copy and share filtered views directly.',
+    ],
 ];

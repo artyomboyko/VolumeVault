@@ -1,7 +1,12 @@
 <?php
 
 return [
-    'unreleased' => [],
+    'unreleased' => [
+        [
+            'type' => 'feature',
+            'key' => 'shareable_filter_urls',
+        ],
+    ],
     'releases' => [
         'v1.7.1' => [
             'date' => '2026-06-06',

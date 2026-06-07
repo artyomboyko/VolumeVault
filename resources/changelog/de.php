@@ -85,4 +85,8 @@ return [
         'title' => 'Aktualisierte Primaer-Schaltflaechen',
         'description' => 'Primaere Aktionsschaltflaechen verwenden jetzt in der gesamten Anwendung denselben blau umrandeten Stil in heller und dunkler Darstellung.',
     ],
+    'shareable_filter_urls' => [
+        'title' => 'Teilbare Filter-URLs',
+        'description' => 'Filter in Listen fuer Volumes, Stacks, Backup-Jobs und Warnungen werden jetzt in der URL angezeigt, sodass Sie gefilterte Ansichten direkt kopieren und teilen koennen.',
+    ],
 ];

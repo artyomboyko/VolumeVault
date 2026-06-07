@@ -5,7 +5,7 @@ import AppLayout from '@/Layouts/AppLayout.vue';
 import { Head, router, usePage } from '@inertiajs/vue3';
 import { useI18n } from '@/i18n';
 import { computed, ref } from 'vue';
-import { initialSearchFromUrl, matchesSearch, uniqueSortedOptions, useListFilters } from '@/Composables/useListFilters';
+import { matchesSearch, readFiltersFromUrl, uniqueSortedOptions, useListFilters, useUrlFilters } from '@/Composables/useListFilters';
 import { formatBytes } from '@/Composables/useFormatBytes';
 
 const props = defineProps<{ volumes: any[] }>();
@@ -13,12 +13,16 @@ const props = defineProps<{ volumes: any[] }>();
 const page = usePage();
 const can = page.props.can as { runDockerActions?: boolean };
 const { t, formatDate } = useI18n();
-const search = ref(initialSearchFromUrl());
+const search = ref('');
 const statusFilter = ref('');
 const driverFilter = ref('');
 const stackFilter = ref('');
 const backupFilter = ref('');
 const filtersVisible = ref(false);
+
+readFiltersFromUrl({ search, status: statusFilter, driver: driverFilter, stack: stackFilter, backup_status: backupFilter });
+useUrlFilters({ search, status: statusFilter, driver: driverFilter, stack: stackFilter, backup_status: backupFilter }, { debounce: 300 });
+
 const { hasActiveFilters, resetFilters } = useListFilters([search, statusFilter, driverFilter, stackFilter, backupFilter]);
 const { activeFilterCount: activeAdvancedFilterCount } = useListFilters([statusFilter, driverFilter, stackFilter, backupFilter]);
 
