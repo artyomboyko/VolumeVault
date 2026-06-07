@@ -85,4 +85,8 @@ return [
         'title' => 'Obnovena primarni tlacitka',
         'description' => 'Primarni akcni tlacitka ted sdileji stejny modre oramovany styl v cele aplikaci ve svetlem i tmavem rezimu.',
     ],
+    'shareable_filter_urls' => [
+        'title' => 'Sditelne URL s filtry',
+        'description' => 'Filtry seznamu Svazku, Stacku, Zaloznich uloh a Upozorneni se nyni promitaji v URL, umoznujici kopirovani a sdileni filtrovanych pohledu primo.',
+    ],
 ];

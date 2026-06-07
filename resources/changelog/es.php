@@ -85,4 +85,8 @@ return [
         'title' => 'Botones primarios renovados',
         'description' => 'Los botones de accion primarios ahora comparten el mismo estilo azul delineado en toda la aplicacion, tanto en modo claro como oscuro.',
     ],
+    'shareable_filter_urls' => [
+        'title' => 'URLs de filtros compatibles',
+        'description' => 'Los filtros de listas de Volumenes, Stacks, Tareas de copia y Alertas ahora se reflejan en la URL, permitiendo copiar y compartir vistas filtradas directamente.',
+    ],
 ];

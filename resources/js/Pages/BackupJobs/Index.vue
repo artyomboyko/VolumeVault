@@ -6,7 +6,7 @@ import Pagination from '@/Components/Pagination.vue';
 import { Head, Link, router, usePage } from '@inertiajs/vue3';
 import { useI18n } from '@/i18n';
 import { ref } from 'vue';
-import { initialSearchFromUrl } from '@/Composables/useListFilters';
+import { initialSearchFromUrl, readFiltersFromUrl } from '@/Composables/useListFilters';
 
 interface PaginatedData<T> {
     data: T[];
@@ -25,6 +25,8 @@ const search = ref(initialSearchFromUrl());
 const statusFilter = ref('');
 const destinationFilter = ref('');
 const filtersVisible = ref(false);
+
+readFiltersFromUrl({ search, status: statusFilter, destination: destinationFilter });
 
 const statuses = ['active', 'paused', 'error', 'running'];
 const sourceLabel = (job: any) => job.source_label || job.host_path || job.volume_name || t('Unknown');

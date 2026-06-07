@@ -1,4 +1,5 @@
-import { computed, type Ref } from 'vue';
+import { computed, type Ref, watch } from 'vue';
+import { router } from '@inertiajs/vue3';
 
 type FilterRef = Ref<string>;
 
@@ -8,6 +9,55 @@ export function initialSearchFromUrl(param = 'search'): string {
     if (typeof window === 'undefined') return '';
 
     return new URLSearchParams(window.location.search).get(param) || '';
+}
+
+export function readFiltersFromUrl(params: Record<string, FilterRef>): void {
+    if (typeof window === 'undefined') return;
+
+    const searchParams = new URLSearchParams(window.location.search);
+
+    for (const [key, ref] of Object.entries(params)) {
+        const value = searchParams.get(key);
+        if (value !== null) {
+            ref.value = value;
+        }
+    }
+}
+
+export function useUrlFilters(filters: Record<string, FilterRef>, options?: { debounce?: number }): void {
+    const buildQuery = (): Record<string, string> => {
+        const query: Record<string, string> = {};
+
+        for (const [key, ref] of Object.entries(filters)) {
+            if (ref.value) {
+                query[key] = ref.value;
+            }
+        }
+
+        return query;
+    };
+
+    const syncToUrl = () => {
+        router.replace({ query: buildQuery() }, { preserveState: true, replace: true });
+    };
+
+    if (options?.debounce) {
+        let timeout: ReturnType<typeof setTimeout>;
+        watch(
+            () => Object.values(filters).map((f) => f.value),
+            () => {
+                clearTimeout(timeout);
+                timeout = setTimeout(syncToUrl, options.debounce);
+            },
+            { deep: true },
+        );
+    } else {
+        watch(
+            () => Object.values(filters).map((f) => f.value),
+            syncToUrl,
+            { deep: true },
+        );
+    }
 }
 
 export function matchesSearch(values: unknown[], query: string): boolean {

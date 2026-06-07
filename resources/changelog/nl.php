@@ -85,4 +85,8 @@ return [
         'title' => 'Vernieuwde primaire knoppen',
         'description' => 'Primaire actieknoppen delen nu in de hele applicatie dezelfde omlijnde blauwe stijl in zowel lichte als donkere modus.',
     ],
+    'shareable_filter_urls' => [
+        'title' => 'Deelbare filter-URLs',
+        'description' => 'Lijstfilter voor Volumes, Stacks, Back-uptaken en Waarschuwingen worden nu weerspiegeld in de URL, zodat u gefilterde weergaven direct kunt kopiëren en delen.',
+    ],
 ];
