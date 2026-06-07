@@ -1,13 +1,18 @@
 <?php
 
 return [
-    'unreleased' => [
-        [
-            'type' => 'feature',
-            'key' => 'shareable_filter_urls',
-        ],
-    ],
+    'unreleased' => [],
     'releases' => [
+        'v1.7.2' => [
+            'date' => '2026-06-07',
+            'url' => 'https://github.com/Darkdragon14/VolumeVault/releases/tag/v1.7.2',
+            'items' => [
+                [
+                    'type' => 'feature',
+                    'key' => 'shareable_filter_urls',
+                ],
+            ],
+        ],
         'v1.7.1' => [
             'date' => '2026-06-06',
             'url' => 'https://github.com/Darkdragon14/VolumeVault/releases/tag/v1.7.1',
