@@ -1,4 +1,4 @@
-import { computed, type Ref, watch } from 'vue';
+import { computed, onBeforeUnmount, type Ref, watch } from 'vue';
 import { router } from '@inertiajs/vue3';
 
 type FilterRef = Ref<string>;
@@ -32,7 +32,7 @@ export function useUrlFilters(filters: Record<string, FilterRef>, options?: { de
     };
 
     const syncToUrl = () => {
-        router.replace({ query: buildQuery() }, { preserveState: true, replace: true });
+        router.replace({ query: buildQuery() }, { preserveState: true });
     };
 
     if (options?.debounce) {
@@ -45,6 +45,7 @@ export function useUrlFilters(filters: Record<string, FilterRef>, options?: { de
             },
             { deep: true },
         );
+        onBeforeUnmount(() => clearTimeout(timeout));
     } else {
         watch(
             () => Object.values(filters).map((f) => f.value),
