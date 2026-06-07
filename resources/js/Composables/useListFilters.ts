@@ -5,12 +5,6 @@ type FilterRef = Ref<string>;
 
 const normalizeSearch = (value: unknown) => String(value ?? '').trim().toLowerCase();
 
-export function initialSearchFromUrl(param = 'search'): string {
-    if (typeof window === 'undefined') return '';
-
-    return new URLSearchParams(window.location.search).get(param) || '';
-}
-
 export function readFiltersFromUrl(params: Record<string, FilterRef>): void {
     if (typeof window === 'undefined') return;
 

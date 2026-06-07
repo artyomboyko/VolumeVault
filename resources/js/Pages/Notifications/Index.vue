@@ -5,7 +5,7 @@ import Pagination from '@/Components/Pagination.vue';
 import { Head, Link, router } from '@inertiajs/vue3';
 import { useI18n } from '@/i18n';
 import { ref } from 'vue';
-import { initialSearchFromUrl } from '@/Composables/useListFilters';
+import { readFiltersFromUrl } from '@/Composables/useListFilters';
 
 interface PaginatedData<T> {
     data: T[];
@@ -18,7 +18,9 @@ const props = defineProps<{
 }>();
 
 const { t, formatDate } = useI18n();
-const search = ref(initialSearchFromUrl());
+const search = ref('');
+
+readFiltersFromUrl({ search });
 
 const applyFilters = () => {
     router.get('/notifications', {

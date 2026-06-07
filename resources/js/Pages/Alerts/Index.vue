@@ -5,7 +5,7 @@ import Pagination from '@/Components/Pagination.vue';
 import { Head, Link, router, usePage } from '@inertiajs/vue3';
 import { ref, watch } from 'vue';
 import { useI18n } from '@/i18n';
-import { initialSearchFromUrl, readFiltersFromUrl } from '@/Composables/useListFilters';
+import { readFiltersFromUrl } from '@/Composables/useListFilters';
 
 interface PaginatedData<T> {
     data: T[];
@@ -21,7 +21,7 @@ const page = usePage();
 const can = page.props.can as { manageSensitiveData?: boolean };
 const activeAlertCount = page.props.activeAlertCount as number;
 const { t, formatDate } = useI18n();
-const search = ref(initialSearchFromUrl());
+const search = ref('');
 const typeFilter = ref('');
 const statusFilter = ref('');
 const severityFilter = ref('');
