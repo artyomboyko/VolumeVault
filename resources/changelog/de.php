@@ -1,9 +1,13 @@
 <?php
 
 return [
+    'stale_run_reconciliation' => [
+        'title' => 'Automatische Wiederherstellung unterbrochener Laeufe',
+        'description' => 'Backup- und Wiederherstellungslaeufe, die durch einen Worker-Absturz, ein Timeout oder einen Neustart unterbrochen wurden, werden jetzt automatisch als fehlgeschlagen markiert, statt haengen zu bleiben, sodass geplante Backups weiterlaufen.',
+    ],
     'advanced_alerting' => [
-        'title' => 'Advanced alerting',
-        'description' => 'VolumeVault can monitor backup jobs for stale backups, repeated failures, long-running error states, and unusual archive sizes.',
+        'title' => 'Erweiterte Benachrichtigungen',
+        'description' => 'VolumeVault kann Backup-Jobs auf veraltete Backups, wiederholte Fehler, lang anhaltende Fehlerzustaende und ungewoehnliche Archivgroessen ueberwachen.',
     ],
     'destination_storage_limit_alerts' => [
         'title' => 'Speicherlimit-Warnungen fuer Ziele',
@@ -74,12 +78,12 @@ return [
         'description' => 'VolumeVault startete mit geplanten Backups, sicheren Wiederherstellungen, verschluesselten Zielen, Benachrichtigungen, Benutzern, API-Tokens und Installationssicherungen.',
     ],
     'pagination_with_user_preference' => [
-        'title' => 'Seitenisierte Listen mit Seiteneinstellung',
-        'description' => 'Alle Listenansichten unterstuetzen jetzt Seitennummern mit konfigurierbaren Eintraegen pro Seite (10, 20, 50, 100 oder Alle). Sie koennen Ihren Standard in den Profileinstellungen festlegen.',
+        'title' => 'Paginierte Listen mit Einstellung pro Seite',
+        'description' => 'Alle Listenansichten unterstuetzen jetzt Paginierung mit konfigurierbaren Eintraegen pro Seite (10, 20, 50, 100 oder Alle). Sie koennen Ihren Standardwert in den Profileinstellungen festlegen.',
     ],
     'dark_pagination_menu' => [
-        'title' => 'Dunkles Paginationsmenue',
-        'description' => 'Das Auswahlfeld fuer Eintraege pro Seite behaelt jetzt beim Oeffnen eine dunkle Darstellung und besseren Kontrast in seitenisierten Listenansichten.',
+        'title' => 'Dunkles Paginierungsmenue',
+        'description' => 'Das Auswahlfeld fuer Eintraege pro Seite behaelt jetzt beim Oeffnen eine dunkle Darstellung bei und verbessert so den Kontrast in paginierten Listenansichten.',
     ],
     'filter_toolbar_action_buttons' => [
         'title' => 'Aktualisierte Primaer-Schaltflaechen',
@@ -87,6 +91,6 @@ return [
     ],
     'shareable_filter_urls' => [
         'title' => 'Teilbare Filter-URLs',
-        'description' => 'Filter in Listen fuer Volumes, Stacks, Backup-Jobs und Warnungen werden jetzt in der URL angezeigt, sodass Sie gefilterte Ansichten direkt kopieren und teilen koennen.',
+        'description' => 'Filter in den Listen Volumes, Stacks, Backup-Jobs und Warnungen werden jetzt in der URL abgebildet, sodass Sie gefilterte Ansichten direkt kopieren und teilen koennen.',
     ],
 ];

@@ -1,6 +1,10 @@
 <?php
 
 return [
+    'stale_run_reconciliation' => [
+        'title' => 'Recuperation automatique des runs interrompus',
+        'description' => "Les sauvegardes et restaurations interrompues par un crash, un timeout ou un redemarrage du worker sont maintenant marquees en echec automatiquement au lieu de rester bloquees, pour que les sauvegardes planifiees continuent de tourner.",
+    ],
     'advanced_alerting' => [
         'title' => 'Alerting avance',
         'description' => 'VolumeVault peut surveiller les jobs de backup pour detecter les sauvegardes trop anciennes, les echecs repetes, les erreurs prolongees et les tailles d archives inhabituelles.',

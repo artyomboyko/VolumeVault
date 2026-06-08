@@ -1,9 +1,13 @@
 <?php
 
 return [
+    'stale_run_reconciliation' => [
+        'title' => 'Automatisch herstel van onderbroken runs',
+        'description' => 'Back-up- en herstelruns die zijn onderbroken door een worker-crash, time-out of herstart worden nu automatisch als mislukt gemarkeerd in plaats van vast te blijven zitten, zodat geplande back-ups blijven draaien.',
+    ],
     'advanced_alerting' => [
-        'title' => 'Advanced alerting',
-        'description' => 'VolumeVault can monitor backup jobs for stale backups, repeated failures, long-running error states, and unusual archive sizes.',
+        'title' => 'Geavanceerde waarschuwingen',
+        'description' => 'VolumeVault kan back-uptaken bewaken op verouderde back-ups, herhaalde mislukkingen, langdurige foutstatussen en ongebruikelijke archiefgroottes.',
     ],
     'destination_storage_limit_alerts' => [
         'title' => 'Opslaglimietwaarschuwingen',
@@ -87,6 +91,6 @@ return [
     ],
     'shareable_filter_urls' => [
         'title' => 'Deelbare filter-URLs',
-        'description' => 'Lijstfilter voor Volumes, Stacks, Back-uptaken en Waarschuwingen worden nu weerspiegeld in de URL, zodat u gefilterde weergaven direct kunt kopiëren en delen.',
+        'description' => 'Lijstfilters voor Volumes, Stacks, Back-uptaken en Waarschuwingen worden nu weerspiegeld in de URL, zodat u gefilterde weergaven direct kunt kopieren en delen.',
     ],
 ];

@@ -1,9 +1,13 @@
 <?php
 
 return [
+    'stale_run_reconciliation' => [
+        'title' => 'Megszakitott futasok automatikus helyreallitasa',
+        'description' => 'A worker osszeomlasa, idotullepes vagy ujrainditas miatt megszakitott mentesi es visszaallitasi futasok mostantol automatikusan sikertelenkent jelolodnek meg, ahelyett hogy elakadva maradnanak, igy az utemezett mentesek tovabb futnak.',
+    ],
     'advanced_alerting' => [
-        'title' => 'Advanced alerting',
-        'description' => 'VolumeVault can monitor backup jobs for stale backups, repeated failures, long-running error states, and unusual archive sizes.',
+        'title' => 'Fejlett riasztas',
+        'description' => 'A VolumeVault figyelheti a mentesi feladatokat elavult mentesek, ismetlodo hibak, hosszan tarto hibaallapotok es szokatlan archivum meretek szempontjabol.',
     ],
     'destination_storage_limit_alerts' => [
         'title' => 'Cel tarhelykorlat riasztasok',
@@ -15,7 +19,7 @@ return [
     ],
     'keyboard_shortcuts' => [
         'title' => 'Billentyuparancsok',
-        'description' => 'Desktopon hasznalja a Ctrl+K-t gyors navigaciohoz, a g elotagu parancsokat a nezetekhez es a / jelet a listakereses fokuszalashoz.',
+        'description' => 'Desktopon hasznalja a Ctrl+K-t gyors navigaciohoz, a g elotagu parancsokat a nezetekhez es a / jelet a listakereses fokuszalasahoz.',
     ],
     'in_app_update_summaries' => [
         'title' => 'Alkalmazason beluli frissitesi osszegzesek',
@@ -75,18 +79,18 @@ return [
     ],
     'pagination_with_user_preference' => [
         'title' => 'Lapozott listak oldalankenti beallitassal',
-        'description' => 'Az osszes listanézet mostmar tamogatja a lapozast konfiguralhato elemekkel oldalankent (10, 20, 50, 100, vagy Osszes). Alapertelmezett beallitasat a profil beallitasokban adhatja meg.',
+        'description' => 'Az osszes listanezet mostmar tamogatja a lapozast konfiguralhato oldalankenti elemszammal (10, 20, 50, 100, vagy Osszes). Alapertelmezett beallitasat a profil beallitasokban adhatja meg.',
     ],
     'dark_pagination_menu' => [
         'title' => 'Sotet lapozasi menu',
-        'description' => 'Az oldalmennyiseg-valaszto megnyitva is megorzi a sotet megjelenest, jobb kontraszttal a lapozott listakban.',
+        'description' => 'Az oldalankenti elemszam-valaszto megnyitva is megorzi a sotet megjelenest, jobb kontraszttal a lapozott listakban.',
     ],
     'filter_toolbar_action_buttons' => [
         'title' => 'Megujult elsoleges gombok',
-        'description' => 'Az elsoleges muveletgombok most az alkalmazas egeszeben ugyanazt a kek keretes stilust kapjak vilagos es sotet temaban is.',
+        'description' => 'Az elsoleges muveletgombok most az alkalmazas egeszeben ugyanazt a keretes kek stilust kapjak vilagos es sotet temaban is.',
     ],
     'shareable_filter_urls' => [
         'title' => 'Megoszthato szuro URL-ek',
-        'description' => 'A Kotekek, Stackek, Mentesi feladatok es Riasztasok listaszuroi mostmar megjelennek az URL-ben, igy a szurt nezeteket kozvetlenul masolhatja es megoszthatja.',
+        'description' => 'A Kotetek, Stackek, Mentesi feladatok es Riasztasok listaszuroi mostmar megjelennek az URL-ben, igy a szurt nezeteket kozvetlenul masolhatja es megoszthatja.',
     ],
 ];

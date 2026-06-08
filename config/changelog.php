@@ -1,7 +1,12 @@
 <?php
 
 return [
-    'unreleased' => [],
+    'unreleased' => [
+        [
+            'type' => 'change',
+            'key' => 'stale_run_reconciliation',
+        ],
+    ],
     'releases' => [
         'v1.7.2' => [
             'date' => '2026-06-07',
