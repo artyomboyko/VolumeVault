@@ -3,6 +3,7 @@
 namespace App\Http\Requests;
 
 use App\Actions\Docker\ValidateHostPathMount;
+use App\Http\Requests\Concerns\ValidatesBackupSizeRange;
 use App\Models\BackupJob;
 use App\Services\BackupSources\HostPathPolicy;
 use App\Services\Scheduling\BackupScheduleCalculator;
@@ -14,6 +15,8 @@ use Throwable;
 
 class BackupJobRequest extends FormRequest
 {
+    use ValidatesBackupSizeRange;
+
     public function authorize(): bool
     {
         return true;
@@ -139,20 +142,10 @@ class BackupJobRequest extends FormRequest
 
     private function validateAlertSizeRanges(Validator $validator): void
     {
-        foreach ($this->input('alert_configs', []) ?? [] as $index => $alertConfig) {
-            $config = $alertConfig['config'] ?? [];
-
-            if (! array_key_exists('backup_size_out_of_range_min_bytes', $config) || ! array_key_exists('backup_size_out_of_range_max_bytes', $config)) {
-                continue;
-            }
-
-            if ($config['backup_size_out_of_range_min_bytes'] === null || $config['backup_size_out_of_range_min_bytes'] === '' || $config['backup_size_out_of_range_max_bytes'] === null || $config['backup_size_out_of_range_max_bytes'] === '') {
-                continue;
-            }
-
-            if ((int) $config['backup_size_out_of_range_min_bytes'] > (int) $config['backup_size_out_of_range_max_bytes']) {
-                $validator->errors()->add('alert_configs.'.$index.'.config.backup_size_out_of_range_max_bytes', 'The maximum backup size must be greater than or equal to the minimum backup size.');
-            }
-        }
+        $this->validateBackupSizeRanges(
+            $validator,
+            $this->input('alert_configs', []) ?? [],
+            fn (int $index): string => 'alert_configs.'.$index.'.config.backup_size_out_of_range_max_bytes',
+        );
     }
 }
