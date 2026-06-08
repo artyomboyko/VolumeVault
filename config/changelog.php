@@ -18,6 +18,10 @@ return [
             'type' => 'change',
             'key' => 'schedule_drift_prevention',
         ],
+        [
+            'type' => 'change',
+            'key' => 'destination_usage_efficiency',
+        ],
     ],
     'releases' => [
         'v1.7.2' => [

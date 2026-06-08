@@ -13,6 +13,10 @@ return [
         'title' => 'Betrouwbaardere back-upplanning',
         'description' => 'Geplande back-ups slaan geen uitvoering meer over wanneer een worker achterloopt. De volgende uitvoering wordt nu verankerd aan het geplande tijdvak in plaats van aan de eindtijd van de vorige uitvoering, zodat een trage of vertraagde uitvoering de planning niet meer kan laten verschuiven.',
     ],
+    'destination_usage_efficiency' => [
+        'title' => 'Efficientere berekening van opslaggebruik van bestemming',
+        'description' => 'Het opslaggebruik van back-upbestemmingen wordt nu berekend door de objecten te streamen in plaats van de hele lijst in het geheugen te laden, en SFTP-verbindingen worden daarna altijd gesloten. Bestemmingen met veel back-ups worden betrouwbaarder gemeten, zonder het geheugen uit te putten of verbindingen open te laten.',
+    ],
     'stale_run_reconciliation' => [
         'title' => 'Automatisch herstel van onderbroken runs',
         'description' => 'Back-up- en herstelruns die zijn onderbroken door een worker-crash, time-out of herstart worden nu automatisch als mislukt gemarkeerd in plaats van vast te blijven zitten, zodat geplande back-ups blijven draaien. Applicatiecontainers die voor een back-up zijn gestopt, worden ook automatisch herstart als een crash ze uitgeschakeld liet.',

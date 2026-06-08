@@ -13,6 +13,10 @@ return [
         'title' => 'More reliable backup scheduling',
         'description' => 'Scheduled backups no longer skip an occurrence when a worker falls behind. The next run is now anchored to the planned slot instead of the previous run\'s finish time, so a slow or delayed run can no longer cause the schedule to drift.',
     ],
+    'destination_usage_efficiency' => [
+        'title' => 'More efficient destination storage usage',
+        'description' => 'Storage usage for backup destinations is now measured by streaming through the objects instead of loading the whole listing into memory, and SFTP connections are always closed afterwards. Destinations holding many backups are measured more reliably, without exhausting memory or leaking connections.',
+    ],
     'stale_run_reconciliation' => [
         'title' => 'Automatic recovery of interrupted runs',
         'description' => 'Backup and restore runs interrupted by a worker crash, timeout, or restart are now automatically marked as failed instead of staying stuck, so scheduled backups keep running. Application containers stopped for a backup are also restarted automatically if a crash left them down.',

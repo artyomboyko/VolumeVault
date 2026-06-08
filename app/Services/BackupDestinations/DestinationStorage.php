@@ -5,6 +5,7 @@ namespace App\Services\BackupDestinations;
 use App\Models\BackupDestination;
 use App\Services\S3\S3ClientFactory;
 use Illuminate\Http\Client\Response;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Str;
@@ -14,6 +15,9 @@ use RuntimeException;
 
 class DestinationStorage
 {
+    /** phpseclib's NET_SFTP_TYPE_DIRECTORY — only defined once an SFTP instance is constructed, so we mirror it here. */
+    private const SFTP_TYPE_DIRECTORY = 2;
+
     public function __construct(private readonly S3ClientFactory $s3ClientFactory) {}
 
     public function test(BackupDestination $destination): void
@@ -59,14 +63,35 @@ class DestinationStorage
     {
         $cacheKey = 'destination_storage_usage_bytes_'.$destination->id;
 
-        return \Illuminate\Support\Facades\Cache::remember($cacheKey, now()->addMinutes(30), function () use ($destination): array {
-            $objects = $this->listAllObjects($destination);
+        return Cache::remember($cacheKey, now()->addMinutes(30), fn (): array => $this->aggregateUsage($destination));
+    }
 
-            return [
-                'used_bytes' => (int) collect($objects)->sum(fn (array $object): int => (int) ($object['size'] ?? 0)),
-                'object_count' => count($objects),
-            ];
-        });
+    /**
+     * Sum sizes and count objects without holding the full listing in memory.
+     *
+     * @return array{used_bytes: int, object_count: int}
+     */
+    private function aggregateUsage(BackupDestination $destination): array
+    {
+        $usedBytes = 0;
+        $objectCount = 0;
+        $accumulate = function (array $object) use (&$usedBytes, &$objectCount): void {
+            $usedBytes += (int) ($object['size'] ?? 0);
+            $objectCount++;
+        };
+
+        match ($destination->provider) {
+            BackupDestination::PROVIDER_AWS_S3,
+            BackupDestination::PROVIDER_CLOUDFLARE_R2,
+            BackupDestination::PROVIDER_CUSTOM_S3 => $this->streamS3($destination, $accumulate),
+            BackupDestination::PROVIDER_SSH => $this->streamSftp($destination, $accumulate),
+            default => collect($this->listAllObjects($destination))->each($accumulate),
+        };
+
+        return [
+            'used_bytes' => $usedBytes,
+            'object_count' => $objectCount,
+        ];
     }
 
     public function upload(BackupDestination $destination, string $sourcePath, string $filename, ?string $directory = null): string
@@ -119,13 +144,26 @@ class DestinationStorage
 
     private function listS3(BackupDestination $destination, int $maxKeys = 1000): array
     {
+        $objects = [];
+        $this->streamS3($destination, function (array $object) use (&$objects): void {
+            $objects[] = $object;
+        }, $maxKeys);
+
+        return $objects;
+    }
+
+    /**
+     * Page through the bucket and hand each object to $onObject without buffering the whole listing.
+     */
+    private function streamS3(BackupDestination $destination, callable $onObject, int $maxKeys = PHP_INT_MAX): void
+    {
         $client = $this->s3ClientFactory->make($destination);
         $prefix = trim((string) $destination->setting('path_prefix'), '/');
-        $objects = [];
+        $emitted = 0;
         $continuationToken = null;
 
         do {
-            $remaining = $maxKeys - count($objects);
+            $remaining = $maxKeys - $emitted;
             $params = [
                 'Bucket' => $destination->setting('bucket'),
                 'Prefix' => $prefix,
@@ -139,22 +177,21 @@ class DestinationStorage
             $result = $client->listObjectsV2($params);
 
             foreach ($result['Contents'] ?? [] as $object) {
-                if (count($objects) >= $maxKeys) {
+                if ($emitted >= $maxKeys) {
                     break;
                 }
 
-                $objects[] = [
+                $onObject([
                     'key' => (string) $object['Key'],
                     'display_name' => (string) $object['Key'],
                     'size' => (int) ($object['Size'] ?? 0),
                     'last_modified' => isset($object['LastModified']) ? $object['LastModified']->format(DATE_ATOM) : null,
-                ];
+                ]);
+                $emitted++;
             }
 
             $continuationToken = ($result['IsTruncated'] ?? false) ? (string) ($result['NextContinuationToken'] ?? '') : null;
-        } while ($continuationToken && count($objects) < $maxKeys);
-
-        return $objects;
+        } while ($continuationToken && $emitted < $maxKeys);
     }
 
     private function uploadS3(BackupDestination $destination, string $sourcePath, string $filename, ?string $directory): string
@@ -299,12 +336,28 @@ class DestinationStorage
 
     private function listSftp(BackupDestination $destination, int $limit = 1000): array
     {
-        $sftp = $this->sftp($destination);
-        $base = (string) $destination->setting('remote_path', '/');
         $objects = [];
-        $this->collectSftpFiles($sftp, $base, '', $objects, $limit);
+        $this->streamSftp($destination, function (array $object) use (&$objects): void {
+            $objects[] = $object;
+        }, $limit);
 
         return $objects;
+    }
+
+    /**
+     * Walk the remote tree, handing each file to $onObject, and always close the connection.
+     */
+    private function streamSftp(BackupDestination $destination, callable $onObject, int $limit = PHP_INT_MAX): void
+    {
+        $sftp = $this->sftp($destination);
+
+        try {
+            $base = (string) $destination->setting('remote_path', '/');
+            $count = 0;
+            $this->collectSftpFiles($sftp, $base, '', $onObject, $limit, $count);
+        } finally {
+            $sftp->disconnect();
+        }
     }
 
     private function uploadSftp(BackupDestination $destination, string $sourcePath, string $filename, ?string $directory): string
@@ -331,7 +384,7 @@ class DestinationStorage
         }
     }
 
-    private function sftp(BackupDestination $destination): SFTP
+    protected function sftp(BackupDestination $destination): SFTP
     {
         $sftp = new SFTP((string) $destination->setting('host'), (int) $destination->setting('port', 22), 15);
         $credential = (string) $destination->secret('password', '');
@@ -347,35 +400,48 @@ class DestinationStorage
         return $sftp;
     }
 
-    private function collectSftpFiles(SFTP $sftp, string $directory, string $prefix, array &$objects, int $limit): void
+    private function collectSftpFiles(SFTP $sftp, string $directory, string $prefix, callable $onObject, int $limit, int &$count): void
     {
-        if (count($objects) >= $limit) {
+        if ($count >= $limit) {
             return;
         }
 
         $entries = $sftp->rawlist($directory) ?: [];
 
         foreach ($entries as $name => $attributes) {
-            if ($name === '.' || $name === '..' || count($objects) >= $limit) {
+            if ($name === '.' || $name === '..' || $count >= $limit) {
                 continue;
             }
 
             $path = $this->joinAbsolute($directory, $name);
             $key = $this->joinRelative($prefix, $name);
 
-            if ($sftp->is_dir($path)) {
-                $this->collectSftpFiles($sftp, $path, $key, $objects, $limit);
+            if ($this->sftpEntryIsDirectory($sftp, $path, $attributes)) {
+                $this->collectSftpFiles($sftp, $path, $key, $onObject, $limit, $count);
 
                 continue;
             }
 
-            $objects[] = [
+            $onObject([
                 'key' => $key,
                 'display_name' => $key,
                 'size' => (int) ($attributes['size'] ?? 0),
                 'last_modified' => isset($attributes['mtime']) ? date(DATE_ATOM, (int) $attributes['mtime']) : null,
-            ];
+            ]);
+            $count++;
         }
+    }
+
+    /**
+     * Prefer the type carried by rawlist over a per-entry network is_dir() round-trip.
+     */
+    private function sftpEntryIsDirectory(SFTP $sftp, string $path, array $attributes): bool
+    {
+        if (isset($attributes['type'])) {
+            return (int) $attributes['type'] === self::SFTP_TYPE_DIRECTORY;
+        }
+
+        return $sftp->is_dir($path);
     }
 
     private function listAzure(BackupDestination $destination, int $limit = 1000): array
