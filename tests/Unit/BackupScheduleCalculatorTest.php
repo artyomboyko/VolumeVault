@@ -42,6 +42,20 @@ class BackupScheduleCalculatorTest extends TestCase
         $this->assertSame('2026-05-01 02:00:00', $next->format('Y-m-d H:i:s'));
     }
 
+    public function test_next_run_anchored_on_serviced_slot_does_not_drift(): void
+    {
+        $calculator = app(BackupScheduleCalculator::class);
+
+        // The 02:00 hourly slot was serviced late. Anchoring the computation on the
+        // theoretical slot (not on a late finish time) keeps the next run on the grid
+        // at 03:00 instead of skipping ahead.
+        $servicedSlot = CarbonImmutable::parse('2026-05-01 02:00:00', 'UTC');
+
+        $next = $calculator->nextRunAt(BackupJob::SCHEDULE_HOURLY, ['everyHours' => 1], $servicedSlot);
+
+        $this->assertSame('2026-05-01 03:00:00', $next->format('Y-m-d H:i:s'));
+    }
+
     public function test_weekly_sunday_at_three(): void
     {
         $calculator = app(BackupScheduleCalculator::class);

@@ -95,13 +95,15 @@ class RunBackup
                 'duration_seconds' => $startedAt->diffInSeconds($finishedAt),
             ])->save();
 
+            // next_run_at is owned by CreateBackupRun, which already advanced it to
+            // the next theoretical slot when this run was queued. Recomputing it here
+            // from finishedAt would skip the slot whenever a run overruns its interval.
             $job->forceFill([
                 'status' => BackupJob::STATUS_ACTIVE,
                 'last_success_at' => $finishedAt,
                 'last_error' => null,
                 'last_error_at' => null,
                 'pause_reason' => null,
-                'next_run_at' => $this->scheduleCalculator->nextRunAt($job->schedule_type, $job->schedule_config ?? [], $finishedAt),
             ])->save();
 
             $this->recordBackupArchiveMetadata($run->fresh(['job.destination']));
@@ -184,7 +186,11 @@ class RunBackup
                 'status' => BackupJob::STATUS_ERROR,
                 'last_error' => $message,
                 'last_error_at' => $finishedAt,
-                'next_run_at' => $this->scheduleCalculator->nextRunAt($job->schedule_type, $job->schedule_config ?? [], $finishedAt),
+                'next_run_at' => $this->scheduleCalculator->nextRunAt(
+                    $job->schedule_type,
+                    $job->schedule_config ?? [],
+                    $job->next_run_at && $job->next_run_at->isPast() ? $job->next_run_at : null,
+                ),
             ])->save();
         }
 
