@@ -71,22 +71,39 @@ class RunRestore
                 'duration_seconds' => $startedAt->diffInSeconds($finishedAt),
             ])->save();
         } catch (Throwable $exception) {
-            $finishedAt = now();
-            $message = str($exception->getMessage() ?: 'Restore failed.')->limit(1000)->toString();
-
-            $run->forceFill([
-                'status' => RestoreRun::STATUS_FAILED,
-                'finished_at' => $finishedAt,
-                'duration_seconds' => $startedAt->diffInSeconds($finishedAt),
-                'error_message' => $message,
-            ])->save();
-
-            $this->appendRunLog->handle($run, $message);
+            $this->markFailed($run, $exception);
         } finally {
             if (File::exists($archivePath)) {
                 File::delete($archivePath);
             }
         }
+    }
+
+    /**
+     * Force a restore run into the FAILED state.
+     *
+     * Shared by the in-process catch block, the queue job's failed() hook
+     * (worker timeout / restart) and the stale-run reconciliation command.
+     * Idempotent: runs that already reached a terminal state are left untouched.
+     */
+    public function markFailed(RestoreRun $run, Throwable $exception): void
+    {
+        if (in_array($run->status, [RestoreRun::STATUS_SUCCESS, RestoreRun::STATUS_FAILED, RestoreRun::STATUS_CANCELLED], true)) {
+            return;
+        }
+
+        $finishedAt = now();
+        $startedAt = $run->started_at ?? $finishedAt;
+        $message = str($exception->getMessage() ?: 'Restore failed.')->limit(1000)->toString();
+
+        $run->forceFill([
+            'status' => RestoreRun::STATUS_FAILED,
+            'finished_at' => $finishedAt,
+            'duration_seconds' => $startedAt->diffInSeconds($finishedAt),
+            'error_message' => $message,
+        ])->save();
+
+        $this->appendRunLog->handle($run, $message);
     }
 
     private function volumeExists(string $volumeName): bool

@@ -104,30 +104,7 @@ class RunBackup
             $this->recordBackupArchiveMetadata($run->fresh(['job.destination']));
             $this->sendNotifications($run->fresh(['job.destination']));
         } catch (Throwable $exception) {
-            $message = str($exception->getMessage() ?: 'Backup failed.')->limit(1000)->toString();
-            $finishedAt = now();
-
-            $run->forceFill([
-                'status' => BackupRun::STATUS_FAILED,
-                'finished_at' => $finishedAt,
-                'duration_seconds' => $startedAt->diffInSeconds($finishedAt),
-                'error_message' => $message,
-            ])->save();
-
-            $this->appendRunLog->handle($run, $message);
-
-            $job->forceFill([
-                'status' => BackupJob::STATUS_ERROR,
-                'last_error' => $message,
-                'last_error_at' => $finishedAt,
-                'next_run_at' => $this->scheduleCalculator->nextRunAt($job->schedule_type, $job->schedule_config ?? [], $finishedAt),
-            ])->save();
-
-            ActivityLog::record('backup_run_failed', 'Backup run failed.', $run, [
-                'backup_job_id' => $job->id,
-            ]);
-
-            $this->sendNotifications($run->fresh(['job.destination']));
+            $this->markFailed($run, $exception);
         } finally {
             if ($stoppedContainers) {
                 try {
@@ -138,6 +115,51 @@ class RunBackup
                 }
             }
         }
+    }
+
+    /**
+     * Force a run into the FAILED state and reschedule its job.
+     *
+     * Shared by the in-process catch block, the queue job's failed() hook
+     * (worker timeout / restart) and the stale-run reconciliation command.
+     * Idempotent: runs that already reached a terminal state are left untouched.
+     */
+    public function markFailed(BackupRun $run, Throwable $exception): void
+    {
+        $run->loadMissing('job.destination');
+
+        if (in_array($run->status, [BackupRun::STATUS_SUCCESS, BackupRun::STATUS_FAILED, BackupRun::STATUS_CANCELLED], true)) {
+            return;
+        }
+
+        $job = $run->job;
+        $finishedAt = now();
+        $startedAt = $run->started_at ?? $finishedAt;
+        $message = str($exception->getMessage() ?: 'Backup failed.')->limit(1000)->toString();
+
+        $run->forceFill([
+            'status' => BackupRun::STATUS_FAILED,
+            'finished_at' => $finishedAt,
+            'duration_seconds' => $startedAt->diffInSeconds($finishedAt),
+            'error_message' => $message,
+        ])->save();
+
+        $this->appendRunLog->handle($run, $message);
+
+        if ($job) {
+            $job->forceFill([
+                'status' => BackupJob::STATUS_ERROR,
+                'last_error' => $message,
+                'last_error_at' => $finishedAt,
+                'next_run_at' => $this->scheduleCalculator->nextRunAt($job->schedule_type, $job->schedule_config ?? [], $finishedAt),
+            ])->save();
+        }
+
+        ActivityLog::record('backup_run_failed', 'Backup run failed.', $run, [
+            'backup_job_id' => $job?->id,
+        ]);
+
+        $this->sendNotifications($run->fresh(['job.destination']));
     }
 
     private function recordBackupArchiveMetadata(BackupRun $run): void
