@@ -4,6 +4,7 @@ namespace App\Jobs;
 
 use App\Actions\Alerts\EnsureAlertRules;
 use App\Actions\Alerts\RunAllAlertChecks;
+use App\Models\ActivityLog;
 use App\Models\AlertRule;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
@@ -13,6 +14,7 @@ use Illuminate\Queue\Middleware\WithoutOverlapping;
 use Illuminate\Queue\SerializesModels;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Cache;
+use Throwable;
 
 class RunAlertChecksJob implements ShouldQueue
 {
@@ -47,8 +49,16 @@ class RunAlertChecksJob implements ShouldQueue
                     return;
                 }
 
-                $runAllAlertChecks->handle($rule);
-                Cache::put($cacheKey, now(), now()->addMinutes($interval * 2));
+                try {
+                    $runAllAlertChecks->handle($rule);
+                } catch (Throwable $exception) {
+                    ActivityLog::record('alert_check_failed', 'Alert check failed.', $rule, [
+                        'type' => $rule->type->value,
+                        'error' => str($exception->getMessage())->limit(1000)->toString(),
+                    ]);
+                } finally {
+                    Cache::put($cacheKey, now(), now()->addMinutes($interval * 2));
+                }
             });
     }
 }

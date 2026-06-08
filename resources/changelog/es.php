@@ -1,6 +1,10 @@
 <?php
 
 return [
+    'alert_check_isolation' => [
+        'title' => 'Comprobaciones de alerta mas robustas',
+        'description' => 'Una regla de alerta que falla ya no impide que se comprueben las demas reglas. Cada regla se evalua ahora de forma independiente y los fallos se registran, de modo que una sola comprobacion defectuosa ya no puede desactivar silenciosamente tus demas alertas.',
+    ],
     'restore_volume_cleanup' => [
         'title' => 'Reintentos mas limpios tras una restauracion fallida',
         'description' => 'Cuando una restauracion falla despues de crear su volumen de destino, VolumeVault ahora elimina el volumen creado parcialmente para que el siguiente reintento empiece limpio en lugar de quedar bloqueado por un error de "ya existe".',

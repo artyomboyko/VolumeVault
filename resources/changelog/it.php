@@ -1,6 +1,10 @@
 <?php
 
 return [
+    'alert_check_isolation' => [
+        'title' => 'Controlli degli avvisi piu robusti',
+        'description' => 'Una regola di avviso che genera un errore non impedisce piu il controllo delle altre regole. Ogni regola viene ora valutata in modo indipendente e gli errori vengono registrati, cosi un singolo controllo difettoso non puo piu disattivare silenziosamente gli altri avvisi.',
+    ],
     'restore_volume_cleanup' => [
         'title' => 'Nuovi tentativi piu puliti dopo un ripristino fallito',
         'description' => 'Quando un ripristino fallisce dopo aver creato il volume di destinazione, VolumeVault ora rimuove il volume creato parzialmente cosi che il tentativo successivo riparta pulito invece di essere bloccato da un errore "esiste gia".',

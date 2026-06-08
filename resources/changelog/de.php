@@ -1,6 +1,10 @@
 <?php
 
 return [
+    'alert_check_isolation' => [
+        'title' => 'Robustere Alarmpruefungen',
+        'description' => 'Eine Alarmregel, die einen Fehler ausloest, verhindert nicht mehr die Pruefung der uebrigen Regeln. Jede Regel wird jetzt unabhaengig ausgewertet und Fehler werden protokolliert, sodass eine fehlerhafte Pruefung die anderen Alarme nicht mehr stillschweigend deaktivieren kann.',
+    ],
     'restore_volume_cleanup' => [
         'title' => 'Sauberere Wiederholungen nach fehlgeschlagener Wiederherstellung',
         'description' => 'Wenn eine Wiederherstellung nach dem Anlegen des Zielvolumes fehlschlaegt, entfernt VolumeVault jetzt das teilweise erstellte Volume, damit der naechste Versuch sauber startet und nicht durch einen "existiert bereits"-Fehler blockiert wird.',

@@ -1,6 +1,10 @@
 <?php
 
 return [
+    'alert_check_isolation' => [
+        'title' => 'Ellenallobb riasztasellenorzesek',
+        'description' => 'Egy hibara futo riasztasi szabaly mar nem akadalyozza meg a tobbi szabaly ellenorzeset. Minden szabaly mostantol fuggetlenul ertekelodik ki, es a hibak naplozasra kerulnek, igy egyetlen hibas ellenorzes mar nem tudja csendben kikapcsolni a tobbi riasztast.',
+    ],
     'restore_volume_cleanup' => [
         'title' => 'Tisztabb ujraprobalkozasok sikertelen visszaallitas utan',
         'description' => 'Ha egy visszaallitas a celkotet letrehozasa utan meghiusul, a VolumeVault mostantol torli a reszben letrehozott kotetet, igy a kovetkezo probalkozas tisztan indul, ahelyett hogy egy "mar letezik" hiba blokkolna.',

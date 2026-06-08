@@ -1,6 +1,10 @@
 <?php
 
 return [
+    'alert_check_isolation' => [
+        'title' => 'Verifications d\'alerte plus robustes',
+        'description' => 'Une regle d\'alerte qui echoue n\'empeche plus la verification des autres regles. Chaque regle est desormais evaluee independamment et les echecs sont journalises, de sorte qu\'une seule verification defaillante ne peut plus desactiver silencieusement vos autres alertes.',
+    ],
     'restore_volume_cleanup' => [
         'title' => 'Reprises plus propres apres une restauration echouee',
         'description' => 'Lorsqu\'une restauration echoue apres avoir cree son volume cible, VolumeVault supprime desormais le volume partiellement cree afin que la nouvelle tentative reparte propre, au lieu d\'etre bloquee par une erreur "existe deja".',
