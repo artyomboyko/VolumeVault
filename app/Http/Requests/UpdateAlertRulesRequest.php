@@ -2,11 +2,14 @@
 
 namespace App\Http\Requests;
 
+use App\Http\Requests\Concerns\ValidatesBackupSizeRange;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Validator;
 
 class UpdateAlertRulesRequest extends FormRequest
 {
+    use ValidatesBackupSizeRange;
+
     public function authorize(): bool
     {
         return true;
@@ -35,21 +38,11 @@ class UpdateAlertRulesRequest extends FormRequest
     public function withValidator(Validator $validator): void
     {
         $validator->after(function (Validator $validator): void {
-            foreach ($this->input('rules', []) as $index => $rule) {
-                $config = $rule['config'] ?? [];
-
-                if (! array_key_exists('backup_size_out_of_range_min_bytes', $config) || ! array_key_exists('backup_size_out_of_range_max_bytes', $config)) {
-                    continue;
-                }
-
-                if ($config['backup_size_out_of_range_min_bytes'] === null || $config['backup_size_out_of_range_min_bytes'] === '' || $config['backup_size_out_of_range_max_bytes'] === null || $config['backup_size_out_of_range_max_bytes'] === '') {
-                    continue;
-                }
-
-                if ((int) $config['backup_size_out_of_range_min_bytes'] > (int) $config['backup_size_out_of_range_max_bytes']) {
-                    $validator->errors()->add('rules.'.$index.'.config.backup_size_out_of_range_max_bytes', 'The maximum backup size must be greater than or equal to the minimum backup size.');
-                }
-            }
+            $this->validateBackupSizeRanges(
+                $validator,
+                $this->input('rules', []),
+                fn (int $index): string => 'rules.'.$index.'.config.backup_size_out_of_range_max_bytes',
+            );
         });
     }
 
