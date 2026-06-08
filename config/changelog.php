@@ -1,33 +1,42 @@
 <?php
 
 return [
-    'unreleased' => [
-        [
-            'type' => 'change',
-            'key' => 'alert_check_isolation',
-        ],
-        [
-            'type' => 'change',
-            'key' => 'stale_run_reconciliation',
-        ],
-        [
-            'type' => 'change',
-            'key' => 'restore_volume_cleanup',
-        ],
-        [
-            'type' => 'change',
-            'key' => 'schedule_drift_prevention',
-        ],
-        [
-            'type' => 'change',
-            'key' => 'destination_usage_efficiency',
-        ],
-        [
-            'type' => 'change',
-            'key' => 'run_log_integrity',
-        ],
-    ],
+    'unreleased' => [],
     'releases' => [
+        'v1.7.3' => [
+            'date' => '2026-06-08',
+            'url' => 'https://github.com/Darkdragon14/VolumeVault/releases/tag/v1.7.3',
+            'items' => [
+                [
+                    'type' => 'change',
+                    'key' => 'alert_check_isolation',
+                ],
+                [
+                    'type' => 'change',
+                    'key' => 'stale_run_reconciliation',
+                ],
+                [
+                    'type' => 'change',
+                    'key' => 'restore_volume_cleanup',
+                ],
+                [
+                    'type' => 'change',
+                    'key' => 'schedule_drift_prevention',
+                ],
+                [
+                    'type' => 'change',
+                    'key' => 'destination_usage_efficiency',
+                ],
+                [
+                    'type' => 'change',
+                    'key' => 'run_log_integrity',
+                ],
+                [
+                    'type' => 'change',
+                    'key' => 'safer_default_environment_settings',
+                ],
+            ],
+        ],
         'v1.7.2' => [
             'date' => '2026-06-07',
             'url' => 'https://github.com/Darkdragon14/VolumeVault/releases/tag/v1.7.2',

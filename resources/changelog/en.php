@@ -113,4 +113,8 @@ return [
         'title' => 'Shareable filter URLs',
         'description' => 'List filters on Volumes, Stacks, Backup Jobs, and Alerts are now reflected in the URL so you can copy and share filtered views directly.',
     ],
+    'safer_default_environment_settings' => [
+        'title' => 'Safer default environment settings',
+        'description' => '.env.example now defaults new deployments to APP_ENV=production and APP_DEBUG=false. It also adds guidance for SESSION_SECURE_COOKIE so HTTPS deployments can enable secure cookies without accidentally breaking HTTP-only setups.',
+    ],
 ];

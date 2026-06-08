@@ -113,4 +113,8 @@ return [
         'title' => 'Teilbare Filter-URLs',
         'description' => 'Filter in den Listen Volumes, Stacks, Backup-Jobs und Warnungen werden jetzt in der URL abgebildet, sodass Sie gefilterte Ansichten direkt kopieren und teilen koennen.',
     ],
+    'safer_default_environment_settings' => [
+        'title' => 'Sicherere Standard-Umgebungseinstellungen',
+        'description' => 'Neue Deployments verwenden in der .env.example jetzt standardmaessig APP_ENV=production und APP_DEBUG=false. Ausserdem gibt es einen Hinweis zu SESSION_SECURE_COOKIE, damit HTTPS-Deployments sichere Cookies aktivieren koennen, ohne versehentlich reine HTTP-Setups auszusperren.',
+    ],
 ];

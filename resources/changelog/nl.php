@@ -113,4 +113,8 @@ return [
         'title' => 'Deelbare filter-URLs',
         'description' => 'Lijstfilters voor Volumes, Stacks, Back-uptaken en Waarschuwingen worden nu weerspiegeld in de URL, zodat u gefilterde weergaven direct kunt kopieren en delen.',
     ],
+    'safer_default_environment_settings' => [
+        'title' => 'Veiligere standaard omgevingsinstellingen',
+        'description' => '.env.example zet nieuwe deployments nu standaard op APP_ENV=production en APP_DEBUG=false. Er is ook uitleg toegevoegd voor SESSION_SECURE_COOKIE, zodat HTTPS-deployments veilige cookies kunnen inschakelen zonder per ongeluk alleen-HTTP-opstellingen te breken.',
+    ],
 ];

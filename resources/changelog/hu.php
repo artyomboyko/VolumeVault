@@ -113,4 +113,8 @@ return [
         'title' => 'Megoszthato szuro URL-ek',
         'description' => 'A Kotetek, Stackek, Mentesi feladatok es Riasztasok listaszuroi mostmar megjelennek az URL-ben, igy a szurt nezeteket kozvetlenul masolhatja es megoszthatja.',
     ],
+    'safer_default_environment_settings' => [
+        'title' => 'Biztonsagosabb alapertelmezett kornyezeti beallitasok',
+        'description' => 'A .env.example mostantol alapertelmezetten APP_ENV=production es APP_DEBUG=false ertekkel indul az uj telepiteseknel. Emellett utmutatast ad a SESSION_SECURE_COOKIE beallitasahoz is, hogy a HTTPS telepitesek biztonsagos cookie-kat kapcsolhassanak be anelkul, hogy veletlenul elrontanak a csak HTTP-s telepiteseket.',
+    ],
 ];

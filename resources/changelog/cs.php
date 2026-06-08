@@ -113,4 +113,8 @@ return [
         'title' => 'Sditelne URL s filtry',
         'description' => 'Filtry seznamu Svazku, Stacku, Zaloznich uloh a Upozorneni se nyni promitaji v URL, coz umoznuje primo kopirovat a sdilet filtrovane pohledy.',
     ],
+    'safer_default_environment_settings' => [
+        'title' => 'Bezpecnejsi vychozi nastaveni prostredi',
+        'description' => '.env.example ted pro nova nasazeni standardne nastavuje APP_ENV=production a APP_DEBUG=false. Zaroven pridava pokyny pro SESSION_SECURE_COOKIE, aby bylo mozne u HTTPS nasazeni zapnout zabezpecene cookies bez nechteneho rozbiti ciste HTTP instalaci.',
+    ],
 ];

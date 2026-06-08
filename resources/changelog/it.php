@@ -113,4 +113,8 @@ return [
         'title' => 'URL filtri condivisibili',
         'description' => 'I filtri delle liste Volumi, Stack, Processi backup e Avvisi ora sono riflessi nell URL, permettendo di copiare e condividere viste filtrate direttamente.',
     ],
+    'safer_default_environment_settings' => [
+        'title' => 'Impostazioni ambiente predefinite piu sicure',
+        'description' => '.env.example ora imposta le nuove distribuzioni con APP_ENV=production e APP_DEBUG=false. Aggiunge anche una guida per SESSION_SECURE_COOKIE, cosi i deploy HTTPS possono abilitare cookie sicuri senza rompere accidentalmente le installazioni solo HTTP.',
+    ],
 ];

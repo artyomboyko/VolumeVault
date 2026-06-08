@@ -113,4 +113,8 @@ return [
         'title' => 'URL de filtros compartibles',
         'description' => 'Los filtros de las listas de Volumenes, Stacks, Tareas de copia y Alertas ahora se reflejan en la URL, para que pueda copiar y compartir vistas filtradas directamente.',
     ],
+    'safer_default_environment_settings' => [
+        'title' => 'Configuracion de entorno predeterminada mas segura',
+        'description' => '.env.example ahora configura las nuevas instalaciones con APP_ENV=production y APP_DEBUG=false. Tambien agrega una guia para SESSION_SECURE_COOKIE, de modo que los despliegues con HTTPS puedan activar cookies seguras sin romper por accidente instalaciones solo HTTP.',
+    ],
 ];
