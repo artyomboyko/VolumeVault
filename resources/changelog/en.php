@@ -9,6 +9,10 @@ return [
         'title' => 'Cleaner retries after a failed restore',
         'description' => 'When a restore fails after creating its target volume, VolumeVault now removes the partially-created volume so the next retry starts clean instead of being blocked by an "already exists" error.',
     ],
+    'schedule_drift_prevention' => [
+        'title' => 'More reliable backup scheduling',
+        'description' => 'Scheduled backups no longer skip an occurrence when a worker falls behind. The next run is now anchored to the planned slot instead of the previous run\'s finish time, so a slow or delayed run can no longer cause the schedule to drift.',
+    ],
     'stale_run_reconciliation' => [
         'title' => 'Automatic recovery of interrupted runs',
         'description' => 'Backup and restore runs interrupted by a worker crash, timeout, or restart are now automatically marked as failed instead of staying stuck, so scheduled backups keep running. Application containers stopped for a backup are also restarted automatically if a crash left them down.',

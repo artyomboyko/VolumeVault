@@ -9,6 +9,10 @@ return [
         'title' => 'Sauberere Wiederholungen nach fehlgeschlagener Wiederherstellung',
         'description' => 'Wenn eine Wiederherstellung nach dem Anlegen des Zielvolumes fehlschlaegt, entfernt VolumeVault jetzt das teilweise erstellte Volume, damit der naechste Versuch sauber startet und nicht durch einen "existiert bereits"-Fehler blockiert wird.',
     ],
+    'schedule_drift_prevention' => [
+        'title' => 'Zuverlaessigere Backup-Planung',
+        'description' => 'Geplante Backups ueberspringen keinen Durchlauf mehr, wenn ein Worker in Verzug geraet. Der naechste Lauf wird jetzt am geplanten Zeitfenster verankert statt an der Endzeit des vorherigen Laufs, sodass ein langsamer oder verspaeteter Lauf den Zeitplan nicht mehr verschieben kann.',
+    ],
     'stale_run_reconciliation' => [
         'title' => 'Automatische Wiederherstellung unterbrochener Laeufe',
         'description' => 'Backup- und Wiederherstellungslaeufe, die durch einen Worker-Absturz, ein Timeout oder einen Neustart unterbrochen wurden, werden jetzt automatisch als fehlgeschlagen markiert, statt haengen zu bleiben, sodass geplante Backups weiterlaufen. Anwendungscontainer, die fuer ein Backup gestoppt wurden, werden ebenfalls automatisch neu gestartet, falls ein Absturz sie ausgeschaltet zurueckliess.',
