@@ -1,6 +1,10 @@
 <?php
 
 return [
+    'stale_run_reconciliation' => [
+        'title' => 'Automatic recovery of interrupted runs',
+        'description' => 'Backup and restore runs interrupted by a worker crash, timeout, or restart are now automatically marked as failed instead of staying stuck, so scheduled backups keep running.',
+    ],
     'advanced_alerting' => [
         'title' => 'Advanced alerting',
         'description' => 'VolumeVault can monitor backup jobs for stale backups, repeated failures, long-running error states, and unusual archive sizes.',

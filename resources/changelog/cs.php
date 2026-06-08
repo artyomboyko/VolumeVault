@@ -1,9 +1,13 @@
 <?php
 
 return [
+    'stale_run_reconciliation' => [
+        'title' => 'Automaticke obnoveni preruseny behu',
+        'description' => 'Behy zalohovani a obnovy preruseny padem workeru, timeoutem nebo restartem jsou nyni automaticky oznaceny jako neuspesne, misto aby zustaly zaseknute, takze planovane zalohy bezi dal.',
+    ],
     'advanced_alerting' => [
-        'title' => 'Advanced alerting',
-        'description' => 'VolumeVault can monitor backup jobs for stale backups, repeated failures, long-running error states, and unusual archive sizes.',
+        'title' => 'Pokrocile upozornovani',
+        'description' => 'VolumeVault muze sledovat zalozni ulohy a hlidat zastarale zalohy, opakovane selhani, dlouhotrvajici chybove stavy a neobvykle velikosti archivu.',
     ],
     'destination_storage_limit_alerts' => [
         'title' => 'Upozorneni na limit uloziste cile',
@@ -75,7 +79,7 @@ return [
     ],
     'pagination_with_user_preference' => [
         'title' => 'Strankovane seznamy s preferencemi na stranku',
-        'description' => 'Vsechny pohledy seznamu nyni podporuji strankovani s konfigurovatelnym poctem polozek na stranku (10, 20, 50, 100 nebo Vse). Vyzchozi hodnotu nastavite v nastaveni profilu.',
+        'description' => 'Vsechny pohledy seznamu nyni podporuji strankovani s konfigurovatelnym poctem polozek na stranku (10, 20, 50, 100 nebo Vse). Vychozi hodnotu nastavite v nastaveni profilu.',
     ],
     'dark_pagination_menu' => [
         'title' => 'Tmave menu strankovani',
@@ -87,6 +91,6 @@ return [
     ],
     'shareable_filter_urls' => [
         'title' => 'Sditelne URL s filtry',
-        'description' => 'Filtry seznamu Svazku, Stacku, Zaloznich uloh a Upozorneni se nyni promitaji v URL, umoznujici kopirovani a sdileni filtrovanych pohledu primo.',
+        'description' => 'Filtry seznamu Svazku, Stacku, Zaloznich uloh a Upozorneni se nyni promitaji v URL, coz umoznuje primo kopirovat a sdilet filtrovane pohledy.',
     ],
 ];

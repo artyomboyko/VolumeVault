@@ -10,6 +10,7 @@ use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\Middleware\WithoutOverlapping;
 use Illuminate\Queue\SerializesModels;
+use Throwable;
 
 class RunRestoreJob implements ShouldQueue
 {
@@ -29,5 +30,18 @@ class RunRestoreJob implements ShouldQueue
     public function handle(RunRestore $runRestore): void
     {
         $runRestore->handle(RestoreRun::findOrFail($this->restoreRunId));
+    }
+
+    /**
+     * Called by the queue when the job fails outright (timeout, queue:restart,
+     * uncaught exception). Ensures the run never stays stuck in running/queued.
+     */
+    public function failed(Throwable $exception): void
+    {
+        $run = RestoreRun::find($this->restoreRunId);
+
+        if ($run) {
+            app(RunRestore::class)->markFailed($run, $exception);
+        }
     }
 }

@@ -10,6 +10,7 @@ use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\Middleware\WithoutOverlapping;
 use Illuminate\Queue\SerializesModels;
+use Throwable;
 
 class RunBackupJob implements ShouldQueue
 {
@@ -33,5 +34,18 @@ class RunBackupJob implements ShouldQueue
         $run = BackupRun::findOrFail($this->backupRunId);
 
         $runBackup->handle($run);
+    }
+
+    /**
+     * Called by the queue when the job fails outright (timeout, queue:restart,
+     * uncaught exception). Ensures the run never stays stuck in running/queued.
+     */
+    public function failed(Throwable $exception): void
+    {
+        $run = BackupRun::find($this->backupRunId);
+
+        if ($run) {
+            app(RunBackup::class)->markFailed($run, $exception);
+        }
     }
 }

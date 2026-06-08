@@ -1,9 +1,13 @@
 <?php
 
 return [
+    'stale_run_reconciliation' => [
+        'title' => 'Recupero automatico delle esecuzioni interrotte',
+        'description' => 'Le esecuzioni di backup e ripristino interrotte da un crash del worker, un timeout o un riavvio ora vengono contrassegnate automaticamente come fallite invece di restare bloccate, cosi i backup pianificati continuano a funzionare.',
+    ],
     'advanced_alerting' => [
-        'title' => 'Advanced alerting',
-        'description' => 'VolumeVault can monitor backup jobs for stale backups, repeated failures, long-running error states, and unusual archive sizes.',
+        'title' => 'Avvisi avanzati',
+        'description' => 'VolumeVault puo monitorare i processi di backup per rilevare backup obsoleti, errori ripetuti, stati di errore prolungati e dimensioni di archivio insolite.',
     ],
     'destination_storage_limit_alerts' => [
         'title' => 'Avvisi limite storage destinazione',
