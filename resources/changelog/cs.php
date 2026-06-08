@@ -9,6 +9,10 @@ return [
         'title' => 'Cistejsi opakovani po neuspesnem obnoveni',
         'description' => 'Kdyz obnoveni selze po vytvoreni ciloveho svazku, VolumeVault nyni castecne vytvoreny svazek odstrani, aby dalsi pokus zacal cisty a nebyl blokovan chybou "jiz existuje".',
     ],
+    'schedule_drift_prevention' => [
+        'title' => 'Spolehlivejsi planovani zaloh',
+        'description' => 'Naplanovane zalohy jiz nevynechaji spusteni, kdyz se worker zpozdi. Dalsi spusteni se nyni ukotvi k planovanemu oknu misto k casu dokonceni predchoziho spusteni, takze pomale nebo opozdene spusteni jiz nemuze zpusobit posun rozvrhu.',
+    ],
     'stale_run_reconciliation' => [
         'title' => 'Automaticke obnoveni preruseny behu',
         'description' => 'Behy zalohovani a obnovy preruseny padem workeru, timeoutem nebo restartem jsou nyni automaticky oznaceny jako neuspesne, misto aby zustaly zaseknute, takze planovane zalohy bezi dal. Aplikacni kontejnery zastavene kvuli zaloze se take automaticky znovu spusti, pokud je pad nechal vypnute.',

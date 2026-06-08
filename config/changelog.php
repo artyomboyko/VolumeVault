@@ -14,6 +14,10 @@ return [
             'type' => 'change',
             'key' => 'restore_volume_cleanup',
         ],
+        [
+            'type' => 'change',
+            'key' => 'schedule_drift_prevention',
+        ],
     ],
     'releases' => [
         'v1.7.2' => [

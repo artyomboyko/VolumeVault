@@ -9,6 +9,10 @@ return [
         'title' => 'Tisztabb ujraprobalkozasok sikertelen visszaallitas utan',
         'description' => 'Ha egy visszaallitas a celkotet letrehozasa utan meghiusul, a VolumeVault mostantol torli a reszben letrehozott kotetet, igy a kovetkezo probalkozas tisztan indul, ahelyett hogy egy "mar letezik" hiba blokkolna.',
     ],
+    'schedule_drift_prevention' => [
+        'title' => 'Megbizhatobb biztonsagi mentes utemezes',
+        'description' => 'Az utemezett biztonsagi mentesek mar nem hagynak ki futtatast, amikor egy worker lemarad. A kovetkezo futtatas mostantol a tervezett idosavhoz igazodik a korabbi futtatas befejezesi ideje helyett, igy a lassu vagy kesleltetett futtatas mar nem csusztathatja el az utemezest.',
+    ],
     'stale_run_reconciliation' => [
         'title' => 'Megszakitott futasok automatikus helyreallitasa',
         'description' => 'A worker osszeomlasa, idotullepes vagy ujrainditas miatt megszakitott mentesi es visszaallitasi futasok mostantol automatikusan sikertelenkent jelolodnek meg, ahelyett hogy elakadva maradnanak, igy az utemezett mentesek tovabb futnak. A mentes miatt leallitott alkalmazaskontenerek is automatikusan ujraindulnak, ha egy osszeomlas leallitva hagyta oket.',

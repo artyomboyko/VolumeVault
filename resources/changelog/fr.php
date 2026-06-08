@@ -9,6 +9,10 @@ return [
         'title' => 'Reprises plus propres apres une restauration echouee',
         'description' => 'Lorsqu\'une restauration echoue apres avoir cree son volume cible, VolumeVault supprime desormais le volume partiellement cree afin que la nouvelle tentative reparte propre, au lieu d\'etre bloquee par une erreur "existe deja".',
     ],
+    'schedule_drift_prevention' => [
+        'title' => 'Planification des sauvegardes plus fiable',
+        'description' => 'Les sauvegardes planifiees ne sautent plus d\'execution lorsqu\'un worker prend du retard. La prochaine execution est desormais ancree sur le creneau prevu plutot que sur l\'heure de fin du run precedent, ce qui evite toute derive du planning.',
+    ],
     'stale_run_reconciliation' => [
         'title' => 'Recuperation automatique des runs interrompus',
         'description' => 'Les sauvegardes et restaurations interrompues par un crash, un timeout ou un redemarrage du worker sont maintenant marquees en echec automatiquement au lieu de rester bloquees, pour que les sauvegardes planifiees continuent de tourner. Les conteneurs applicatifs arretes pour une sauvegarde sont aussi redemarres automatiquement si un crash les avait laisses eteints.',

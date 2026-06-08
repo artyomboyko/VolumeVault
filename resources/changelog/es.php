@@ -9,6 +9,10 @@ return [
         'title' => 'Reintentos mas limpios tras una restauracion fallida',
         'description' => 'Cuando una restauracion falla despues de crear su volumen de destino, VolumeVault ahora elimina el volumen creado parcialmente para que el siguiente reintento empiece limpio en lugar de quedar bloqueado por un error de "ya existe".',
     ],
+    'schedule_drift_prevention' => [
+        'title' => 'Programacion de copias de seguridad mas fiable',
+        'description' => 'Las copias de seguridad programadas ya no se saltan una ejecucion cuando un worker se retrasa. La proxima ejecucion ahora se ancla en la franja prevista en lugar de la hora de finalizacion de la ejecucion anterior, de modo que una ejecucion lenta o retrasada ya no puede desviar la programacion.',
+    ],
     'stale_run_reconciliation' => [
         'title' => 'Recuperacion automatica de ejecuciones interrumpidas',
         'description' => 'Las ejecuciones de copia y restauracion interrumpidas por un fallo del worker, un timeout o un reinicio ahora se marcan automaticamente como fallidas en lugar de quedarse bloqueadas, para que las copias programadas sigan ejecutandose. Los contenedores de aplicacion detenidos para una copia tambien se reinician automaticamente si un fallo los dejo apagados.',

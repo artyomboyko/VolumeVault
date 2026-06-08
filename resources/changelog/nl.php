@@ -9,6 +9,10 @@ return [
         'title' => 'Schonere nieuwe pogingen na een mislukte restore',
         'description' => 'Wanneer een restore mislukt nadat het doelvolume is aangemaakt, verwijdert VolumeVault nu het gedeeltelijk aangemaakte volume zodat de volgende poging schoon start in plaats van te worden geblokkeerd door een "bestaat al"-fout.',
     ],
+    'schedule_drift_prevention' => [
+        'title' => 'Betrouwbaardere back-upplanning',
+        'description' => 'Geplande back-ups slaan geen uitvoering meer over wanneer een worker achterloopt. De volgende uitvoering wordt nu verankerd aan het geplande tijdvak in plaats van aan de eindtijd van de vorige uitvoering, zodat een trage of vertraagde uitvoering de planning niet meer kan laten verschuiven.',
+    ],
     'stale_run_reconciliation' => [
         'title' => 'Automatisch herstel van onderbroken runs',
         'description' => 'Back-up- en herstelruns die zijn onderbroken door een worker-crash, time-out of herstart worden nu automatisch als mislukt gemarkeerd in plaats van vast te blijven zitten, zodat geplande back-ups blijven draaien. Applicatiecontainers die voor een back-up zijn gestopt, worden ook automatisch herstart als een crash ze uitgeschakeld liet.',
