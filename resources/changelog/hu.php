@@ -17,6 +17,10 @@ return [
         'title' => 'Hatekonyabb celhely-tarhasznalat szamitas',
         'description' => 'A biztonsagi mentes celhelyek tarhasznalatat mostantol az objektumok folyamatos bejarasaval szamitja a rendszer, ahelyett hogy a teljes listat betoltene a memoriaba, es az SFTP-kapcsolatokat ezt kovetoen mindig lezarja. A sok mentest tartalmazo celhelyek megbizhatobban merhetok, a memoria kimeritese vagy nyitva hagyott kapcsolatok nelkul.',
     ],
+    'run_log_integrity' => [
+        'title' => 'Megbizhatobb futtatasi naplok',
+        'description' => 'A biztonsagi mentesi es visszaallitasi futtatasok naploi mostantol atomi modon bovulnek, igy az egyidejuleg torteno frissitesek - peldaul egy hibauzenet es egy konteneer-ujrainditasi ertesites - mar nem irjak felul egymast. A naplok merete is korlatozott, a legfrissebb kimenetet megtartva ahelyett, hogy korlatlanul novekedne.',
+    ],
     'stale_run_reconciliation' => [
         'title' => 'Megszakitott futasok automatikus helyreallitasa',
         'description' => 'A worker osszeomlasa, idotullepes vagy ujrainditas miatt megszakitott mentesi es visszaallitasi futasok mostantol automatikusan sikertelenkent jelolodnek meg, ahelyett hogy elakadva maradnanak, igy az utemezett mentesek tovabb futnak. A mentes miatt leallitott alkalmazaskontenerek is automatikusan ujraindulnak, ha egy osszeomlas leallitva hagyta oket.',

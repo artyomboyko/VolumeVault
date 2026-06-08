@@ -17,6 +17,10 @@ return [
         'title' => 'Calculo mas eficiente del uso de almacenamiento del destino',
         'description' => 'El uso de almacenamiento de los destinos de copia de seguridad ahora se calcula recorriendo los objetos en flujo en lugar de cargar toda la lista en memoria, y las conexiones SFTP siempre se cierran despues. Los destinos con muchas copias de seguridad se miden de forma mas fiable, sin agotar la memoria ni dejar conexiones abiertas.',
     ],
+    'run_log_integrity' => [
+        'title' => 'Registros de ejecucion mas fiables',
+        'description' => 'Los registros de las ejecuciones de copia de seguridad y restauracion ahora se anaden de forma atomica, de modo que las actualizaciones simultaneas - como un mensaje de error y un aviso de reinicio de contenedor - ya no se sobrescriben entre si. Ademas su tamano esta limitado, conservando la salida mas reciente en lugar de crecer sin limite.',
+    ],
     'stale_run_reconciliation' => [
         'title' => 'Recuperacion automatica de ejecuciones interrumpidas',
         'description' => 'Las ejecuciones de copia y restauracion interrumpidas por un fallo del worker, un timeout o un reinicio ahora se marcan automaticamente como fallidas en lugar de quedarse bloqueadas, para que las copias programadas sigan ejecutandose. Los contenedores de aplicacion detenidos para una copia tambien se reinician automaticamente si un fallo los dejo apagados.',

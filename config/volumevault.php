@@ -12,6 +12,13 @@ return [
         'github_api_url' => env('VOLUMEVAULT_UPDATE_CHECK_URL', 'https://api.github.com/repos/Darkdragon14/VolumeVault/releases/latest'),
     ],
 
+    'run_logs' => [
+        // Maximum size (in bytes) kept in a run's `logs` column. When exceeded,
+        // the oldest output is dropped so the most recent lines (errors usually
+        // surface last) are preserved. Set to 0 to disable the cap.
+        'max_bytes' => (int) env('VOLUMEVAULT_RUN_LOG_MAX_BYTES', 262144),
+    ],
+
     'alerts' => [
         'enabled' => (bool) env('VOLUMEVAULT_ALERTS_ENABLED', true),
         'defaults' => [
