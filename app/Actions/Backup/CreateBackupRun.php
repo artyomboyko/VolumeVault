@@ -58,8 +58,19 @@ class CreateBackupRun
                 'trigger' => $trigger,
             ]);
 
+            // Anchor the next slot on the theoretical occurrence we are about to
+            // service (the current next_run_at when it is already due) rather than
+            // on "now". This keeps the schedule on its grid and prevents drift when
+            // the worker dispatches late. CreateBackupRun owns next_run_at for the
+            // whole run lifecycle; RunBackup no longer recomputes it on success.
+            $anchor = $job->next_run_at;
+
             $job->forceFill([
-                'next_run_at' => $this->scheduleCalculator->nextRunAt($job->schedule_type, $job->schedule_config ?? []),
+                'next_run_at' => $this->scheduleCalculator->nextRunAt(
+                    $job->schedule_type,
+                    $job->schedule_config ?? [],
+                    $anchor && $anchor->isPast() ? $anchor : null,
+                ),
                 'last_error' => null,
                 'last_error_at' => null,
             ])->save();
