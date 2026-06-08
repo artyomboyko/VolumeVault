@@ -3,7 +3,7 @@
 return [
     'stale_run_reconciliation' => [
         'title' => 'Recupero automatico delle esecuzioni interrotte',
-        'description' => 'Le esecuzioni di backup e ripristino interrotte da un crash del worker, un timeout o un riavvio ora vengono contrassegnate automaticamente come fallite invece di restare bloccate, cosi i backup pianificati continuano a funzionare.',
+        'description' => 'Le esecuzioni di backup e ripristino interrotte da un crash del worker, un timeout o un riavvio ora vengono contrassegnate automaticamente come fallite invece di restare bloccate, cosi i backup pianificati continuano a funzionare. Anche i container applicativi fermati per un backup vengono riavviati automaticamente se un crash li ha lasciati spenti.',
     ],
     'advanced_alerting' => [
         'title' => 'Avvisi avanzati',

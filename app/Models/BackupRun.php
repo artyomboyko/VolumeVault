@@ -34,6 +34,7 @@ class BackupRun extends Model
         'logs',
         'error_message',
         'docker_container_id',
+        'stopped_container_ids',
         'backup_key',
         'backup_size_bytes',
     ];
@@ -44,6 +45,7 @@ class BackupRun extends Model
             'started_at' => 'datetime',
             'finished_at' => 'datetime',
             'duration_seconds' => 'integer',
+            'stopped_container_ids' => 'array',
             'backup_size_bytes' => 'integer',
         ];
     }

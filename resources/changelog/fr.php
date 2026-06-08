@@ -3,7 +3,7 @@
 return [
     'stale_run_reconciliation' => [
         'title' => 'Recuperation automatique des runs interrompus',
-        'description' => "Les sauvegardes et restaurations interrompues par un crash, un timeout ou un redemarrage du worker sont maintenant marquees en echec automatiquement au lieu de rester bloquees, pour que les sauvegardes planifiees continuent de tourner.",
+        'description' => 'Les sauvegardes et restaurations interrompues par un crash, un timeout ou un redemarrage du worker sont maintenant marquees en echec automatiquement au lieu de rester bloquees, pour que les sauvegardes planifiees continuent de tourner. Les conteneurs applicatifs arretes pour une sauvegarde sont aussi redemarres automatiquement si un crash les avait laisses eteints.',
     ],
     'advanced_alerting' => [
         'title' => 'Alerting avance',

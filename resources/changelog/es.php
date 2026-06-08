@@ -3,7 +3,7 @@
 return [
     'stale_run_reconciliation' => [
         'title' => 'Recuperacion automatica de ejecuciones interrumpidas',
-        'description' => 'Las ejecuciones de copia y restauracion interrumpidas por un fallo del worker, un timeout o un reinicio ahora se marcan automaticamente como fallidas en lugar de quedarse bloqueadas, para que las copias programadas sigan ejecutandose.',
+        'description' => 'Las ejecuciones de copia y restauracion interrumpidas por un fallo del worker, un timeout o un reinicio ahora se marcan automaticamente como fallidas en lugar de quedarse bloqueadas, para que las copias programadas sigan ejecutandose. Los contenedores de aplicacion detenidos para una copia tambien se reinician automaticamente si un fallo los dejo apagados.',
     ],
     'advanced_alerting' => [
         'title' => 'Alertas avanzadas',

@@ -10,13 +10,14 @@ use Carbon\CarbonInterface;
 use Illuminate\Console\Command;
 use Illuminate\Database\Eloquent\Collection;
 use RuntimeException;
+use Throwable;
 
 class ReconcileStaleRuns extends Command
 {
     protected $signature = 'volumevault:reconcile-stale-runs
         {--minutes= : Age threshold in minutes before a queued/running run is considered stale}';
 
-    protected $description = 'Mark backup/restore runs stuck in queued/running as failed after a worker crash, timeout or restart.';
+    protected $description = 'Mark backup/restore runs stuck in queued/running as failed after a worker crash, timeout or restart, and restart application containers left stopped by an interrupted backup.';
 
     /**
      * Default staleness threshold. Kept in step with the queue jobs'
@@ -48,7 +49,19 @@ class ReconcileStaleRuns extends Command
             $restoreCount++;
         });
 
-        $this->info("Reconciled {$backupCount} stale backup run(s) and {$restoreCount} stale restore run(s).");
+        // Runs the sweep just failed (or runs whose worker died during restart)
+        // may still have application containers stopped. Restart them now.
+        $restartedCount = 0;
+        $this->runsWithStoppedContainers()->each(function (BackupRun $run) use ($runBackup, &$restartedCount): void {
+            try {
+                $runBackup->restartStoppedContainers($run);
+                $restartedCount++;
+            } catch (Throwable $exception) {
+                $this->warn("Failed to restart containers for backup run {$run->id}: {$exception->getMessage()}");
+            }
+        });
+
+        $this->info("Reconciled {$backupCount} stale backup run(s) and {$restoreCount} stale restore run(s); restarted containers for {$restartedCount} interrupted run(s).");
 
         return self::SUCCESS;
     }
@@ -68,6 +81,21 @@ class ReconcileStaleRuns extends Command
         return RestoreRun::query()
             ->whereIn('status', [RestoreRun::STATUS_QUEUED, RestoreRun::STATUS_RUNNING])
             ->where(fn ($query) => $this->staleConstraint($query, $cutoff, RestoreRun::STATUS_RUNNING))
+            ->get();
+    }
+
+    /**
+     * Terminal runs whose application containers were stopped for the backup
+     * but never restarted (worker crash between stop and restart).
+     *
+     * @return Collection<int, BackupRun>
+     */
+    private function runsWithStoppedContainers(): Collection
+    {
+        return BackupRun::query()
+            ->whereIn('status', [BackupRun::STATUS_SUCCESS, BackupRun::STATUS_FAILED, BackupRun::STATUS_CANCELLED])
+            ->whereNotNull('stopped_container_ids')
+            ->where('stopped_container_ids', '!=', '[]')
             ->get();
     }
 

@@ -3,7 +3,7 @@
 return [
     'stale_run_reconciliation' => [
         'title' => 'Megszakitott futasok automatikus helyreallitasa',
-        'description' => 'A worker osszeomlasa, idotullepes vagy ujrainditas miatt megszakitott mentesi es visszaallitasi futasok mostantol automatikusan sikertelenkent jelolodnek meg, ahelyett hogy elakadva maradnanak, igy az utemezett mentesek tovabb futnak.',
+        'description' => 'A worker osszeomlasa, idotullepes vagy ujrainditas miatt megszakitott mentesi es visszaallitasi futasok mostantol automatikusan sikertelenkent jelolodnek meg, ahelyett hogy elakadva maradnanak, igy az utemezett mentesek tovabb futnak. A mentes miatt leallitott alkalmazaskontenerek is automatikusan ujraindulnak, ha egy osszeomlas leallitva hagyta oket.',
     ],
     'advanced_alerting' => [
         'title' => 'Fejlett riasztas',

@@ -3,7 +3,7 @@
 return [
     'stale_run_reconciliation' => [
         'title' => 'Automatic recovery of interrupted runs',
-        'description' => 'Backup and restore runs interrupted by a worker crash, timeout, or restart are now automatically marked as failed instead of staying stuck, so scheduled backups keep running.',
+        'description' => 'Backup and restore runs interrupted by a worker crash, timeout, or restart are now automatically marked as failed instead of staying stuck, so scheduled backups keep running. Application containers stopped for a backup are also restarted automatically if a crash left them down.',
     ],
     'advanced_alerting' => [
         'title' => 'Advanced alerting',
