@@ -443,6 +443,33 @@ class AlertSystemTest extends TestCase
         $this->assertSame(AlertStatus::Active, Alert::firstOrFail()->status);
     }
 
+    public function test_alert_check_failure_does_not_block_remaining_rules(): void
+    {
+        Cache::flush();
+        app(EnsureAlertRules::class)->handle();
+        $this->assertSame(5, AlertRule::count());
+
+        $handled = [];
+        $mock = Mockery::mock(RunAllAlertChecks::class);
+        $mock->shouldReceive('handle')
+            ->times(5)
+            ->andReturnUsing(function (AlertRule $rule) use (&$handled): void {
+                $handled[] = $rule->id;
+
+                if (count($handled) === 1) {
+                    throw new \RuntimeException('boom');
+                }
+            });
+        $this->app->instance(RunAllAlertChecks::class, $mock);
+
+        app()->call([new RunAlertChecksJob, 'handle']);
+
+        $this->assertCount(5, $handled, 'Every rule should be evaluated even when one throws.');
+        $this->assertDatabaseHas('activity_logs', [
+            'event_type' => 'alert_check_failed',
+        ]);
+    }
+
     public function test_alert_index_filters_by_type(): void
     {
         $job = $this->backupJob(['last_success_at' => now()->subDays(8)]);

@@ -4,6 +4,10 @@ return [
     'unreleased' => [
         [
             'type' => 'change',
+            'key' => 'alert_check_isolation',
+        ],
+        [
+            'type' => 'change',
             'key' => 'stale_run_reconciliation',
         ],
         [

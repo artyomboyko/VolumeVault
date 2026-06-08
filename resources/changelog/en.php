@@ -1,6 +1,10 @@
 <?php
 
 return [
+    'alert_check_isolation' => [
+        'title' => 'More resilient alert checks',
+        'description' => 'A single alert rule that errors out no longer stops the other rules from being checked. Each rule is now evaluated independently and failures are logged, so one misbehaving check can no longer silently disable your remaining alerts.',
+    ],
     'restore_volume_cleanup' => [
         'title' => 'Cleaner retries after a failed restore',
         'description' => 'When a restore fails after creating its target volume, VolumeVault now removes the partially-created volume so the next retry starts clean instead of being blocked by an "already exists" error.',
