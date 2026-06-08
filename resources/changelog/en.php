@@ -17,6 +17,10 @@ return [
         'title' => 'More efficient destination storage usage',
         'description' => 'Storage usage for backup destinations is now measured by streaming through the objects instead of loading the whole listing into memory, and SFTP connections are always closed afterwards. Destinations holding many backups are measured more reliably, without exhausting memory or leaking connections.',
     ],
+    'run_log_integrity' => [
+        'title' => 'More reliable run logs',
+        'description' => 'Backup and restore run logs are now appended atomically, so concurrent updates - such as an error message and a container-restart notice - no longer overwrite each other. Logs are also capped in size, keeping the most recent output instead of growing without limit.',
+    ],
     'stale_run_reconciliation' => [
         'title' => 'Automatic recovery of interrupted runs',
         'description' => 'Backup and restore runs interrupted by a worker crash, timeout, or restart are now automatically marked as failed instead of staying stuck, so scheduled backups keep running. Application containers stopped for a backup are also restarted automatically if a crash left them down.',

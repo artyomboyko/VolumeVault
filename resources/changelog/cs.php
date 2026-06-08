@@ -17,6 +17,10 @@ return [
         'title' => 'Efektivnejsi vypocet vyuziti uloziste cile',
         'description' => 'Vyuziti uloziste cilu zaloh se nyni pocita prubeznym prochazenim objektu misto nacitani celeho seznamu do pameti a SFTP spojeni se po dokonceni vzdy uzavre. Cile s mnoha zalohami se meri spolehliveji, bez vycerpani pameti nebo ponechani otevrenych spojeni.',
     ],
+    'run_log_integrity' => [
+        'title' => 'Spolehlivejsi protokoly behu',
+        'description' => 'Protokoly behu zaloh a obnoveni se nyni pripojuji atomicky, takze soubezne aktualizace - napriklad chybova zprava a upozorneni na restart kontejneru - se jiz vzajemne neprepisuji. Velikost protokolu je take omezena a zachovava nejnovejsi vystup misto neomezeneho rustu.',
+    ],
     'stale_run_reconciliation' => [
         'title' => 'Automaticke obnoveni preruseny behu',
         'description' => 'Behy zalohovani a obnovy preruseny padem workeru, timeoutem nebo restartem jsou nyni automaticky oznaceny jako neuspesne, misto aby zustaly zaseknute, takze planovane zalohy bezi dal. Aplikacni kontejnery zastavene kvuli zaloze se take automaticky znovu spusti, pokud je pad nechal vypnute.',

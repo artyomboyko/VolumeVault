@@ -22,6 +22,10 @@ return [
             'type' => 'change',
             'key' => 'destination_usage_efficiency',
         ],
+        [
+            'type' => 'change',
+            'key' => 'run_log_integrity',
+        ],
     ],
     'releases' => [
         'v1.7.2' => [

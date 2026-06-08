@@ -17,6 +17,10 @@ return [
         'title' => 'Effizientere Ermittlung der Zielspeichernutzung',
         'description' => 'Die Speichernutzung von Backup-Zielen wird jetzt per Streaming durch die Objekte ermittelt, statt die gesamte Liste in den Speicher zu laden, und SFTP-Verbindungen werden anschliessend immer geschlossen. Ziele mit vielen Backups werden zuverlaessiger gemessen, ohne den Speicher zu erschoepfen oder Verbindungen offen zu lassen.',
     ],
+    'run_log_integrity' => [
+        'title' => 'Zuverlaessigere Laufprotokolle',
+        'description' => 'Protokolle von Backup- und Wiederherstellungslaeufen werden jetzt atomar angehaengt, sodass gleichzeitige Aktualisierungen - etwa eine Fehlermeldung und ein Hinweis auf den Container-Neustart - sich nicht mehr gegenseitig ueberschreiben. Die Protokollgroesse ist zudem begrenzt und behaelt die neueste Ausgabe, statt unbegrenzt zu wachsen.',
+    ],
     'stale_run_reconciliation' => [
         'title' => 'Automatische Wiederherstellung unterbrochener Laeufe',
         'description' => 'Backup- und Wiederherstellungslaeufe, die durch einen Worker-Absturz, ein Timeout oder einen Neustart unterbrochen wurden, werden jetzt automatisch als fehlgeschlagen markiert, statt haengen zu bleiben, sodass geplante Backups weiterlaufen. Anwendungscontainer, die fuer ein Backup gestoppt wurden, werden ebenfalls automatisch neu gestartet, falls ein Absturz sie ausgeschaltet zurueckliess.',

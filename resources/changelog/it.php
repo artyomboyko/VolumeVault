@@ -17,6 +17,10 @@ return [
         'title' => 'Calcolo piu efficiente dell\'utilizzo dello spazio della destinazione',
         'description' => 'L\'utilizzo dello spazio delle destinazioni di backup viene ora calcolato scorrendo gli oggetti in streaming invece di caricare l\'intero elenco in memoria, e le connessioni SFTP vengono sempre chiuse al termine. Le destinazioni che contengono molti backup vengono misurate in modo piu affidabile, senza esaurire la memoria ne lasciare connessioni aperte.',
     ],
+    'run_log_integrity' => [
+        'title' => 'Log delle esecuzioni piu affidabili',
+        'description' => 'I log delle esecuzioni di backup e ripristino vengono ora aggiunti in modo atomico, cosi gli aggiornamenti concorrenti - come un messaggio di errore e un avviso di riavvio del container - non si sovrascrivono piu a vicenda. La loro dimensione e inoltre limitata, mantenendo l\'output piu recente invece di crescere senza limiti.',
+    ],
     'stale_run_reconciliation' => [
         'title' => 'Recupero automatico delle esecuzioni interrotte',
         'description' => 'Le esecuzioni di backup e ripristino interrotte da un crash del worker, un timeout o un riavvio ora vengono contrassegnate automaticamente come fallite invece di restare bloccate, cosi i backup pianificati continuano a funzionare. Anche i container applicativi fermati per un backup vengono riavviati automaticamente se un crash li ha lasciati spenti.',
