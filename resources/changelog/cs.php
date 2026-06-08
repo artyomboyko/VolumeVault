@@ -3,7 +3,7 @@
 return [
     'stale_run_reconciliation' => [
         'title' => 'Automaticke obnoveni preruseny behu',
-        'description' => 'Behy zalohovani a obnovy preruseny padem workeru, timeoutem nebo restartem jsou nyni automaticky oznaceny jako neuspesne, misto aby zustaly zaseknute, takze planovane zalohy bezi dal.',
+        'description' => 'Behy zalohovani a obnovy preruseny padem workeru, timeoutem nebo restartem jsou nyni automaticky oznaceny jako neuspesne, misto aby zustaly zaseknute, takze planovane zalohy bezi dal. Aplikacni kontejnery zastavene kvuli zaloze se take automaticky znovu spusti, pokud je pad nechal vypnute.',
     ],
     'advanced_alerting' => [
         'title' => 'Pokrocile upozornovani',

@@ -7,6 +7,8 @@ use App\Models\BackupDestination;
 use App\Models\BackupJob;
 use App\Models\BackupRun;
 use App\Models\RestoreRun;
+use App\Services\Docker\DockerProcess;
+use App\Services\Docker\DockerProcessResult;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -122,10 +124,113 @@ class ReconcileStaleRunsTest extends TestCase
         $this->assertNotNull($run->error_message);
     }
 
+    public function test_interrupted_run_with_stopped_containers_is_restarted_and_cleared(): void
+    {
+        $docker = $this->recordingDockerProcess();
+        $this->app->instance(DockerProcess::class, $docker);
+
+        $job = $this->backupJob(BackupJob::STATUS_ERROR);
+        $run = BackupRun::create([
+            'backup_job_id' => $job->id,
+            'status' => BackupRun::STATUS_FAILED,
+            'trigger' => BackupRun::TRIGGER_SCHEDULED,
+            'started_at' => now()->subDays(2),
+            'finished_at' => now()->subDays(2),
+            'stopped_container_ids' => ['app-1', 'app-2'],
+        ]);
+
+        $this->artisan('volumevault:reconcile-stale-runs')->assertSuccessful();
+
+        $this->assertSame([
+            ['docker', 'start', 'app-1'],
+            ['docker', 'start', 'app-2'],
+        ], $docker->commands);
+        $this->assertNull($run->refresh()->stopped_container_ids);
+    }
+
+    public function test_stale_running_run_with_stopped_containers_is_failed_then_restarted(): void
+    {
+        $docker = $this->recordingDockerProcess();
+        $this->app->instance(DockerProcess::class, $docker);
+
+        $job = $this->backupJob(BackupJob::STATUS_RUNNING);
+        $run = BackupRun::create([
+            'backup_job_id' => $job->id,
+            'status' => BackupRun::STATUS_RUNNING,
+            'trigger' => BackupRun::TRIGGER_SCHEDULED,
+            'started_at' => now()->subDays(2),
+            'stopped_container_ids' => ['app-1'],
+        ]);
+
+        $this->artisan('volumevault:reconcile-stale-runs')->assertSuccessful();
+
+        $run->refresh();
+        $this->assertSame(BackupRun::STATUS_FAILED, $run->status);
+        $this->assertNull($run->stopped_container_ids);
+        $this->assertSame([['docker', 'start', 'app-1']], $docker->commands);
+    }
+
+    public function test_restart_failure_keeps_stopped_container_ids_for_retry(): void
+    {
+        $docker = $this->recordingDockerProcess(successful: false);
+        $this->app->instance(DockerProcess::class, $docker);
+
+        $job = $this->backupJob(BackupJob::STATUS_ERROR);
+        $run = BackupRun::create([
+            'backup_job_id' => $job->id,
+            'status' => BackupRun::STATUS_FAILED,
+            'trigger' => BackupRun::TRIGGER_SCHEDULED,
+            'started_at' => now()->subDays(2),
+            'finished_at' => now()->subDays(2),
+            'stopped_container_ids' => ['app-1'],
+        ]);
+
+        $this->artisan('volumevault:reconcile-stale-runs')->assertSuccessful();
+
+        $this->assertSame(['app-1'], $run->refresh()->stopped_container_ids);
+    }
+
+    public function test_terminal_run_without_stopped_containers_is_left_untouched(): void
+    {
+        $docker = $this->recordingDockerProcess();
+        $this->app->instance(DockerProcess::class, $docker);
+
+        $job = $this->backupJob(BackupJob::STATUS_ACTIVE);
+        BackupRun::create([
+            'backup_job_id' => $job->id,
+            'status' => BackupRun::STATUS_SUCCESS,
+            'trigger' => BackupRun::TRIGGER_SCHEDULED,
+            'started_at' => now()->subDays(2),
+            'finished_at' => now()->subDays(2),
+        ]);
+
+        $this->artisan('volumevault:reconcile-stale-runs')->assertSuccessful();
+
+        $this->assertSame([], $docker->commands);
+    }
+
     public function test_default_threshold_matches_overlap_lock_expiry(): void
     {
         // 86400s expireAfter on the queue jobs == 1440 minutes.
         $this->assertSame(86400, ReconcileStaleRuns::DEFAULT_THRESHOLD_MINUTES * 60);
+    }
+
+    private function recordingDockerProcess(bool $successful = true): DockerProcess
+    {
+        return new class($successful) extends DockerProcess
+        {
+            /** @var array<int, array<int, string>> */
+            public array $commands = [];
+
+            public function __construct(private readonly bool $successful) {}
+
+            public function run(array $command, int $timeout = 300, array $environment = []): DockerProcessResult
+            {
+                $this->commands[] = $command;
+
+                return new DockerProcessResult($command, $this->successful ? 0 : 1, '', $this->successful ? '' : 'boom');
+            }
+        };
     }
 
     private function backupJob(string $status): BackupJob

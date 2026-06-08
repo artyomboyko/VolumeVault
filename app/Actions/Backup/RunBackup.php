@@ -11,9 +11,9 @@ use App\Models\ActivityLog;
 use App\Models\BackupJob;
 use App\Models\BackupRun;
 use App\Models\DockerVolume;
-use App\Services\Logging\AppendRunLog;
 use App\Services\BackupDestinations\ListBackupObjects;
 use App\Services\BackupSources\HostPathPolicy;
+use App\Services\Logging\AppendRunLog;
 use App\Services\Notifications\SendShoutrrrNotification;
 use App\Services\Scheduling\BackupScheduleCalculator;
 use RuntimeException;
@@ -73,6 +73,9 @@ class RunBackup
                 $stoppedContainers = collect($containers)->pluck('id')->filter()->values()->all();
 
                 if ($stoppedContainers) {
+                    // Persist the IDs before stopping so a worker crash mid-run
+                    // can be reconciled later (the finally block clears them).
+                    $run->forceFill(['stopped_container_ids' => $stoppedContainers])->save();
                     $this->appendRunLog->handle($run, 'Stopping containers before backup: '.implode(', ', $stoppedContainers));
                     $this->stopDockerContainers->handle($stoppedContainers);
                 }
@@ -109,12 +112,42 @@ class RunBackup
             if ($stoppedContainers) {
                 try {
                     $this->startDockerContainers->handle($stoppedContainers);
+                    $run->forceFill(['stopped_container_ids' => null])->save();
                     $this->appendRunLog->handle($run->fresh(), 'Restarted containers: '.implode(', ', $stoppedContainers));
                 } catch (Throwable $exception) {
+                    // Leave stopped_container_ids set so reconciliation can retry.
                     $this->appendRunLog->handle($run->fresh(), 'Failed to restart containers: '.$exception->getMessage());
                 }
             }
         }
+    }
+
+    /**
+     * Restart application containers that a previous run stopped but never
+     * restarted (worker crash between stop and restart).
+     *
+     * Used by the stale-run reconciliation command. Idempotent: re-running
+     * `docker start` on an already-running container succeeds, and the IDs are
+     * only cleared once every container is back up.
+     */
+    public function restartStoppedContainers(BackupRun $run): void
+    {
+        $containerIds = $run->stopped_container_ids ?? [];
+
+        if (! $containerIds) {
+            return;
+        }
+
+        $this->startDockerContainers->handle($containerIds);
+
+        $run->forceFill(['stopped_container_ids' => null])->save();
+
+        $message = 'Restarted containers left stopped after an interrupted run: '.implode(', ', $containerIds);
+        $this->appendRunLog->handle($run, $message);
+
+        ActivityLog::record('backup_run_containers_reconciled', $message, $run, [
+            'backup_job_id' => $run->backup_job_id,
+        ]);
     }
 
     /**
