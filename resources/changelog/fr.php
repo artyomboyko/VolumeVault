@@ -1,6 +1,10 @@
 <?php
 
 return [
+    'restore_volume_cleanup' => [
+        'title' => 'Reprises plus propres apres une restauration echouee',
+        'description' => 'Lorsqu\'une restauration echoue apres avoir cree son volume cible, VolumeVault supprime desormais le volume partiellement cree afin que la nouvelle tentative reparte propre, au lieu d\'etre bloquee par une erreur "existe deja".',
+    ],
     'stale_run_reconciliation' => [
         'title' => 'Recuperation automatique des runs interrompus',
         'description' => 'Les sauvegardes et restaurations interrompues par un crash, un timeout ou un redemarrage du worker sont maintenant marquees en echec automatiquement au lieu de rester bloquees, pour que les sauvegardes planifiees continuent de tourner. Les conteneurs applicatifs arretes pour une sauvegarde sont aussi redemarres automatiquement si un crash les avait laisses eteints.',

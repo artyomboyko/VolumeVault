@@ -1,6 +1,10 @@
 <?php
 
 return [
+    'restore_volume_cleanup' => [
+        'title' => 'Sauberere Wiederholungen nach fehlgeschlagener Wiederherstellung',
+        'description' => 'Wenn eine Wiederherstellung nach dem Anlegen des Zielvolumes fehlschlaegt, entfernt VolumeVault jetzt das teilweise erstellte Volume, damit der naechste Versuch sauber startet und nicht durch einen "existiert bereits"-Fehler blockiert wird.',
+    ],
     'stale_run_reconciliation' => [
         'title' => 'Automatische Wiederherstellung unterbrochener Laeufe',
         'description' => 'Backup- und Wiederherstellungslaeufe, die durch einen Worker-Absturz, ein Timeout oder einen Neustart unterbrochen wurden, werden jetzt automatisch als fehlgeschlagen markiert, statt haengen zu bleiben, sodass geplante Backups weiterlaufen. Anwendungscontainer, die fuer ein Backup gestoppt wurden, werden ebenfalls automatisch neu gestartet, falls ein Absturz sie ausgeschaltet zurueckliess.',

@@ -1,6 +1,10 @@
 <?php
 
 return [
+    'restore_volume_cleanup' => [
+        'title' => 'Cleaner retries after a failed restore',
+        'description' => 'When a restore fails after creating its target volume, VolumeVault now removes the partially-created volume so the next retry starts clean instead of being blocked by an "already exists" error.',
+    ],
     'stale_run_reconciliation' => [
         'title' => 'Automatic recovery of interrupted runs',
         'description' => 'Backup and restore runs interrupted by a worker crash, timeout, or restart are now automatically marked as failed instead of staying stuck, so scheduled backups keep running. Application containers stopped for a backup are also restarted automatically if a crash left them down.',

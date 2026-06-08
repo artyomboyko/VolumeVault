@@ -4,6 +4,7 @@ namespace App\Actions\Restore;
 
 use App\Actions\Docker\CreateDockerVolume;
 use App\Actions\Docker\InspectDockerVolume;
+use App\Actions\Docker\RemoveDockerVolume;
 use App\Actions\Docker\RunRestoreContainer;
 use App\Models\DockerVolume;
 use App\Models\RestoreRun;
@@ -18,6 +19,7 @@ class RunRestore
     public function __construct(
         private readonly InspectDockerVolume $inspectDockerVolume,
         private readonly CreateDockerVolume $createDockerVolume,
+        private readonly RemoveDockerVolume $removeDockerVolume,
         private readonly RunRestoreContainer $runRestoreContainer,
         private readonly DestinationStorage $storage,
         private readonly AppendRunLog $appendRunLog,
@@ -28,6 +30,7 @@ class RunRestore
         $run->loadMissing('job.destination', 'destination');
         $startedAt = now();
         $archivePath = storage_path('app/restore-runs/'.$run->id.'/backup.tar.gz');
+        $createdVolume = false;
 
         $run->forceFill([
             'status' => RestoreRun::STATUS_RUNNING,
@@ -50,6 +53,7 @@ class RunRestore
 
             $this->appendRunLog->handle($run, 'Creating target Docker volume '.$run->target_volume_name.'.');
             $this->createDockerVolume->handle($run->target_volume_name);
+            $createdVolume = true;
 
             $this->appendRunLog->handle($run, 'Extracting backup archive into target volume.');
             $result = $this->runRestoreContainer->handle($run->fresh(), $archivePath);
@@ -71,6 +75,10 @@ class RunRestore
                 'duration_seconds' => $startedAt->diffInSeconds($finishedAt),
             ])->save();
         } catch (Throwable $exception) {
+            if ($createdVolume) {
+                $this->removePartialVolume($run);
+            }
+
             $this->markFailed($run, $exception);
         } finally {
             if (File::exists($archivePath)) {
@@ -104,6 +112,24 @@ class RunRestore
         ])->save();
 
         $this->appendRunLog->handle($run, $message);
+    }
+
+    /**
+     * Remove the target volume created by this run after a failed extraction.
+     *
+     * Without this, the partially-created volume survives and the next retry
+     * trips the volumeExists() guard ("Target Docker volume already exists")
+     * with no clear cause. Cleanup failures are logged but never mask the
+     * original restore error.
+     */
+    private function removePartialVolume(RestoreRun $run): void
+    {
+        try {
+            $this->removeDockerVolume->handle($run->target_volume_name);
+            $this->appendRunLog->handle($run, 'Removed partially-created target volume '.$run->target_volume_name.' so the run can be retried cleanly.');
+        } catch (Throwable $cleanupException) {
+            $this->appendRunLog->handle($run, 'Failed to remove partially-created target volume '.$run->target_volume_name.': '.$cleanupException->getMessage());
+        }
     }
 
     private function volumeExists(string $volumeName): bool

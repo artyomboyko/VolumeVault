@@ -1,6 +1,10 @@
 <?php
 
 return [
+    'restore_volume_cleanup' => [
+        'title' => 'Schonere nieuwe pogingen na een mislukte restore',
+        'description' => 'Wanneer een restore mislukt nadat het doelvolume is aangemaakt, verwijdert VolumeVault nu het gedeeltelijk aangemaakte volume zodat de volgende poging schoon start in plaats van te worden geblokkeerd door een "bestaat al"-fout.',
+    ],
     'stale_run_reconciliation' => [
         'title' => 'Automatisch herstel van onderbroken runs',
         'description' => 'Back-up- en herstelruns die zijn onderbroken door een worker-crash, time-out of herstart worden nu automatisch als mislukt gemarkeerd in plaats van vast te blijven zitten, zodat geplande back-ups blijven draaien. Applicatiecontainers die voor een back-up zijn gestopt, worden ook automatisch herstart als een crash ze uitgeschakeld liet.',

@@ -6,6 +6,10 @@ return [
             'type' => 'change',
             'key' => 'stale_run_reconciliation',
         ],
+        [
+            'type' => 'change',
+            'key' => 'restore_volume_cleanup',
+        ],
     ],
     'releases' => [
         'v1.7.2' => [

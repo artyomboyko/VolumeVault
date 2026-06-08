@@ -1,6 +1,10 @@
 <?php
 
 return [
+    'restore_volume_cleanup' => [
+        'title' => 'Tisztabb ujraprobalkozasok sikertelen visszaallitas utan',
+        'description' => 'Ha egy visszaallitas a celkotet letrehozasa utan meghiusul, a VolumeVault mostantol torli a reszben letrehozott kotetet, igy a kovetkezo probalkozas tisztan indul, ahelyett hogy egy "mar letezik" hiba blokkolna.',
+    ],
     'stale_run_reconciliation' => [
         'title' => 'Megszakitott futasok automatikus helyreallitasa',
         'description' => 'A worker osszeomlasa, idotullepes vagy ujrainditas miatt megszakitott mentesi es visszaallitasi futasok mostantol automatikusan sikertelenkent jelolodnek meg, ahelyett hogy elakadva maradnanak, igy az utemezett mentesek tovabb futnak. A mentes miatt leallitott alkalmazaskontenerek is automatikusan ujraindulnak, ha egy osszeomlas leallitva hagyta oket.',

@@ -1,6 +1,10 @@
 <?php
 
 return [
+    'restore_volume_cleanup' => [
+        'title' => 'Cistejsi opakovani po neuspesnem obnoveni',
+        'description' => 'Kdyz obnoveni selze po vytvoreni ciloveho svazku, VolumeVault nyni castecne vytvoreny svazek odstrani, aby dalsi pokus zacal cisty a nebyl blokovan chybou "jiz existuje".',
+    ],
     'stale_run_reconciliation' => [
         'title' => 'Automaticke obnoveni preruseny behu',
         'description' => 'Behy zalohovani a obnovy preruseny padem workeru, timeoutem nebo restartem jsou nyni automaticky oznaceny jako neuspesne, misto aby zustaly zaseknute, takze planovane zalohy bezi dal. Aplikacni kontejnery zastavene kvuli zaloze se take automaticky znovu spusti, pokud je pad nechal vypnute.',

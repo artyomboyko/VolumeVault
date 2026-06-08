@@ -1,6 +1,10 @@
 <?php
 
 return [
+    'restore_volume_cleanup' => [
+        'title' => 'Nuovi tentativi piu puliti dopo un ripristino fallito',
+        'description' => 'Quando un ripristino fallisce dopo aver creato il volume di destinazione, VolumeVault ora rimuove il volume creato parzialmente cosi che il tentativo successivo riparta pulito invece di essere bloccato da un errore "esiste gia".',
+    ],
     'stale_run_reconciliation' => [
         'title' => 'Recupero automatico delle esecuzioni interrotte',
         'description' => 'Le esecuzioni di backup e ripristino interrotte da un crash del worker, un timeout o un riavvio ora vengono contrassegnate automaticamente come fallite invece di restare bloccate, cosi i backup pianificati continuano a funzionare. Anche i container applicativi fermati per un backup vengono riavviati automaticamente se un crash li ha lasciati spenti.',
