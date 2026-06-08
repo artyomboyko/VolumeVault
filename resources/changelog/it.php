@@ -13,6 +13,10 @@ return [
         'title' => 'Pianificazione dei backup piu affidabile',
         'description' => 'I backup pianificati non saltano piu un\'esecuzione quando un worker e in ritardo. La prossima esecuzione viene ora ancorata alla fascia prevista invece che all\'orario di fine dell\'esecuzione precedente, cosi un\'esecuzione lenta o in ritardo non puo piu far slittare la pianificazione.',
     ],
+    'destination_usage_efficiency' => [
+        'title' => 'Calcolo piu efficiente dell\'utilizzo dello spazio della destinazione',
+        'description' => 'L\'utilizzo dello spazio delle destinazioni di backup viene ora calcolato scorrendo gli oggetti in streaming invece di caricare l\'intero elenco in memoria, e le connessioni SFTP vengono sempre chiuse al termine. Le destinazioni che contengono molti backup vengono misurate in modo piu affidabile, senza esaurire la memoria ne lasciare connessioni aperte.',
+    ],
     'stale_run_reconciliation' => [
         'title' => 'Recupero automatico delle esecuzioni interrotte',
         'description' => 'Le esecuzioni di backup e ripristino interrotte da un crash del worker, un timeout o un riavvio ora vengono contrassegnate automaticamente come fallite invece di restare bloccate, cosi i backup pianificati continuano a funzionare. Anche i container applicativi fermati per un backup vengono riavviati automaticamente se un crash li ha lasciati spenti.',

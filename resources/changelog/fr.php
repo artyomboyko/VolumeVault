@@ -13,6 +13,10 @@ return [
         'title' => 'Planification des sauvegardes plus fiable',
         'description' => 'Les sauvegardes planifiees ne sautent plus d\'execution lorsqu\'un worker prend du retard. La prochaine execution est desormais ancree sur le creneau prevu plutot que sur l\'heure de fin du run precedent, ce qui evite toute derive du planning.',
     ],
+    'destination_usage_efficiency' => [
+        'title' => 'Calcul de l\'utilisation du stockage plus efficace',
+        'description' => 'L\'utilisation du stockage des destinations de sauvegarde est desormais calculee en parcourant les objets en flux plutot qu\'en chargeant toute la liste en memoire, et les connexions SFTP sont toujours fermees ensuite. Les destinations contenant de nombreuses sauvegardes sont mesurees de maniere plus fiable, sans saturer la memoire ni laisser de connexions ouvertes.',
+    ],
     'stale_run_reconciliation' => [
         'title' => 'Recuperation automatique des runs interrompus',
         'description' => 'Les sauvegardes et restaurations interrompues par un crash, un timeout ou un redemarrage du worker sont maintenant marquees en echec automatiquement au lieu de rester bloquees, pour que les sauvegardes planifiees continuent de tourner. Les conteneurs applicatifs arretes pour une sauvegarde sont aussi redemarres automatiquement si un crash les avait laisses eteints.',

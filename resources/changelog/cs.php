@@ -13,6 +13,10 @@ return [
         'title' => 'Spolehlivejsi planovani zaloh',
         'description' => 'Naplanovane zalohy jiz nevynechaji spusteni, kdyz se worker zpozdi. Dalsi spusteni se nyni ukotvi k planovanemu oknu misto k casu dokonceni predchoziho spusteni, takze pomale nebo opozdene spusteni jiz nemuze zpusobit posun rozvrhu.',
     ],
+    'destination_usage_efficiency' => [
+        'title' => 'Efektivnejsi vypocet vyuziti uloziste cile',
+        'description' => 'Vyuziti uloziste cilu zaloh se nyni pocita prubeznym prochazenim objektu misto nacitani celeho seznamu do pameti a SFTP spojeni se po dokonceni vzdy uzavre. Cile s mnoha zalohami se meri spolehliveji, bez vycerpani pameti nebo ponechani otevrenych spojeni.',
+    ],
     'stale_run_reconciliation' => [
         'title' => 'Automaticke obnoveni preruseny behu',
         'description' => 'Behy zalohovani a obnovy preruseny padem workeru, timeoutem nebo restartem jsou nyni automaticky oznaceny jako neuspesne, misto aby zustaly zaseknute, takze planovane zalohy bezi dal. Aplikacni kontejnery zastavene kvuli zaloze se take automaticky znovu spusti, pokud je pad nechal vypnute.',

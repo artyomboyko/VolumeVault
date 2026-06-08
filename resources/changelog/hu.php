@@ -13,6 +13,10 @@ return [
         'title' => 'Megbizhatobb biztonsagi mentes utemezes',
         'description' => 'Az utemezett biztonsagi mentesek mar nem hagynak ki futtatast, amikor egy worker lemarad. A kovetkezo futtatas mostantol a tervezett idosavhoz igazodik a korabbi futtatas befejezesi ideje helyett, igy a lassu vagy kesleltetett futtatas mar nem csusztathatja el az utemezest.',
     ],
+    'destination_usage_efficiency' => [
+        'title' => 'Hatekonyabb celhely-tarhasznalat szamitas',
+        'description' => 'A biztonsagi mentes celhelyek tarhasznalatat mostantol az objektumok folyamatos bejarasaval szamitja a rendszer, ahelyett hogy a teljes listat betoltene a memoriaba, es az SFTP-kapcsolatokat ezt kovetoen mindig lezarja. A sok mentest tartalmazo celhelyek megbizhatobban merhetok, a memoria kimeritese vagy nyitva hagyott kapcsolatok nelkul.',
+    ],
     'stale_run_reconciliation' => [
         'title' => 'Megszakitott futasok automatikus helyreallitasa',
         'description' => 'A worker osszeomlasa, idotullepes vagy ujrainditas miatt megszakitott mentesi es visszaallitasi futasok mostantol automatikusan sikertelenkent jelolodnek meg, ahelyett hogy elakadva maradnanak, igy az utemezett mentesek tovabb futnak. A mentes miatt leallitott alkalmazaskontenerek is automatikusan ujraindulnak, ha egy osszeomlas leallitva hagyta oket.',
