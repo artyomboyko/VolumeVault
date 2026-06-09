@@ -442,5 +442,11 @@
   "Previous": "Anterior",
   "Next": "Siguiente",
   "All": "Todos",
-  "Pagination": "Paginacion"
+  "Pagination": "Paginacion",
+  "Pinned host key": "Clave de host fijada",
+  "Fetch key from server": "Obtener clave del servidor",
+  "Server key trusted (fingerprint {fingerprint}). Compare it with the server before saving to rule out a first-contact attack.": "Clave del servidor confiada (huella {fingerprint}). Comparela con el servidor antes de guardar para descartar un ataque en el primer contacto.",
+  "Unable to reach the SSH server.": "No se puede conectar con el servidor SSH.",
+  "Optional but recommended. Use the button to trust the current server key, or paste a host key (e.g. from ssh-keyscan) or its SHA256 fingerprint. Blocks man-in-the-middle attacks on the SFTP operations performed by VolumeVault; the backup container cannot verify host keys.": "Opcional pero recomendado. Use el boton para confiar en la clave actual del servidor, o pegue una clave de host (p. ej. de ssh-keyscan) o su huella SHA256. Bloquea los ataques de intermediario en las operaciones SFTP realizadas por VolumeVault; el contenedor de copia de seguridad no puede verificar las claves de host.",
+  "Fetching...": "Obteniendo..."
 }

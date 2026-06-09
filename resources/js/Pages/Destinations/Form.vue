@@ -42,6 +42,7 @@ const form = useForm({
         port: settings.port || 22,
         remote_path: settings.remote_path || '',
         identity_file: settings.identity_file || '',
+        host_key: settings.host_key || '',
         account_name: settings.account_name || '',
         container: settings.container || '',
         endpoint: settings.endpoint || '',
@@ -99,6 +100,35 @@ const submit = () => {
 
 const toggleDestinationActive = () => {
     form.is_active = !form.is_active;
+};
+
+const hostKeyProbe = ref<{ loading: boolean; fingerprint: string; error: string }>({
+    loading: false,
+    fingerprint: '',
+    error: '',
+});
+
+const fetchHostKey = async () => {
+    if (!form.settings.host || hostKeyProbe.value.loading) {
+        return;
+    }
+
+    hostKeyProbe.value = { loading: true, fingerprint: '', error: '' };
+
+    try {
+        const { data } = await window.axios.post('/destinations/host-key', {
+            host: form.settings.host,
+            port: form.settings.port,
+        });
+        form.settings.host_key = data.key;
+        hostKeyProbe.value = { loading: false, fingerprint: data.fingerprint, error: '' };
+    } catch (error: any) {
+        hostKeyProbe.value = {
+            loading: false,
+            fingerprint: '',
+            error: error?.response?.data?.message || t('Unable to reach the SSH server.'),
+        };
+    }
 };
 </script>
 
@@ -223,6 +253,18 @@ const toggleDestinationActive = () => {
                     <input v-model="form.settings.identity_file" class="input" placeholder="/root/.ssh/id_rsa">
                     <span class="text-xs text-slate-400">Advanced: path already available inside the Offen container.</span>
                 </label>
+                <div class="space-y-2 sm:col-span-2">
+                    <div class="flex items-center justify-between gap-2">
+                        <span class="label">{{ t('Pinned host key') }}</span>
+                        <button type="button" class="btn-secondary text-xs" :disabled="!form.settings.host || hostKeyProbe.loading" @click="fetchHostKey">
+                            {{ hostKeyProbe.loading ? t('Fetching...') : t('Fetch key from server') }}
+                        </button>
+                    </div>
+                    <textarea v-model="form.settings.host_key" class="input min-h-20" placeholder="ssh-ed25519 AAAAC3Nza... or SHA256:abc123..."></textarea>
+                    <span v-if="hostKeyProbe.fingerprint" class="block text-xs text-emerald-400">{{ t('Server key trusted (fingerprint {fingerprint}). Compare it with the server before saving to rule out a first-contact attack.', { fingerprint: hostKeyProbe.fingerprint }) }}</span>
+                    <span v-if="hostKeyProbe.error" class="block text-xs text-rose-400">{{ hostKeyProbe.error }}</span>
+                    <span class="text-xs text-slate-400">{{ t('Optional but recommended. Use the button to trust the current server key, or paste a host key (e.g. from ssh-keyscan) or its SHA256 fingerprint. Blocks man-in-the-middle attacks on the SFTP operations performed by VolumeVault; the backup container cannot verify host keys.') }}</span>
+                </div>
             </section>
 
             <section v-else-if="form.provider === 'azure_blob'" class="grid gap-4 sm:grid-cols-2">

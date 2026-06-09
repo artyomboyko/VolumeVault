@@ -37,7 +37,7 @@ Host path rules:
 - The filesystem root `/` is rejected.
 - Paths containing `.` or `..` segments are rejected.
 - `Stop containers before backup` is only available for Docker volume sources.
-- If `VOLUMEVAULT_HOST_PATH_ALLOWLIST` is set, the host path must match one of its comma-separated prefixes.
+- The host path must match one of the comma-separated prefixes in `VOLUMEVAULT_HOST_PATH_ALLOWLIST`. This is fail-closed: when the allowlist is empty, host path sources (and local destinations) are refused.
 
 Example allowlist:
 
@@ -45,7 +45,16 @@ Example allowlist:
 VOLUMEVAULT_HOST_PATH_ALLOWLIST=/srv,/mnt/data,/opt/stacks
 ```
 
-When the allowlist is configured, jobs outside those prefixes fail validation when saved and the error is shown on the host path field.
+Jobs outside those prefixes fail validation when saved (the error is shown on the host path field) and are re-checked at run time, so a path that is later swapped for a symlink pointing outside the allowlist is still refused.
+
+> **Upgrading from a version without the fail-closed allowlist?** Earlier releases allowed any host path when `VOLUMEVAULT_HOST_PATH_ALLOWLIST` was empty. After upgrading, existing host-path sources and local destinations are refused until their paths are allowlisted. Run the audit command to get the exact value to add to your `.env`:
+>
+> ```bash
+> php artisan volumevault:host-path-allowlist:audit
+> ```
+>
+> It prints the `VOLUMEVAULT_HOST_PATH_ALLOWLIST=…` line that keeps your existing jobs and destinations working (nothing more). The command also runs hourly on the scheduler and records a warning in the activity log if any in-use path is blocked, so the breakage is never silent.
+{: .prompt-warning }
 
 ## Scheduling
 

@@ -1,6 +1,30 @@
 <?php
 
 return [
+    'ssrf_destination_guard' => [
+        'title' => 'Les destinations de sauvegarde en IP privee sont desormais protegees (SSRF)',
+        'description' => 'VolumeVault refuse desormais par defaut de se connecter a une destination de sauvegarde dont l\'hote se resout en une adresse privee, de bouclage (loopback) ou lien-local (y compris le point de terminaison de metadonnees cloud 169.254.169.254). Cela ne concerne que les destinations sur IP privee, comme un NAS local ou un S3/MinIO auto-heberge - les destinations cloud accessibles par une URL publique ne sont pas affectees. Les sauvegardes planifiees continuent de s\'executer, mais le test de destination, la restauration (listing et telechargement) et l\'alerte de quota de stockage sont bloques tant que vous n\'avez pas liste la plage de la destination dans VOLUMEVAULT_SSRF_ALLOWED_IPS (CIDR separes par des virgules, par ex. 192.168.1.0/24). Les canaux de notification ne sont pas concernes.',
+    ],
+    'host_path_allowlist_fail_closed' => [
+        'title' => 'La liste d\'autorisation des chemins hote est desormais fail-closed',
+        'description' => 'VOLUMEVAULT_HOST_PATH_ALLOWLIST refuse desormais par defaut : lorsqu\'elle est vide, les sources de sauvegarde par chemin hote et les destinations locales sont refusees au lieu d\'autoriser n\'importe quel chemin. La meme liste protege maintenant aussi les destinations locales, et les chemins sont reverifies a l\'execution pour bloquer les substitutions de liens symboliques. Les installations existantes qui s\'appuyaient sur l\'ancien comportement ouvert doivent lister leurs chemins - executez "php artisan volumevault:host-path-allowlist:audit" pour obtenir la valeur exacte a definir.',
+    ],
+    'auth_rate_limiting' => [
+        'title' => 'Connexion et reinitialisation de mot de passe limitees',
+        'description' => 'Les requetes de connexion et de reinitialisation de mot de passe sont desormais limitees a 5 tentatives par minute, ce qui ralentit les attaques par force brute sur le mot de passe administrateur. Au-dela de la limite, une reponse temporaire "trop de requetes" est renvoyee et se reinitialise au bout d\'une minute.',
+    ],
+    'restore_input_hardening' => [
+        'title' => 'Validation renforcee des entrees de restauration et de sauvegarde',
+        'description' => 'La sauvegarde selectionnee pour une restauration doit desormais correspondre au listing de la destination, ce qui bloque les cles de traversee de chemin comme "../../etc/passwd". Les noms de volumes Docker sont limites a des caracteres surs, et l\'extraction de restauration est confinee afin qu\'une archive falsifiee ne puisse pas ecrire en dehors du volume cible.',
+    ],
+    'sftp_host_key_pinning' => [
+        'title' => 'Epinglage de la cle d\'hote SSH pour les destinations SFTP',
+        'description' => 'Les destinations SSH/SFTP peuvent desormais epingler la cle d\'hote du serveur pour bloquer les attaques de l\'homme du milieu. Utilisez le bouton "Recuperer la cle du serveur" - ou le nouvel endpoint POST /api/v1/destinations/host-key - pour approuver la cle presentee, ou collez une cle d\'hote ou une empreinte SHA256. La cle est verifiee avant tout envoi d\'identifiants, pour les operations SFTP propres a VolumeVault (test, listing, restauration). La laisser vide conserve le comportement precedent.',
+    ],
+    'api_token_expiration' => [
+        'title' => 'Les tokens API expirent desormais par defaut',
+        'description' => 'Les tokens API expirent desormais 60 jours apres leur creation par defaut, ce qui limite l\'impact d\'un token divulgue. Les tokens existants plus anciens cessent de fonctionner apres la mise a jour et doivent etre recrees. Definissez SANCTUM_TOKEN_EXPIRATION (en minutes) pour modifier la duree, ou null pour conserver des tokens sans expiration. Une expiration definie par token ne peut que raccourcir cette duree, jamais l\'allonger.',
+    ],
     'alert_check_isolation' => [
         'title' => 'Verifications d\'alerte plus robustes',
         'description' => 'Une regle d\'alerte qui echoue n\'empeche plus la verification des autres regles. Chaque regle est desormais evaluee independamment et les echecs sont journalises, de sorte qu\'une seule verification defaillante ne peut plus desactiver silencieusement vos autres alertes.',

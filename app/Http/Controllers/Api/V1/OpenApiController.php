@@ -44,6 +44,7 @@ class OpenApiController extends Controller
             '/me' => ['get' => $this->operation('Inspect current authenticated user and token.', ['read'])],
             '/dashboard' => ['get' => $this->operation('Read dashboard stats and recent activity.', ['read'])],
             '/volumes' => ['get' => $this->operation('List Docker volumes.', ['read'])],
+            '/host-path-allowlist' => ['get' => $this->operation('Read the configured host-path allowlist (prefixes that host-path backup sources and local destinations may use). Empty/not configured means host paths are refused (fail-closed).', ['read'], null, false, true)],
             '/volumes/sync' => ['post' => $this->operation('Synchronize Docker volumes from the host.', ['write'], null, true, true)],
             '/backup-jobs' => [
                 'get' => $this->operation('List backup jobs.', ['read']),
@@ -73,6 +74,7 @@ class OpenApiController extends Controller
                 'delete' => $this->operation('Delete a backup destination.', ['write'], null, true, true, 204),
             ],
             '/destinations/{id}/test' => ['post' => $this->operation('Test a backup destination.', ['write'], null, true, true)],
+            '/destinations/host-key' => ['post' => $this->operation('Read the SSH host key a server presents, to pin it as settings.host_key (trust on first use). Connects without authenticating.', ['write'], ['$ref' => '#/components/schemas/HostKeyRequest'], false, true)],
             '/notifications' => ['get' => $this->operation('List notification channels without plaintext URLs.', ['read'], null, false, true)],
             '/notifications/{id}' => ['get' => $this->operation('Read one notification channel without plaintext URL.', ['read'], null, true, true)],
             '/notifications/{id}/test' => ['post' => $this->operation('Send a notification test.', ['write'], null, true, true)],
@@ -153,7 +155,7 @@ class OpenApiController extends Controller
                 'properties' => [
                     'name' => ['type' => 'string'],
                     'source_type' => ['type' => 'string', 'enum' => ['docker_volume', 'host_path'], 'default' => 'docker_volume'],
-                    'volume_name' => ['type' => ['string', 'null'], 'description' => 'Required when source_type is docker_volume.'],
+                    'volume_name' => ['type' => ['string', 'null'], 'pattern' => '^[A-Za-z0-9_.-]+$', 'maxLength' => 255, 'description' => 'Required when source_type is docker_volume. Must match the Docker volume name pattern ^[A-Za-z0-9_.-]+$.'],
                     'host_path' => ['type' => ['string', 'null'], 'description' => 'Required when source_type is host_path. Must be an absolute directory path on the Docker host and match VOLUMEVAULT_HOST_PATH_ALLOWLIST when configured.'],
                     'backup_destination_id' => ['type' => 'integer'],
                     'schedule_type' => ['type' => 'string', 'enum' => ['hourly', 'daily', 'weekly', 'cron']],
@@ -180,9 +182,9 @@ class OpenApiController extends Controller
                 'type' => 'object',
                 'required' => ['selected_backup_key', 'mode'],
                 'properties' => [
-                    'selected_backup_key' => ['type' => 'string'],
+                    'selected_backup_key' => ['type' => 'string', 'maxLength' => 2048, 'description' => 'Object key of the backup to restore. Must be one of the keys returned by GET /backup-jobs/{id}/backups; it is checked against the destination listing (fail-closed), so arbitrary or path-traversal keys such as "../../etc/passwd" are rejected.'],
                     'mode' => ['type' => 'string', 'enum' => ['new_volume']],
-                    'target_volume_name' => ['type' => ['string', 'null']],
+                    'target_volume_name' => ['type' => ['string', 'null'], 'pattern' => '^[A-Za-z0-9_.-]+$', 'maxLength' => 128, 'description' => 'Name for the new volume created by the restore. Must match ^[A-Za-z0-9_.-]+$.'],
                     'confirmation_text' => ['type' => ['string', 'null']],
                 ],
             ],
@@ -195,6 +197,14 @@ class OpenApiController extends Controller
                 'type' => 'object',
                 'required' => ['name', 'provider'],
                 'properties' => $this->destinationProperties(false),
+            ],
+            'HostKeyRequest' => [
+                'type' => 'object',
+                'required' => ['host'],
+                'properties' => [
+                    'host' => ['type' => 'string', 'description' => 'SSH server hostname or IP.'],
+                    'port' => ['type' => ['integer', 'null'], 'minimum' => 1, 'maximum' => 65535, 'default' => 22],
+                ],
             ],
         ];
     }
@@ -214,7 +224,7 @@ class OpenApiController extends Controller
             'settings' => [
                 'type' => ['object', 'null'],
                 'additionalProperties' => true,
-                'description' => 'Provider-specific non-secret settings. Examples: WebDAV url/path, SSH host/remote_path, Azure container, Dropbox remote_path, Google Drive folder_id, local archive_path.',
+                'description' => 'Provider-specific non-secret settings. Examples: WebDAV url/path, SSH host/remote_path, Azure container, Dropbox remote_path, Google Drive folder_id, local archive_path. For local destinations, archive_path and archive_mount_source must match VOLUMEVAULT_HOST_PATH_ALLOWLIST (fail-closed: refused when the allowlist is empty); read GET /host-path-allowlist for the allowed prefixes. For SSH, set host_key (an OpenSSH public host key line or a SHA256: fingerprint) to pin the server and block man-in-the-middle attacks; use POST /destinations/host-key to discover it.',
             ],
             'secrets' => [
                 'type' => ['object', 'null'],

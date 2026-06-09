@@ -7,6 +7,7 @@ use App\Models\BackupJob;
 use App\Models\DockerVolume;
 use App\Models\NotificationChannel;
 use App\Models\User;
+use App\Services\BackupDestinations\DestinationStorage;
 use App\Services\Docker\DockerProcess;
 use App\Services\Docker\DockerProcessResult;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -246,5 +247,98 @@ class ExternalApiTest extends TestCase
             ->assertJsonPath('data.0.has_access_key_id', true)
             ->assertJsonMissing(['secret-access-key'])
             ->assertJsonMissing(['secret-access-key-id']);
+    }
+
+    public function test_admin_read_token_can_read_the_host_path_allowlist(): void
+    {
+        config(['volumevault.host_path_allowlist' => ['/srv//data/', '/mnt/backups']]);
+        $token = User::factory()->admin()->create()->createToken('openclaw-read', ['read'])->plainTextToken;
+
+        $this->withToken($token)
+            ->getJson('/api/v1/host-path-allowlist')
+            ->assertOk()
+            ->assertJsonPath('data.configured', true)
+            ->assertJsonPath('data.prefixes.0', '/srv/data')
+            ->assertJsonPath('data.prefixes.1', '/mnt/backups');
+    }
+
+    public function test_host_path_allowlist_reports_fail_closed_when_empty(): void
+    {
+        config(['volumevault.host_path_allowlist' => []]);
+        $token = User::factory()->admin()->create()->createToken('openclaw-read', ['read'])->plainTextToken;
+
+        $this->withToken($token)
+            ->getJson('/api/v1/host-path-allowlist')
+            ->assertOk()
+            ->assertJsonPath('data.configured', false)
+            ->assertJsonPath('data.prefixes', []);
+    }
+
+    public function test_host_path_allowlist_is_admin_only(): void
+    {
+        $token = User::factory()->user()->create()->createToken('openclaw-read', ['read'])->plainTextToken;
+
+        $this->withToken($token)
+            ->getJson('/api/v1/host-path-allowlist')
+            ->assertForbidden();
+    }
+
+    public function test_admin_write_token_can_probe_an_ssh_host_key(): void
+    {
+        $this->mock(DestinationStorage::class)
+            ->shouldReceive('probeHostKey')
+            ->once()
+            ->with('ssh.example.com', 2222)
+            ->andReturn(['key' => 'ssh-ed25519 AAAAKEY', 'fingerprint' => 'SHA256:abc']);
+
+        $token = User::factory()->admin()->create()->createToken('openclaw-write', ['read', 'write'])->plainTextToken;
+
+        $this->withToken($token)
+            ->postJson('/api/v1/destinations/host-key', ['host' => 'ssh.example.com', 'port' => 2222])
+            ->assertOk()
+            ->assertJsonPath('data.key', 'ssh-ed25519 AAAAKEY')
+            ->assertJsonPath('data.fingerprint', 'SHA256:abc');
+    }
+
+    public function test_host_key_probe_requires_write_ability(): void
+    {
+        $token = User::factory()->admin()->create()->createToken('openclaw-read', ['read'])->plainTextToken;
+
+        $this->withToken($token)
+            ->postJson('/api/v1/destinations/host-key', ['host' => 'ssh.example.com'])
+            ->assertForbidden();
+    }
+
+    public function test_host_key_probe_validates_the_host(): void
+    {
+        $token = User::factory()->admin()->create()->createToken('openclaw-write', ['read', 'write'])->plainTextToken;
+
+        $this->withToken($token)
+            ->postJson('/api/v1/destinations/host-key', ['host' => ''])
+            ->assertStatus(422);
+    }
+
+    public function test_openapi_documents_the_host_key_probe(): void
+    {
+        $this->getJson('/api/v1/openapi.json')
+            ->assertOk()
+            ->assertJsonPath('paths./destinations/host-key.post.requestBody.content.application/json.schema.$ref', '#/components/schemas/HostKeyRequest')
+            ->assertJsonPath('components.schemas.HostKeyRequest.required.0', 'host');
+    }
+
+    public function test_openapi_documents_the_host_path_allowlist(): void
+    {
+        $this->getJson('/api/v1/openapi.json')
+            ->assertOk()
+            ->assertJsonPath('paths./host-path-allowlist.get.summary', fn (string $summary): bool => str_contains($summary, 'host-path allowlist'));
+    }
+
+    public function test_openapi_documents_volume_and_restore_key_constraints(): void
+    {
+        $this->getJson('/api/v1/openapi.json')
+            ->assertOk()
+            ->assertJsonPath('components.schemas.BackupJobRequest.properties.volume_name.pattern', '^[A-Za-z0-9_.-]+$')
+            ->assertJsonPath('components.schemas.RestoreRequest.properties.target_volume_name.pattern', '^[A-Za-z0-9_.-]+$')
+            ->assertJsonPath('components.schemas.RestoreRequest.properties.selected_backup_key.description', fn (string $d): bool => str_contains($d, '/backup-jobs/{id}/backups'));
     }
 }

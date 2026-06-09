@@ -1,6 +1,30 @@
 <?php
 
 return [
+    'ssrf_destination_guard' => [
+        'title' => 'Le destinazioni di backup con IP privato ora sono protette (SSRF)',
+        'description' => 'VolumeVault ora rifiuta per impostazione predefinita di connettersi a una destinazione di backup il cui host si risolve in un indirizzo privato, di loopback o link-local (incluso l\'endpoint dei metadati cloud 169.254.169.254). Questo riguarda solo le destinazioni con IP privato, come un NAS in LAN o un S3/MinIO self-hosted; le destinazioni cloud raggiungibili tramite un URL pubblico non sono interessate. I backup pianificati continuano a essere eseguiti, ma il test della destinazione, il ripristino (elenco e download) e l\'avviso sulla quota di archiviazione sono bloccati finche non si elenca l\'intervallo della destinazione in VOLUMEVAULT_SSRF_ALLOWED_IPS (CIDR separati da virgole, ad es. 192.168.1.0/24). I canali di notifica non sono protetti.',
+    ],
+    'host_path_allowlist_fail_closed' => [
+        'title' => 'L\'elenco di autorizzazione dei percorsi host ora e fail-closed',
+        'description' => 'VOLUMEVAULT_HOST_PATH_ALLOWLIST ora nega in modo predefinito: quando e vuoto, le sorgenti di backup per percorso host e le destinazioni locali vengono rifiutate invece di consentire qualsiasi percorso. Lo stesso elenco ora protegge anche le destinazioni locali e i percorsi vengono ricontrollati in fase di esecuzione per bloccare la sostituzione dei collegamenti simbolici. Le installazioni esistenti che si basavano sul precedente comportamento aperto devono elencare i propri percorsi: esegui "php artisan volumevault:host-path-allowlist:audit" per ottenere il valore esatto da impostare.',
+    ],
+    'auth_rate_limiting' => [
+        'title' => 'Accesso e reimpostazione password con limite di frequenza',
+        'description' => 'Le richieste di accesso e di reimpostazione della password sono ora limitate a 5 tentativi al minuto, rallentando gli attacchi a forza bruta contro la password dell\'amministratore. Superando il limite viene restituita una risposta temporanea "troppe richieste" che si reimposta dopo un minuto.',
+    ],
+    'restore_input_hardening' => [
+        'title' => 'Convalida piu rigorosa degli input di ripristino e backup',
+        'description' => 'Il backup selezionato per un ripristino ora deve corrispondere all\'elenco della destinazione, bloccando le chiavi di attraversamento dei percorsi come "../../etc/passwd". I nomi dei volumi Docker sono limitati a caratteri sicuri e l\'estrazione di ripristino e confinata in modo che un archivio contraffatto non possa scrivere al di fuori del volume di destinazione.',
+    ],
+    'sftp_host_key_pinning' => [
+        'title' => 'Blocco della chiave host SSH per le destinazioni SFTP',
+        'description' => 'Le destinazioni SSH/SFTP ora possono bloccare la chiave host del server per impedire gli attacchi man-in-the-middle. Usa il pulsante "Recupera la chiave dal server" - o il nuovo endpoint POST /api/v1/destinations/host-key - per considerare attendibile la chiave presentata, oppure incolla una chiave host o un\'impronta SHA256. La chiave viene verificata prima di inviare qualsiasi credenziale, per le operazioni SFTP eseguite da VolumeVault (test, elenco, ripristino). Lasciarla vuota mantiene il comportamento precedente.',
+    ],
+    'api_token_expiration' => [
+        'title' => 'I token API ora scadono per impostazione predefinita',
+        'description' => 'I token API ora scadono 60 giorni dopo la creazione per impostazione predefinita, limitando l\'impatto di un token trafugato. I token esistenti piu vecchi smettono di funzionare dopo l\'aggiornamento e devono essere ricreati. Imposta SANCTUM_TOKEN_EXPIRATION (in minuti) per modificare la durata, oppure null per mantenere token senza scadenza. Una scadenza per token puo solo ridurre questa durata, mai estenderla.',
+    ],
     'alert_check_isolation' => [
         'title' => 'Controlli degli avvisi piu robusti',
         'description' => 'Una regola di avviso che genera un errore non impedisce piu il controllo delle altre regole. Ogni regola viene ora valutata in modo indipendente e gli errori vengono registrati, cosi un singolo controllo difettoso non puo piu disattivare silenziosamente gli altri avvisi.',

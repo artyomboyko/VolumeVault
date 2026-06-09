@@ -5,6 +5,7 @@ namespace App\Actions\Docker;
 use App\Models\BackupDestination;
 use App\Models\BackupJob;
 use App\Models\BackupRun;
+use App\Services\BackupSources\HostPathPolicy;
 use App\Services\Docker\DockerProcess;
 use App\Services\Docker\DockerProcessResult;
 use Illuminate\Support\Facades\File;
@@ -14,7 +15,14 @@ class RunBackupContainer
 {
     public const IMAGE = 'offen/docker-volume-backup:latest';
 
-    public function __construct(private readonly DockerProcess $dockerProcess) {}
+    private readonly HostPathPolicy $hostPathPolicy;
+
+    public function __construct(
+        private readonly DockerProcess $dockerProcess,
+        ?HostPathPolicy $hostPathPolicy = null,
+    ) {
+        $this->hostPathPolicy = $hostPathPolicy ?? app(HostPathPolicy::class);
+    }
 
     public function handle(BackupRun $run): DockerProcessResult
     {
@@ -204,6 +212,13 @@ class RunBackupContainer
         $archivePath = rtrim((string) $destination->setting('archive_path'), '/');
         $mountSource = rtrim((string) ($destination->setting('archive_mount_source') ?: $archivePath), '/');
 
+        // The local destination is bind-mounted read-write (offen writes the
+        // archive into it), so an unrestricted path would let the backup
+        // container write anywhere on the host. Re-validate both ends against
+        // the host-path allowlist at run time (fail-closed + TOCTOU guard).
+        $this->hostPathPolicy->assertValidAtRuntime($archivePath);
+        $this->hostPathPolicy->assertValidAtRuntime($mountSource);
+
         return [
             'environment' => ['BACKUP_ARCHIVE' => $archivePath],
             'mounts' => [$mountSource.':'.$archivePath],
@@ -254,6 +269,10 @@ class RunBackupContainer
         $target = '/backup/'.$this->sourceMountName($job);
 
         if ($job->isHostPathSource()) {
+            // Re-validate at run time, not just at job creation, to close the
+            // TOCTOU window (e.g. a symlink swapped in after the job was saved).
+            $this->hostPathPolicy->assertValidAtRuntime((string) $job->host_path);
+
             return [
                 '--mount',
                 'type=bind,src='.$job->host_path.',dst='.$target.',readonly',

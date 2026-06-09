@@ -1,0 +1,102 @@
+<?php
+
+namespace Tests\Feature;
+
+use App\Models\BackupDestination;
+use App\Models\BackupJob;
+use App\Models\RestoreRun;
+use App\Models\User;
+use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\File;
+use Illuminate\Support\Facades\Queue;
+use Tests\TestCase;
+
+class RestoreKeyValidationTest extends TestCase
+{
+    use RefreshDatabase;
+
+    private string $archivePath;
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        $this->archivePath = sys_get_temp_dir().'/volumevault-restore-key-'.uniqid();
+        File::ensureDirectoryExists($this->archivePath);
+        File::put($this->archivePath.'/backup.tar.gz', 'fake-archive');
+    }
+
+    protected function tearDown(): void
+    {
+        File::deleteDirectory($this->archivePath);
+
+        parent::tearDown();
+    }
+
+    public function test_selected_backup_key_within_the_listing_is_accepted(): void
+    {
+        Queue::fake();
+        $job = $this->backupJob();
+
+        $response = $this->actingAs(User::factory()->admin()->create())
+            ->post(route('backup-jobs.restore.store', $job), [
+                'selected_backup_key' => 'backup.tar.gz',
+                'mode' => RestoreRun::MODE_NEW_VOLUME,
+            ]);
+
+        $response->assertSessionDoesntHaveErrors();
+        $this->assertSame(1, RestoreRun::count());
+    }
+
+    public function test_path_traversal_key_is_rejected(): void
+    {
+        $job = $this->backupJob();
+
+        $this->actingAs(User::factory()->admin()->create())
+            ->from(route('backup-jobs.restore', $job))
+            ->post(route('backup-jobs.restore.store', $job), [
+                'selected_backup_key' => '../../../../etc/passwd',
+                'mode' => RestoreRun::MODE_NEW_VOLUME,
+            ])
+            ->assertSessionHasErrors('selected_backup_key');
+
+        $this->assertSame(0, RestoreRun::count());
+    }
+
+    public function test_key_outside_the_listing_is_rejected(): void
+    {
+        $job = $this->backupJob();
+
+        $this->actingAs(User::factory()->admin()->create())
+            ->from(route('backup-jobs.restore', $job))
+            ->post(route('backup-jobs.restore.store', $job), [
+                'selected_backup_key' => 'does-not-exist.tar.gz',
+                'mode' => RestoreRun::MODE_NEW_VOLUME,
+            ])
+            ->assertSessionHasErrors('selected_backup_key');
+
+        $this->assertSame(0, RestoreRun::count());
+    }
+
+    private function backupJob(): BackupJob
+    {
+        $destination = BackupDestination::create([
+            'name' => 'Local',
+            'provider' => BackupDestination::PROVIDER_LOCAL,
+            'bucket' => 'local',
+            'access_key_id' => '',
+            'secret_access_key' => '',
+            'settings' => ['archive_path' => $this->archivePath],
+        ]);
+
+        return BackupJob::create([
+            'name' => 'Job',
+            'volume_name' => 'app_data',
+            'backup_destination_id' => $destination->id,
+            'schedule_type' => BackupJob::SCHEDULE_DAILY,
+            'schedule_config' => ['time' => '02:00'],
+            'cron_expression' => '0 2 * * *',
+            'status' => BackupJob::STATUS_ACTIVE,
+        ]);
+    }
+}

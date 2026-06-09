@@ -442,5 +442,11 @@
   "Previous": "Назад",
   "Next": "Вперёд",
   "All": "Все",
-  "Pagination": "Постраничная навигация"
+  "Pagination": "Постраничная навигация",
+  "Pinned host key": "Закреплённый ключ хоста",
+  "Fetch key from server": "Получить ключ с сервера",
+  "Server key trusted (fingerprint {fingerprint}). Compare it with the server before saving to rule out a first-contact attack.": "Ключ сервера доверенный (отпечаток {fingerprint}). Перед сохранением сравните его с сервером, чтобы исключить атаку при первом подключении.",
+  "Unable to reach the SSH server.": "Не удалось подключиться к серверу SSH.",
+  "Optional but recommended. Use the button to trust the current server key, or paste a host key (e.g. from ssh-keyscan) or its SHA256 fingerprint. Blocks man-in-the-middle attacks on the SFTP operations performed by VolumeVault; the backup container cannot verify host keys.": "Необязательно, но рекомендуется. Нажмите кнопку, чтобы доверять текущему ключу сервера, или вставьте ключ хоста (например, из ssh-keyscan) либо его отпечаток SHA256. Блокирует атаки «человек посередине» для операций SFTP, выполняемых VolumeVault; контейнер резервного копирования не может проверять ключи хоста.",
+  "Fetching...": "Получение..."
 }

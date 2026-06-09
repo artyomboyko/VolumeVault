@@ -1,6 +1,30 @@
 <?php
 
 return [
+    'ssrf_destination_guard' => [
+        'title' => 'Private-IP backup destinations are now guarded (SSRF)',
+        'description' => 'VolumeVault now refuses by default to connect to a backup destination whose host resolves to a private, loopback or link-local address (including the cloud metadata endpoint 169.254.169.254). This only affects destinations on a private IP, such as a LAN NAS or self-hosted S3/MinIO - cloud destinations on a public URL are unaffected. Scheduled backups still run, but the destination test, restore (listing and download) and the storage-quota alert are blocked until you list the destination\'s range in VOLUMEVAULT_SSRF_ALLOWED_IPS (comma-separated CIDRs, e.g. 192.168.1.0/24). Notification channels are not guarded.',
+    ],
+    'host_path_allowlist_fail_closed' => [
+        'title' => 'Host path allowlist is now fail-closed',
+        'description' => 'VOLUMEVAULT_HOST_PATH_ALLOWLIST now denies by default: when it is empty, host-path backup sources and local destinations are refused instead of any path being allowed. The same allowlist now also protects local destinations, and paths are re-checked at run time to block symlink swaps. Existing installations that relied on the previous open default must list their paths - run "php artisan volumevault:host-path-allowlist:audit" for the exact value to set.',
+    ],
+    'auth_rate_limiting' => [
+        'title' => 'Rate-limited sign-in and password reset',
+        'description' => 'Sign-in and password-reset requests are now rate-limited to 5 attempts per minute, slowing down brute-force attempts against the admin password. Going over the limit returns a temporary "too many requests" response that clears after a minute.',
+    ],
+    'restore_input_hardening' => [
+        'title' => 'Stricter restore and backup input validation',
+        'description' => 'The backup selected for a restore must now match the destination listing, blocking path-traversal keys such as "../../etc/passwd". Docker volume names are limited to safe characters, and restore extraction is confined so a forged archive cannot write outside the target volume.',
+    ],
+    'sftp_host_key_pinning' => [
+        'title' => 'SSH host key pinning for SFTP destinations',
+        'description' => 'SSH/SFTP destinations can now pin the server host key to block man-in-the-middle attacks. Use the "Fetch key from server" button - or the new POST /api/v1/destinations/host-key endpoint - to trust the key a server presents, or paste a host key or SHA256 fingerprint. The key is verified before any credentials are sent, for VolumeVault\'s own SFTP operations (test, listing, restore). Leaving it empty keeps the previous behaviour.',
+    ],
+    'api_token_expiration' => [
+        'title' => 'API tokens now expire by default',
+        'description' => 'API tokens now expire 60 days after creation by default, limiting the impact of a leaked token. Existing tokens older than this stop working after the upgrade and must be recreated. Set SANCTUM_TOKEN_EXPIRATION (in minutes) to change the window, or to null to keep non-expiring tokens. A per-token expiry can only shorten this window, never extend it.',
+    ],
     'alert_check_isolation' => [
         'title' => 'More resilient alert checks',
         'description' => 'A single alert rule that errors out no longer stops the other rules from being checked. Each rule is now evaluated independently and failures are logged, so one misbehaving check can no longer silently disable your remaining alerts.',

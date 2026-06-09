@@ -442,5 +442,11 @@
   "Previous": "Predchozi",
   "Next": "Dalsi",
   "All": "Vse",
-  "Pagination": "Strankovani"
+  "Pagination": "Strankovani",
+  "Pinned host key": "Pripnuty klic hostitele",
+  "Fetch key from server": "Nacist klic ze serveru",
+  "Server key trusted (fingerprint {fingerprint}). Compare it with the server before saving to rule out a first-contact attack.": "Klic serveru je duveryhodny (otisk {fingerprint}). Pred ulozenim jej porovnejte se serverem, abyste vyloucili utok pri prvnim kontaktu.",
+  "Unable to reach the SSH server.": "Server SSH neni dostupny.",
+  "Optional but recommended. Use the button to trust the current server key, or paste a host key (e.g. from ssh-keyscan) or its SHA256 fingerprint. Blocks man-in-the-middle attacks on the SFTP operations performed by VolumeVault; the backup container cannot verify host keys.": "Volitelne, ale doporucene. Tlacitkem duverujte aktualnimu klici serveru, nebo vlozte klic hostitele (napr. z ssh-keyscan) ci jeho otisk SHA256. Blokuje utoky typu man-in-the-middle na operace SFTP provadene aplikaci VolumeVault; zalohovaci kontejner nedokaze klice hostitele overit.",
+  "Fetching...": "Nacitani..."
 }

@@ -23,7 +23,7 @@ class CreateRestoreRun
         }
 
         $sourceName = $job->sourceName();
-        $targetVolume = $data['target_volume_name'] ?: $this->generateRestoreVolumeName->handle($sourceName);
+        $targetVolume = ($data['target_volume_name'] ?? null) ?: $this->generateRestoreVolumeName->handle($sourceName);
 
         if ($job->isDockerVolumeSource() && $targetVolume === $job->volume_name) {
             throw ValidationException::withMessages([

@@ -1,6 +1,30 @@
 <?php
 
 return [
+    'ssrf_destination_guard' => [
+        'title' => 'Los destinos de copia de seguridad con IP privada ahora estan protegidos (SSRF)',
+        'description' => 'VolumeVault ahora se niega por defecto a conectarse a un destino de copia de seguridad cuyo host se resuelve en una direccion privada, de bucle local (loopback) o de enlace local (incluido el punto de metadatos de la nube 169.254.169.254). Esto solo afecta a los destinos con IP privada, como un NAS en la LAN o un S3/MinIO autoalojado; los destinos en la nube accesibles por una URL publica no se ven afectados. Las copias programadas siguen ejecutandose, pero la prueba de destino, la restauracion (listado y descarga) y la alerta de cuota de almacenamiento quedan bloqueadas hasta que indique el rango del destino en VOLUMEVAULT_SSRF_ALLOWED_IPS (CIDR separados por comas, p. ej. 192.168.1.0/24). Los canales de notificacion no se ven afectados.',
+    ],
+    'host_path_allowlist_fail_closed' => [
+        'title' => 'La lista de permitidos de rutas del host ahora es fail-closed',
+        'description' => 'VOLUMEVAULT_HOST_PATH_ALLOWLIST ahora deniega de forma predeterminada: cuando esta vacia, las fuentes de copia por ruta del host y los destinos locales se rechazan en lugar de permitir cualquier ruta. La misma lista ahora tambien protege los destinos locales, y las rutas se vuelven a comprobar en tiempo de ejecucion para bloquear el cambio de enlaces simbolicos. Las instalaciones existentes que dependian del comportamiento abierto anterior deben enumerar sus rutas: ejecuta "php artisan volumevault:host-path-allowlist:audit" para obtener el valor exacto que debes definir.',
+    ],
+    'auth_rate_limiting' => [
+        'title' => 'Inicio de sesion y restablecimiento de contrasena con limite de velocidad',
+        'description' => 'Las solicitudes de inicio de sesion y de restablecimiento de contrasena ahora estan limitadas a 5 intentos por minuto, lo que ralentiza los ataques de fuerza bruta contra la contrasena del administrador. Al superar el limite se devuelve una respuesta temporal de "demasiadas solicitudes" que se restablece despues de un minuto.',
+    ],
+    'restore_input_hardening' => [
+        'title' => 'Validacion mas estricta de las entradas de restauracion y copia',
+        'description' => 'La copia seleccionada para una restauracion ahora debe coincidir con el listado del destino, lo que bloquea claves de salto de ruta como "../../etc/passwd". Los nombres de volumenes Docker se limitan a caracteres seguros, y la extraccion de restauracion se confina para que un archivo manipulado no pueda escribir fuera del volumen de destino.',
+    ],
+    'sftp_host_key_pinning' => [
+        'title' => 'Fijacion de la clave de host SSH para destinos SFTP',
+        'description' => 'Los destinos SSH/SFTP ahora pueden fijar la clave de host del servidor para bloquear los ataques de intermediario. Use el boton "Obtener clave del servidor" - o el nuevo endpoint POST /api/v1/destinations/host-key - para confiar en la clave presentada, o pegue una clave de host o una huella SHA256. La clave se verifica antes de enviar cualquier credencial, para las operaciones SFTP propias de VolumeVault (prueba, listado, restauracion). Dejarla vacia mantiene el comportamiento anterior.',
+    ],
+    'api_token_expiration' => [
+        'title' => 'Los tokens de API ahora caducan por defecto',
+        'description' => 'Los tokens de API ahora caducan 60 dias despues de su creacion por defecto, lo que limita el impacto de un token filtrado. Los tokens existentes mas antiguos dejan de funcionar tras la actualizacion y deben recrearse. Defina SANCTUM_TOKEN_EXPIRATION (en minutos) para cambiar el periodo, o null para mantener tokens sin caducidad. Una caducidad por token solo puede acortar este periodo, nunca ampliarlo.',
+    ],
     'alert_check_isolation' => [
         'title' => 'Comprobaciones de alerta mas robustas',
         'description' => 'Una regla de alerta que falla ya no impide que se comprueben las demas reglas. Cada regla se evalua ahora de forma independiente y los fallos se registran, de modo que una sola comprobacion defectuosa ya no puede desactivar silenciosamente tus demas alertas.',

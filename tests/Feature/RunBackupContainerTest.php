@@ -16,6 +16,15 @@ class RunBackupContainerTest extends TestCase
 {
     use RefreshDatabase;
 
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        // Host-path sources are fail-closed without an allowlist; allow the
+        // prefixes the happy-path tests in this file rely on.
+        config(['volumevault.host_path_allowlist' => ['/srv']]);
+    }
+
     public function test_volume_source_is_mounted_read_only_and_env_names_are_forwarded(): void
     {
         $docker = $this->recordingDocker();
@@ -121,6 +130,52 @@ class RunBackupContainerTest extends TestCase
         // The host-side key file must be deleted once the container has run.
         $keyPath = explode(':', $keyMount)[0];
         $this->assertFileDoesNotExist($keyPath);
+    }
+
+    public function test_host_path_source_outside_the_allowlist_is_refused_at_runtime(): void
+    {
+        config(['volumevault.host_path_allowlist' => ['/srv']]);
+        $docker = $this->recordingDocker();
+        $run = $this->backupRun($this->s3Destination(), [
+            'source_type' => BackupJob::SOURCE_TYPE_HOST_PATH,
+            'host_path' => '/etc',
+            'volume_name' => null,
+        ]);
+
+        $this->expectException(\InvalidArgumentException::class);
+        (new RunBackupContainer($docker))->handle($run);
+    }
+
+    public function test_local_destination_outside_the_allowlist_is_refused_at_runtime(): void
+    {
+        config(['volumevault.host_path_allowlist' => ['/srv']]);
+        $docker = $this->recordingDocker();
+        $destination = BackupDestination::create([
+            'name' => 'Local',
+            'provider' => BackupDestination::PROVIDER_LOCAL,
+            'bucket' => 'local',
+            'access_key_id' => '',
+            'secret_access_key' => '',
+            'settings' => ['archive_path' => '/root/.ssh', 'archive_mount_source' => '/root/.ssh'],
+        ]);
+        $run = $this->backupRun($destination, ['volume_name' => 'app_data']);
+
+        $this->expectException(\InvalidArgumentException::class);
+        (new RunBackupContainer($docker))->handle($run);
+    }
+
+    public function test_empty_allowlist_refuses_a_host_path_source_at_runtime(): void
+    {
+        config(['volumevault.host_path_allowlist' => []]);
+        $docker = $this->recordingDocker();
+        $run = $this->backupRun($this->s3Destination(), [
+            'source_type' => BackupJob::SOURCE_TYPE_HOST_PATH,
+            'host_path' => '/srv/data',
+            'volume_name' => null,
+        ]);
+
+        $this->expectException(\InvalidArgumentException::class);
+        (new RunBackupContainer($docker))->handle($run);
     }
 
     public function test_unsupported_provider_throws(): void

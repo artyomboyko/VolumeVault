@@ -442,5 +442,11 @@
   "Previous": "Previous",
   "Next": "Next",
   "All": "All",
-  "Pagination": "Pagination"
+  "Pagination": "Pagination",
+  "Pinned host key": "Pinned host key",
+  "Fetch key from server": "Fetch key from server",
+  "Server key trusted (fingerprint {fingerprint}). Compare it with the server before saving to rule out a first-contact attack.": "Server key trusted (fingerprint {fingerprint}). Compare it with the server before saving to rule out a first-contact attack.",
+  "Unable to reach the SSH server.": "Unable to reach the SSH server.",
+  "Optional but recommended. Use the button to trust the current server key, or paste a host key (e.g. from ssh-keyscan) or its SHA256 fingerprint. Blocks man-in-the-middle attacks on the SFTP operations performed by VolumeVault; the backup container cannot verify host keys.": "Optional but recommended. Use the button to trust the current server key, or paste a host key (e.g. from ssh-keyscan) or its SHA256 fingerprint. Blocks man-in-the-middle attacks on the SFTP operations performed by VolumeVault; the backup container cannot verify host keys.",
+  "Fetching...": "Fetching..."
 }

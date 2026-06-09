@@ -10,7 +10,7 @@ VolumeVault is not S3-only. It supports the destination families exposed by the 
 
 - S3-compatible storage: AWS S3, Cloudflare R2, and custom S3-compatible endpoints.
 - WebDAV: URL, optional path, optional basic auth, and optional insecure TLS mode.
-- SSH/SFTP: host, port, remote path, username, password or private key.
+- SSH/SFTP: host, port, remote path, username, password or private key, and an optional pinned host key.
 - Azure Blob Storage: container plus account key or connection string.
 - Dropbox: remote path, app key, app secret, refresh token, and concurrency level.
 - Google Drive: folder ID and service account JSON, with optional domain-wide delegation subject.

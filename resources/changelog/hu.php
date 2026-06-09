@@ -1,6 +1,30 @@
 <?php
 
 return [
+    'ssrf_destination_guard' => [
+        'title' => 'A privat IP-cimu mentesi celok mostantol vedettek (SSRF)',
+        'description' => 'A VolumeVault mostantol alapertelmezetten megtagadja a kapcsolodast olyan mentesi celhoz, amelynek a gazdaneve privat, loopback vagy link-local cimre oldodik fel (beleertve a 169.254.169.254 felho-metaadat vegpontot). Ez csak a privat IP-cimu celokat erinti, peldaul egy LAN-on levo NAS-t vagy egy sajat uzemeltetesu S3/MinIO-t - a nyilvanos URL-en elerheto felho celok nem erintettek. Az utemezett mentesek tovabbra is futnak, de a celteszt, a visszaallitas (listazas es letoltes) es a tarhelykvota-riasztas blokkolva van, amig fel nem veszi a cel tartomanyat a VOLUMEVAULT_SSRF_ALLOWED_IPS valtozoba (vesszovel elvalasztott CIDR-ek, pl. 192.168.1.0/24). Az ertesitesi csatornak nincsenek vedve.',
+    ],
+    'host_path_allowlist_fail_closed' => [
+        'title' => 'A hoteleresi utak engedelyezesi listaja mostantol fail-closed',
+        'description' => 'A VOLUMEVAULT_HOST_PATH_ALLOWLIST mostantol alapertelmezetten elutasit: ha ures, a hoteleresi uton alapulo mentesi forrasokat es a helyi celokat elutasitja ahelyett, hogy barmely utat engedelyezne. Ugyanez a lista mostantol a helyi celokat is vedi, es az utak futasidoben ujra ellenorzesre kerulnek a szimbolikus linkek lecserelesenek megakadalyozasara. A korabbi nyitott alapertelmezett viselkedesre tamaszkodo meglevo telepiteseknek fel kell sorolniuk az utjaikat - futtassa a "php artisan volumevault:host-path-allowlist:audit" parancsot a pontosan beallitando ertek megszerzesehez.',
+    ],
+    'auth_rate_limiting' => [
+        'title' => 'Bejelentkezes es jelszo-visszaallitas sebessegkorlatozassal',
+        'description' => 'A bejelentkezesi es jelszo-visszaallitasi kereseket mostantol percenkent 5 probalkozasra korlatozzuk, ami lassitja az adminisztratori jelszo elleni nyers ero alapu tamadasokat. A korlat tullepesekor ideiglenes "tul sok keres" valasz erkezik, amely egy perc utan visszaallodik.',
+    ],
+    'restore_input_hardening' => [
+        'title' => 'Szigorubb visszaallitasi es mentesi bemenet-ellenorzes',
+        'description' => 'A visszaallitashoz kivalasztott mentesnek mostantol egyeznie kell a cel listajaval, ami blokkolja az olyan utvonalbejaro kulcsokat, mint a "../../etc/passwd". A Docker-kotetnevek biztonsagos karakterekre vannak korlatozva, es a visszaallitasi kicsomagolas korlatozott, igy egy hamisitott archivum nem irhat a celkoteten kivulre.',
+    ],
+    'sftp_host_key_pinning' => [
+        'title' => 'SSH gazdakulcs rogzitese az SFTP celokhoz',
+        'description' => 'Az SSH/SFTP celok mostantol rogzithetik a szerver gazdakulcsat a kozbeekelodeses (man-in-the-middle) tamadasok blokkolasahoz. Hasznalja a "Kulcs lekerese a szerverrol" gombot - vagy az uj POST /api/v1/destinations/host-key vegpontot -, hogy megbizzon a bemutatott kulcsban, vagy illesszen be egy gazdakulcsot vagy SHA256 ujjlenyomatot. A kulcs ellenorzese a hitelesito adatok elkuldese elott tortenik, a VolumeVault altal vegzett SFTP-muveletekhez (teszt, listazas, visszaallitas). Uresen hagyva a korabbi viselkedes marad.',
+    ],
+    'api_token_expiration' => [
+        'title' => 'Az API-tokenek mostantol alapertelmezetten lejarnak',
+        'description' => 'Az API-tokenek mostantol alapertelmezetten a letrehozasuk utan 60 nappal lejarnak, ami korlatozza egy kiszivargott token hatasat. A meglevo, ennel regebbi tokenek a frissites utan nem mukodnek tovabb, es ujra letre kell hozni oket. Allitsa be a SANCTUM_TOKEN_EXPIRATION erteket (percben) az idoszak modositasahoz, vagy null erteket a lejarat nelkuli tokenek megtartasahoz. A tokenenkenti lejarat csak roviditheti ezt az idoszakot, soha nem hosszabbithatja meg.',
+    ],
     'alert_check_isolation' => [
         'title' => 'Ellenallobb riasztasellenorzesek',
         'description' => 'Egy hibara futo riasztasi szabaly mar nem akadalyozza meg a tobbi szabaly ellenorzeset. Minden szabaly mostantol fuggetlenul ertekelodik ki, es a hibak naplozasra kerulnek, igy egyetlen hibas ellenorzes mar nem tudja csendben kikapcsolni a tobbi riasztast.',

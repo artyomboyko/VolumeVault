@@ -1,6 +1,30 @@
 <?php
 
 return [
+    'ssrf_destination_guard' => [
+        'title' => 'Back-upbestemmingen met een prive-IP zijn nu beveiligd (SSRF)',
+        'description' => 'VolumeVault weigert nu standaard verbinding te maken met een back-upbestemming waarvan de host wordt herleid naar een prive-, loopback- of link-local-adres (inclusief het cloud-metadata-eindpunt 169.254.169.254). Dit betreft alleen bestemmingen met een prive-IP, zoals een NAS in het LAN of een zelf-gehoste S3/MinIO - cloudbestemmingen via een openbare URL worden niet beinvloed. Geplande back-ups blijven draaien, maar de bestemmingstest, het herstel (lijst en download) en de waarschuwing voor het opslagquotum worden geblokkeerd totdat u het bereik van de bestemming opgeeft in VOLUMEVAULT_SSRF_ALLOWED_IPS (door komma\'s gescheiden CIDR-reeksen, bijv. 192.168.1.0/24). Notificatiekanalen worden niet beveiligd.',
+    ],
+    'host_path_allowlist_fail_closed' => [
+        'title' => 'De hostpad-toelatingslijst is nu fail-closed',
+        'description' => 'VOLUMEVAULT_HOST_PATH_ALLOWLIST weigert nu standaard: wanneer deze leeg is, worden back-upbronnen op basis van een hostpad en lokale bestemmingen geweigerd in plaats van elk pad toe te staan. Dezelfde lijst beschermt nu ook lokale bestemmingen, en paden worden tijdens runtime opnieuw gecontroleerd om het verwisselen van symbolische koppelingen te blokkeren. Bestaande installaties die op het vorige open standaardgedrag vertrouwden, moeten hun paden opgeven - voer "php artisan volumevault:host-path-allowlist:audit" uit voor de exacte in te stellen waarde.',
+    ],
+    'auth_rate_limiting' => [
+        'title' => 'Aanmelding en wachtwoordherstel met snelheidslimiet',
+        'description' => 'Aanmeldings- en wachtwoordherstelverzoeken zijn nu beperkt tot 5 pogingen per minuut, wat brute-force-aanvallen op het beheerderswachtwoord vertraagt. Bij het overschrijden van de limiet wordt een tijdelijk "te veel verzoeken"-antwoord geretourneerd dat na een minuut wordt gereset.',
+    ],
+    'restore_input_hardening' => [
+        'title' => 'Strengere validatie van herstel- en back-upinvoer',
+        'description' => 'De voor een herstel geselecteerde back-up moet nu overeenkomen met de lijst van de bestemming, waardoor pad-traversal-sleutels zoals "../../etc/passwd" worden geblokkeerd. Docker-volumenamen zijn beperkt tot veilige tekens en de herstelextractie wordt ingeperkt zodat een vervalst archief niet buiten het doelvolume kan schrijven.',
+    ],
+    'sftp_host_key_pinning' => [
+        'title' => 'SSH-hostsleutel vastzetten voor SFTP-bestemmingen',
+        'description' => 'SSH/SFTP-bestemmingen kunnen nu de hostsleutel van de server vastzetten om man-in-the-middle-aanvallen te blokkeren. Gebruik de knop "Sleutel van server ophalen" - of het nieuwe eindpunt POST /api/v1/destinations/host-key - om de gepresenteerde sleutel te vertrouwen, of plak een hostsleutel of SHA256-vingerafdruk. De sleutel wordt geverifieerd voordat er inloggegevens worden verzonden, voor de SFTP-bewerkingen die door VolumeVault worden uitgevoerd (test, lijst, herstel). Leeg laten behoudt het vorige gedrag.',
+    ],
+    'api_token_expiration' => [
+        'title' => 'API-tokens verlopen nu standaard',
+        'description' => 'API-tokens verlopen nu standaard 60 dagen na het aanmaken, wat de impact van een gelekte token beperkt. Bestaande oudere tokens werken na de upgrade niet meer en moeten opnieuw worden aangemaakt. Stel SANCTUM_TOKEN_EXPIRATION (in minuten) in om de periode te wijzigen, of null om niet-verlopende tokens te behouden. Een verloopdatum per token kan deze periode alleen verkorten, nooit verlengen.',
+    ],
     'alert_check_isolation' => [
         'title' => 'Robuustere alertcontroles',
         'description' => 'Een alertregel die een fout veroorzaakt, verhindert niet langer dat de overige regels worden gecontroleerd. Elke regel wordt nu onafhankelijk geevalueerd en fouten worden gelogd, zodat een enkele falende controle je overige alerts niet meer stilletjes kan uitschakelen.',

@@ -36,6 +36,14 @@ docker compose exec volumevault php artisan volumevault:reset-password admin@exa
 
 Both reset methods invalidate existing browser sessions for the user. Existing API tokens are kept so integrations are not interrupted.
 
+## SFTP Host Key Pinning
+
+SSH/SFTP destinations accept an optional pinned host key. When set, VolumeVault verifies the server key before sending any credentials and refuses the connection on mismatch, blocking man-in-the-middle attacks.
+
+The simplest way to set it is the **Fetch key from server** button on the destination form: VolumeVault connects to the host (key exchange only, no login), pins the key it presents, and shows its `SHA256:` fingerprint. This is trust-on-first-use — it protects against any later man-in-the-middle. If you want to also rule out a first-contact attack, compare the displayed fingerprint with the server's own (`ssh-keygen -lf /etc/ssh/ssh_host_ed25519_key.pub`) before saving. You can also paste a key manually: the server's public host key (for example from `ssh-keyscan -t ed25519 server.local`) or its `SHA256:` fingerprint (from `ssh-keygen -lf`).
+
+This pin protects VolumeVault's own SFTP operations — destination testing, listing, and restore downloads. The actual backup upload runs in the temporary `offen/docker-volume-backup` container, which does not verify SSH host keys (an upstream limitation), so that leg of the transfer cannot be pinned from here.
+
 ## Secure Installation Saves
 
 Admins can create a secure `.vvsave` from the `Installation save` screen. The save archives useful files from `/app/storage`, including the SQLite database, then encrypts the archive with a key derived from the current `APP_KEY`.
@@ -54,4 +62,4 @@ To migrate an installation, start a fresh VolumeVault instance, choose `Import e
 - For databases, application-consistent backups may require stopping containers or using database-native dumps.
 - Optional job setting `Stop containers before backup` stops containers using the volume before backup and restarts them afterward.
 - Local backup destinations require a filesystem path shared by VolumeVault and the temporary Offen container.
-- Host path backup sources are mounted read-only into the temporary Offen container. Use `VOLUMEVAULT_HOST_PATH_ALLOWLIST` to restrict which host directories admins can select.
+- Host path backup sources are mounted read-only into the temporary Offen container. `VOLUMEVAULT_HOST_PATH_ALLOWLIST` restricts which host directories admins can select and is fail-closed (empty = nothing allowed). The same allowlist gates local backup destinations, which are bind-mounted read-write, and both are re-validated at run time to defend against a symlink swap (TOCTOU).
