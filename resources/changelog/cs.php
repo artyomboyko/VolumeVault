@@ -1,6 +1,10 @@
 <?php
 
 return [
+    'host_path_allowlist_fail_closed' => [
+        'title' => 'Seznam povolenych cest hostitele je nyni fail-closed',
+        'description' => 'VOLUMEVAULT_HOST_PATH_ALLOWLIST nyni ve vychozim nastaveni odmita: kdyz je prazdny, jsou zdroje zaloh podle cesty hostitele a mistni cile odmitnuty namisto povoleni libovolne cesty. Stejny seznam nyni chrani i mistni cile a cesty se pri behu znovu kontroluji, aby se zablokovala zamena symbolickych odkazu. Stavajici instalace, ktere se spolehaly na predchozi otevrene vychozi chovani, musi uvest sve cesty - spustte "php artisan volumevault:host-path-allowlist:audit" pro ziskani presne hodnoty k nastaveni.',
+    ],
     'alert_check_isolation' => [
         'title' => 'Odolnejsi kontroly upozorneni',
         'description' => 'Pravidlo upozorneni, ktere skonci chybou, jiz nebrani kontrole ostatnich pravidel. Kazde pravidlo se nyni vyhodnocuje samostatne a chyby se zaznamenavaji, takze jedna chybna kontrola jiz nemuze tise vypnout ostatni upozorneni.',

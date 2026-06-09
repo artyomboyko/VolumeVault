@@ -1,6 +1,10 @@
 <?php
 
 return [
+    'host_path_allowlist_fail_closed' => [
+        'title' => 'La liste d\'autorisation des chemins hote est desormais fail-closed',
+        'description' => 'VOLUMEVAULT_HOST_PATH_ALLOWLIST refuse desormais par defaut : lorsqu\'elle est vide, les sources de sauvegarde par chemin hote et les destinations locales sont refusees au lieu d\'autoriser n\'importe quel chemin. La meme liste protege maintenant aussi les destinations locales, et les chemins sont reverifies a l\'execution pour bloquer les substitutions de liens symboliques. Les installations existantes qui s\'appuyaient sur l\'ancien comportement ouvert doivent lister leurs chemins - executez "php artisan volumevault:host-path-allowlist:audit" pour obtenir la valeur exacte a definir.',
+    ],
     'alert_check_isolation' => [
         'title' => 'Verifications d\'alerte plus robustes',
         'description' => 'Une regle d\'alerte qui echoue n\'empeche plus la verification des autres regles. Chaque regle est desormais evaluee independamment et les echecs sont journalises, de sorte qu\'une seule verification defaillante ne peut plus desactiver silencieusement vos autres alertes.',

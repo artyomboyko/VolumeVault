@@ -1,7 +1,12 @@
 <?php
 
 return [
-    'unreleased' => [],
+    'unreleased' => [
+        [
+            'type' => 'breaking',
+            'key' => 'host_path_allowlist_fail_closed',
+        ],
+    ],
     'releases' => [
         'v1.7.3' => [
             'date' => '2026-06-08',

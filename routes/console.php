@@ -61,3 +61,4 @@ Schedule::job(new DispatchDueBackupJobsJob)->everyMinute()->withoutOverlapping()
 Schedule::job(new SyncDockerVolumesJob)->everyFiveMinutes()->withoutOverlapping();
 Schedule::job(new RunAlertChecksJob)->everyFiveMinutes()->withoutOverlapping();
 Schedule::command('volumevault:reconcile-stale-runs')->everyFiveMinutes()->withoutOverlapping();
+Schedule::command('volumevault:host-path-allowlist:audit')->hourly()->withoutOverlapping();

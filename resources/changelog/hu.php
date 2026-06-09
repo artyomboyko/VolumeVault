@@ -1,6 +1,10 @@
 <?php
 
 return [
+    'host_path_allowlist_fail_closed' => [
+        'title' => 'A hoteleresi utak engedelyezesi listaja mostantol fail-closed',
+        'description' => 'A VOLUMEVAULT_HOST_PATH_ALLOWLIST mostantol alapertelmezetten elutasit: ha ures, a hoteleresi uton alapulo mentesi forrasokat es a helyi celokat elutasitja ahelyett, hogy barmely utat engedelyezne. Ugyanez a lista mostantol a helyi celokat is vedi, es az utak futasidoben ujra ellenorzesre kerulnek a szimbolikus linkek lecserelesenek megakadalyozasara. A korabbi nyitott alapertelmezett viselkedesre tamaszkodo meglevo telepiteseknek fel kell sorolniuk az utjaikat - futtassa a "php artisan volumevault:host-path-allowlist:audit" parancsot a pontosan beallitando ertek megszerzesehez.',
+    ],
     'alert_check_isolation' => [
         'title' => 'Ellenallobb riasztasellenorzesek',
         'description' => 'Egy hibara futo riasztasi szabaly mar nem akadalyozza meg a tobbi szabaly ellenorzeset. Minden szabaly mostantol fuggetlenul ertekelodik ki, es a hibak naplozasra kerulnek, igy egyetlen hibas ellenorzes mar nem tudja csendben kikapcsolni a tobbi riasztast.',

@@ -15,6 +15,15 @@ class BackupDestinationProviderTest extends TestCase
 {
     use RefreshDatabase;
 
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        // Local destinations and host-path sources are fail-closed without an
+        // allowlist; allow the prefixes these provider tests rely on.
+        config(['volumevault.host_path_allowlist' => ['/archive', '/host', '/srv']]);
+    }
+
     public function test_offen_environment_is_mapped_for_supported_non_s3_providers(): void
     {
         $process = new class extends DockerProcess

@@ -1,6 +1,10 @@
 <?php
 
 return [
+    'host_path_allowlist_fail_closed' => [
+        'title' => 'L\'elenco di autorizzazione dei percorsi host ora e fail-closed',
+        'description' => 'VOLUMEVAULT_HOST_PATH_ALLOWLIST ora nega in modo predefinito: quando e vuoto, le sorgenti di backup per percorso host e le destinazioni locali vengono rifiutate invece di consentire qualsiasi percorso. Lo stesso elenco ora protegge anche le destinazioni locali e i percorsi vengono ricontrollati in fase di esecuzione per bloccare la sostituzione dei collegamenti simbolici. Le installazioni esistenti che si basavano sul precedente comportamento aperto devono elencare i propri percorsi: esegui "php artisan volumevault:host-path-allowlist:audit" per ottenere il valore esatto da impostare.',
+    ],
     'alert_check_isolation' => [
         'title' => 'Controlli degli avvisi piu robusti',
         'description' => 'Una regola di avviso che genera un errore non impedisce piu il controllo delle altre regole. Ogni regola viene ora valutata in modo indipendente e gli errori vengono registrati, cosi un singolo controllo difettoso non puo piu disattivare silenziosamente gli altri avvisi.',

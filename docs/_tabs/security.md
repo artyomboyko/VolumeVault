@@ -54,4 +54,4 @@ To migrate an installation, start a fresh VolumeVault instance, choose `Import e
 - For databases, application-consistent backups may require stopping containers or using database-native dumps.
 - Optional job setting `Stop containers before backup` stops containers using the volume before backup and restarts them afterward.
 - Local backup destinations require a filesystem path shared by VolumeVault and the temporary Offen container.
-- Host path backup sources are mounted read-only into the temporary Offen container. Use `VOLUMEVAULT_HOST_PATH_ALLOWLIST` to restrict which host directories admins can select.
+- Host path backup sources are mounted read-only into the temporary Offen container. `VOLUMEVAULT_HOST_PATH_ALLOWLIST` restricts which host directories admins can select and is fail-closed (empty = nothing allowed). The same allowlist gates local backup destinations, which are bind-mounted read-write, and both are re-validated at run time to defend against a symlink swap (TOCTOU).

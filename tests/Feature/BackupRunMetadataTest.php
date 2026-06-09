@@ -17,6 +17,19 @@ class BackupRunMetadataTest extends TestCase
 {
     use RefreshDatabase;
 
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        // The local destination is now fail-closed: allow the temp dir these
+        // tests write archives to, plus its canonical form (the run-time
+        // re-check resolves realpath, and /tmp & /var are symlinks on macOS).
+        config(['volumevault.host_path_allowlist' => array_unique([
+            sys_get_temp_dir(),
+            realpath(sys_get_temp_dir()) ?: sys_get_temp_dir(),
+        ])]);
+    }
+
     public function test_successful_backup_records_archive_key_and_size_when_available(): void
     {
         $archivePath = sys_get_temp_dir().'/volumevault-backup-metadata-success';

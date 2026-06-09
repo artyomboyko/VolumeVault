@@ -1,6 +1,10 @@
 <?php
 
 return [
+    'host_path_allowlist_fail_closed' => [
+        'title' => 'La lista de permitidos de rutas del host ahora es fail-closed',
+        'description' => 'VOLUMEVAULT_HOST_PATH_ALLOWLIST ahora deniega de forma predeterminada: cuando esta vacia, las fuentes de copia por ruta del host y los destinos locales se rechazan en lugar de permitir cualquier ruta. La misma lista ahora tambien protege los destinos locales, y las rutas se vuelven a comprobar en tiempo de ejecucion para bloquear el cambio de enlaces simbolicos. Las instalaciones existentes que dependian del comportamiento abierto anterior deben enumerar sus rutas: ejecuta "php artisan volumevault:host-path-allowlist:audit" para obtener el valor exacto que debes definir.',
+    ],
     'alert_check_isolation' => [
         'title' => 'Comprobaciones de alerta mas robustas',
         'description' => 'Una regla de alerta que falla ya no impide que se comprueben las demas reglas. Cada regla se evalua ahora de forma independiente y los fallos se registran, de modo que una sola comprobacion defectuosa ya no puede desactivar silenciosamente tus demas alertas.',

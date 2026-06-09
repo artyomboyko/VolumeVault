@@ -149,7 +149,7 @@ When `APP_VERSION` is a tagged release, VolumeVault can also check GitHub for a 
 - `APP_TIMEZONE`: timezone used to interpret backup schedules and display backup job dates, defaults to `UTC`. Use an IANA timezone such as `Europe/Paris`.
 - `APP_URL`: public URL, defaults to `http://localhost:8080`.
 - `TRUSTED_PROXIES`: reverse proxy IP, CIDR, comma-separated list, or `*` when running behind HTTPS termination. Leave empty when exposing VolumeVault directly.
-- `VOLUMEVAULT_HOST_PATH_ALLOWLIST`: optional comma-separated list of Docker host path prefixes allowed for host-path backup jobs, for example `/srv,/mnt/data`. Leave empty to allow any non-root absolute host directory path.
+- `VOLUMEVAULT_HOST_PATH_ALLOWLIST`: comma-separated list of Docker host path prefixes allowed for host-path backup sources **and local backup destinations**, for example `/srv,/mnt/data`. Fail-closed: when empty, host-path sources and local destinations are refused. Set the prefixes you intend to back up to/from.
 - `DB_CONNECTION`: defaults to `sqlite`.
 - `DB_DATABASE`: defaults to `/app/storage/database/database.sqlite` inside the Docker image.
 - `QUEUE_CONNECTION`: defaults to `database`.

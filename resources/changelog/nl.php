@@ -1,6 +1,10 @@
 <?php
 
 return [
+    'host_path_allowlist_fail_closed' => [
+        'title' => 'De hostpad-toelatingslijst is nu fail-closed',
+        'description' => 'VOLUMEVAULT_HOST_PATH_ALLOWLIST weigert nu standaard: wanneer deze leeg is, worden back-upbronnen op basis van een hostpad en lokale bestemmingen geweigerd in plaats van elk pad toe te staan. Dezelfde lijst beschermt nu ook lokale bestemmingen, en paden worden tijdens runtime opnieuw gecontroleerd om het verwisselen van symbolische koppelingen te blokkeren. Bestaande installaties die op het vorige open standaardgedrag vertrouwden, moeten hun paden opgeven - voer "php artisan volumevault:host-path-allowlist:audit" uit voor de exacte in te stellen waarde.',
+    ],
     'alert_check_isolation' => [
         'title' => 'Robuustere alertcontroles',
         'description' => 'Een alertregel die een fout veroorzaakt, verhindert niet langer dat de overige regels worden gecontroleerd. Elke regel wordt nu onafhankelijk geevalueerd en fouten worden gelogd, zodat een enkele falende controle je overige alerts niet meer stilletjes kan uitschakelen.',

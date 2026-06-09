@@ -68,7 +68,7 @@ Defaults are built into the application for a production SQLite setup. Add envir
 
 You can also use `env_file: .env` for overrides, but do not reuse a development `.env` in production without review. Values such as `APP_ENV=local` or `APP_DEBUG=true` override the safe production defaults.
 
-Host path backup jobs can be limited with `VOLUMEVAULT_HOST_PATH_ALLOWLIST`, a comma-separated list of allowed Docker host path prefixes such as `/srv,/mnt/data`. When set, host path jobs outside those prefixes are rejected when saved.
+Host path backup jobs **and local backup destinations** are restricted by `VOLUMEVAULT_HOST_PATH_ALLOWLIST`, a comma-separated list of allowed Docker host path prefixes such as `/srv,/mnt/data`. This is **fail-closed**: when the variable is empty, host path sources and local destinations are refused entirely. Configure the prefixes you intend to back up to/from; paths outside them are rejected both when saved and again at run time (defending against a symlink swapped in afterwards).
 
 Keep your `APP_KEY` safe: it is required to decrypt destinations, notifications, and installation saves.
 

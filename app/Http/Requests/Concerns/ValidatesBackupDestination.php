@@ -3,6 +3,7 @@
 namespace App\Http\Requests\Concerns;
 
 use App\Models\BackupDestination;
+use App\Services\BackupSources\HostPathPolicy;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\Validator;
 
@@ -113,7 +114,43 @@ trait ValidatesBackupDestination
     {
         $validator->after(function (Validator $validator): void {
             $this->validateStorageLimits($validator);
+            $this->validateLocalDestinationPaths($validator);
         });
+    }
+
+    /**
+     * The local provider bind-mounts these paths on the Docker host
+     * read-write. Hold them to the same fail-closed host-path allowlist as a
+     * host-path backup source, and reject characters (`:`) that could inject
+     * extra mount options into the `src:dst` spec.
+     */
+    protected function validateLocalDestinationPaths(Validator $validator): void
+    {
+        if ($this->input('provider') !== BackupDestination::PROVIDER_LOCAL) {
+            return;
+        }
+
+        $policy = app(HostPathPolicy::class);
+
+        foreach (['settings.archive_path', 'settings.archive_mount_source'] as $field) {
+            $value = (string) $this->input($field, '');
+
+            // archive_mount_source is optional; the `required` rule on
+            // archive_path already reports an empty required path.
+            if ($value === '') {
+                continue;
+            }
+
+            if (str_contains($value, ':')) {
+                $validator->errors()->add($field, 'Local archive paths cannot contain a colon.');
+
+                continue;
+            }
+
+            if ($message = $policy->validationError($policy->normalize($value))) {
+                $validator->errors()->add($field, $message);
+            }
+        }
     }
 
     protected function validateStorageLimits(Validator $validator): void

@@ -26,6 +26,27 @@ class HostPathPolicy
         }
     }
 
+    /**
+     * Re-validate a path at run time (defence in depth against a symlink swap
+     * happening between job/destination creation and the backup run — TOCTOU).
+     *
+     * Validates the configured path, then — when the path is visible to the
+     * app and resolves to a different canonical location — re-validates that
+     * real target as well. Throws when either fails the allowlist.
+     */
+    public function assertValidAtRuntime(string $path): void
+    {
+        $normalized = $this->normalize($path);
+
+        $this->assertValid($normalized);
+
+        $real = @realpath($normalized);
+
+        if ($real !== false && $real !== $normalized) {
+            $this->assertValid($this->normalize($real));
+        }
+    }
+
     public function validationError(string $path): ?string
     {
         if (! str_starts_with($path, '/')) {
@@ -47,7 +68,13 @@ class HostPathPolicy
         }
 
         if (! $this->isAllowed($path)) {
-            return 'Host path is outside VOLUMEVAULT_HOST_PATH_ALLOWLIST. Allowed prefixes: '.implode(', ', $this->allowedPrefixes()).'.';
+            $prefixes = $this->allowedPrefixes();
+
+            if ($prefixes === []) {
+                return 'Host path access is disabled. Configure at least one allowed prefix in VOLUMEVAULT_HOST_PATH_ALLOWLIST.';
+            }
+
+            return 'Host path is outside VOLUMEVAULT_HOST_PATH_ALLOWLIST. Allowed prefixes: '.implode(', ', $prefixes).'.';
         }
 
         return null;
@@ -57,8 +84,11 @@ class HostPathPolicy
     {
         $prefixes = $this->allowedPrefixes();
 
+        // Fail closed: with no allowlist configured, no host path is allowed.
+        // (Out of the box this blocks mounting arbitrary host paths such as
+        // /etc, /root/.ssh or /var/lib/docker as a backup source/destination.)
         if ($prefixes === []) {
-            return true;
+            return false;
         }
 
         foreach ($prefixes as $prefix) {

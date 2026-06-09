@@ -1,6 +1,10 @@
 <?php
 
 return [
+    'host_path_allowlist_fail_closed' => [
+        'title' => 'Host path allowlist is now fail-closed',
+        'description' => 'VOLUMEVAULT_HOST_PATH_ALLOWLIST now denies by default: when it is empty, host-path backup sources and local destinations are refused instead of any path being allowed. The same allowlist now also protects local destinations, and paths are re-checked at run time to block symlink swaps. Existing installations that relied on the previous open default must list their paths - run "php artisan volumevault:host-path-allowlist:audit" for the exact value to set.',
+    ],
     'alert_check_isolation' => [
         'title' => 'More resilient alert checks',
         'description' => 'A single alert rule that errors out no longer stops the other rules from being checked. Each rule is now evaluated independently and failures are logged, so one misbehaving check can no longer silently disable your remaining alerts.',
