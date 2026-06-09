@@ -1,6 +1,10 @@
 <?php
 
 return [
+    'ssrf_destination_guard' => [
+        'title' => 'A privat IP-cimu mentesi celok mostantol vedettek (SSRF)',
+        'description' => 'A VolumeVault mostantol alapertelmezetten megtagadja a kapcsolodast olyan mentesi celhoz, amelynek a gazdaneve privat, loopback vagy link-local cimre oldodik fel (beleertve a 169.254.169.254 felho-metaadat vegpontot). Ez csak a privat IP-cimu celokat erinti, peldaul egy LAN-on levo NAS-t vagy egy sajat uzemeltetesu S3/MinIO-t - a nyilvanos URL-en elerheto felho celok nem erintettek. Az utemezett mentesek tovabbra is futnak, de a celteszt, a visszaallitas (listazas es letoltes) es a tarhelykvota-riasztas blokkolva van, amig fel nem veszi a cel tartomanyat a VOLUMEVAULT_SSRF_ALLOWED_IPS valtozoba (vesszovel elvalasztott CIDR-ek, pl. 192.168.1.0/24). Az ertesitesi csatornak nincsenek vedve.',
+    ],
     'host_path_allowlist_fail_closed' => [
         'title' => 'A hoteleresi utak engedelyezesi listaja mostantol fail-closed',
         'description' => 'A VOLUMEVAULT_HOST_PATH_ALLOWLIST mostantol alapertelmezetten elutasit: ha ures, a hoteleresi uton alapulo mentesi forrasokat es a helyi celokat elutasitja ahelyett, hogy barmely utat engedelyezne. Ugyanez a lista mostantol a helyi celokat is vedi, es az utak futasidoben ujra ellenorzesre kerulnek a szimbolikus linkek lecserelesenek megakadalyozasara. A korabbi nyitott alapertelmezett viselkedesre tamaszkodo meglevo telepiteseknek fel kell sorolniuk az utjaikat - futtassa a "php artisan volumevault:host-path-allowlist:audit" parancsot a pontosan beallitando ertek megszerzesehez.',

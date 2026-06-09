@@ -6,6 +6,20 @@ return [
         explode(',', env('VOLUMEVAULT_HOST_PATH_ALLOWLIST', ''))
     ))),
 
+    'ssrf' => [
+        // CIDR ranges that re-authorise otherwise-blocked (private, loopback or
+        // link-local) backup destinations. Only relevant when a DESTINATION is
+        // on a private IP (LAN NAS, self-hosted S3/MinIO, LAN SFTP); cloud URLs
+        // are unaffected. Deny-by-default: such hosts are blocked for the test
+        // button, restore (listing + download) and the storage-quota alert
+        // unless listed here. Scheduled backups themselves are not guarded.
+        // e.g. VOLUMEVAULT_SSRF_ALLOWED_IPS=192.168.1.0/24,10.0.0.0/8
+        'allowed_ips' => array_values(array_filter(array_map(
+            fn (string $cidr): string => trim($cidr),
+            explode(',', (string) env('VOLUMEVAULT_SSRF_ALLOWED_IPS', ''))
+        ))),
+    ],
+
     'update_check' => [
         'enabled' => (bool) env('VOLUMEVAULT_UPDATE_CHECK_ENABLED', true),
         'cache_ttl_seconds' => (int) env('VOLUMEVAULT_UPDATE_CHECK_CACHE_TTL', 43200),

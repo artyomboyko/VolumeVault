@@ -1,6 +1,10 @@
 <?php
 
 return [
+    'ssrf_destination_guard' => [
+        'title' => 'Cilove destinace zaloh se soukromou IP jsou nyni chranene (SSRF)',
+        'description' => 'VolumeVault nyni ve vychozim nastaveni odmita pripojeni k zalozni destinaci, jejiz hostitel se preklada na soukromou, smyckovou (loopback) nebo link-local adresu (vcetne cloudoveho metadatoveho koncoveho bodu 169.254.169.254). Tyka se to pouze destinaci se soukromou IP, jako je NAS v LAN nebo vlastni S3/MinIO - cloudove destinace dostupne pres verejnou URL nejsou dotceny. Naplanovane zalohy stale bezi, ale test destinace, obnoveni (vypis a stazeni) a upozorneni na kvotu uloziste jsou blokovany, dokud rozsah destinace neuvedete v VOLUMEVAULT_SSRF_ALLOWED_IPS (CIDR oddelene carkami, napr. 192.168.1.0/24). Notifikacni kanaly nejsou chranene.',
+    ],
     'host_path_allowlist_fail_closed' => [
         'title' => 'Seznam povolenych cest hostitele je nyni fail-closed',
         'description' => 'VOLUMEVAULT_HOST_PATH_ALLOWLIST nyni ve vychozim nastaveni odmita: kdyz je prazdny, jsou zdroje zaloh podle cesty hostitele a mistni cile odmitnuty namisto povoleni libovolne cesty. Stejny seznam nyni chrani i mistni cile a cesty se pri behu znovu kontroluji, aby se zablokovala zamena symbolickych odkazu. Stavajici instalace, ktere se spolehaly na predchozi otevrene vychozi chovani, musi uvest sve cesty - spustte "php artisan volumevault:host-path-allowlist:audit" pro ziskani presne hodnoty k nastaveni.',

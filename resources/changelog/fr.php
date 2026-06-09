@@ -1,6 +1,10 @@
 <?php
 
 return [
+    'ssrf_destination_guard' => [
+        'title' => 'Les destinations de sauvegarde en IP privee sont desormais protegees (SSRF)',
+        'description' => 'VolumeVault refuse desormais par defaut de se connecter a une destination de sauvegarde dont l\'hote se resout en une adresse privee, de bouclage (loopback) ou lien-local (y compris le point de terminaison de metadonnees cloud 169.254.169.254). Cela ne concerne que les destinations sur IP privee, comme un NAS local ou un S3/MinIO auto-heberge - les destinations cloud accessibles par une URL publique ne sont pas affectees. Les sauvegardes planifiees continuent de s\'executer, mais le test de destination, la restauration (listing et telechargement) et l\'alerte de quota de stockage sont bloques tant que vous n\'avez pas liste la plage de la destination dans VOLUMEVAULT_SSRF_ALLOWED_IPS (CIDR separes par des virgules, par ex. 192.168.1.0/24). Les canaux de notification ne sont pas concernes.',
+    ],
     'host_path_allowlist_fail_closed' => [
         'title' => 'La liste d\'autorisation des chemins hote est desormais fail-closed',
         'description' => 'VOLUMEVAULT_HOST_PATH_ALLOWLIST refuse desormais par defaut : lorsqu\'elle est vide, les sources de sauvegarde par chemin hote et les destinations locales sont refusees au lieu d\'autoriser n\'importe quel chemin. La meme liste protege maintenant aussi les destinations locales, et les chemins sont reverifies a l\'execution pour bloquer les substitutions de liens symboliques. Les installations existantes qui s\'appuyaient sur l\'ancien comportement ouvert doivent lister leurs chemins - executez "php artisan volumevault:host-path-allowlist:audit" pour obtenir la valeur exacte a definir.',

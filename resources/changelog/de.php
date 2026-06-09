@@ -1,6 +1,10 @@
 <?php
 
 return [
+    'ssrf_destination_guard' => [
+        'title' => 'Backup-Ziele mit privater IP sind jetzt geschuetzt (SSRF)',
+        'description' => 'VolumeVault weigert sich jetzt standardmaessig, eine Verbindung zu einem Backup-Ziel herzustellen, dessen Host zu einer privaten, Loopback- oder Link-Local-Adresse aufgeloest wird (einschliesslich des Cloud-Metadaten-Endpunkts 169.254.169.254). Dies betrifft nur Ziele mit privater IP, etwa ein NAS im LAN oder ein selbst gehostetes S3/MinIO - Cloud-Ziele ueber eine oeffentliche URL sind nicht betroffen. Geplante Backups laufen weiter, aber der Zieltest, die Wiederherstellung (Auflistung und Download) und die Speicherkontingent-Warnung sind blockiert, bis Sie den Bereich des Ziels in VOLUMEVAULT_SSRF_ALLOWED_IPS eintragen (kommagetrennte CIDRs, z. B. 192.168.1.0/24). Benachrichtigungskanaele werden nicht geschuetzt.',
+    ],
     'host_path_allowlist_fail_closed' => [
         'title' => 'Die Hostpfad-Zulassungsliste ist jetzt fail-closed',
         'description' => 'VOLUMEVAULT_HOST_PATH_ALLOWLIST verweigert jetzt standardmaessig: wenn sie leer ist, werden Hostpfad-Sicherungsquellen und lokale Ziele abgelehnt, statt jeden Pfad zuzulassen. Dieselbe Liste schuetzt nun auch lokale Ziele, und Pfade werden zur Laufzeit erneut geprueft, um den Austausch symbolischer Links zu blockieren. Bestehende Installationen, die sich auf das bisherige offene Standardverhalten verlassen haben, muessen ihre Pfade auflisten - fuehren Sie "php artisan volumevault:host-path-allowlist:audit" aus, um den genau einzutragenden Wert zu erhalten.',

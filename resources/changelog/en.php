@@ -1,6 +1,10 @@
 <?php
 
 return [
+    'ssrf_destination_guard' => [
+        'title' => 'Private-IP backup destinations are now guarded (SSRF)',
+        'description' => 'VolumeVault now refuses by default to connect to a backup destination whose host resolves to a private, loopback or link-local address (including the cloud metadata endpoint 169.254.169.254). This only affects destinations on a private IP, such as a LAN NAS or self-hosted S3/MinIO - cloud destinations on a public URL are unaffected. Scheduled backups still run, but the destination test, restore (listing and download) and the storage-quota alert are blocked until you list the destination\'s range in VOLUMEVAULT_SSRF_ALLOWED_IPS (comma-separated CIDRs, e.g. 192.168.1.0/24). Notification channels are not guarded.',
+    ],
     'host_path_allowlist_fail_closed' => [
         'title' => 'Host path allowlist is now fail-closed',
         'description' => 'VOLUMEVAULT_HOST_PATH_ALLOWLIST now denies by default: when it is empty, host-path backup sources and local destinations are refused instead of any path being allowed. The same allowlist now also protects local destinations, and paths are re-checked at run time to block symlink swaps. Existing installations that relied on the previous open default must list their paths - run "php artisan volumevault:host-path-allowlist:audit" for the exact value to set.',

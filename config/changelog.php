@@ -22,6 +22,10 @@ return [
             'type' => 'breaking',
             'key' => 'api_token_expiration',
         ],
+        [
+            'type' => 'breaking',
+            'key' => 'ssrf_destination_guard',
+        ],
     ],
     'releases' => [
         'v1.7.3' => [

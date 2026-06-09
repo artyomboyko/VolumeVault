@@ -70,6 +70,28 @@ You can also use `env_file: .env` for overrides, but do not reuse a development 
 
 Host path backup jobs **and local backup destinations** are restricted by `VOLUMEVAULT_HOST_PATH_ALLOWLIST`, a comma-separated list of allowed Docker host path prefixes such as `/srv,/mnt/data`. This is **fail-closed**: when the variable is empty, host path sources and local destinations are refused entirely. Configure the prefixes you intend to back up to/from; paths outside them are rejected both when saved and again at run time (defending against a symlink swapped in afterwards).
 
+### Backup destinations on a private IP (NAS, self-hosted S3/MinIO, LAN SFTP)
+
+The requests VolumeVault makes **to a backup destination on your behalf** are guarded against SSRF, and this is **deny-by-default**: a destination host that resolves to a private, loopback or link-local address (including the cloud metadata endpoint `169.254.169.254`) is refused. In practice **this only matters when your destination sits on a private IP** — a cloud destination reached by a public URL (AWS S3, Backblaze, Dropbox, …) is never affected and needs no configuration.
+
+The trigger is the **range of the resolved IP, not whether you typed an IP or a hostname**. A public IP — whether written directly (`http://203.0.113.10:9000`) or reached through a hostname — is never blocked; that is by design, because the point of SSRF protection is to stop the server being used to reach *internal* resources an attacker could not otherwise touch (a public address is something they could already request themselves). Conversely a hostname is blocked when it resolves to a private address (e.g. an internal DNS name `nas.home.lan` → `192.168.1.x`).
+
+What this changes for a destination on a private IP, **before** you allow its range:
+
+- ✅ **Scheduled backups still run** — the upload is done by the backup container, which is not guarded, so the archive still lands on your NAS.
+- ⚠️ The archive **size is not detected** (the run is still marked successful).
+- ❌ **Restore is blocked** (listing + download) — this is the one that matters: a backup you cannot restore is useless.
+- ❌ The **"Test destination"** button and the **storage-quota alert** are blocked.
+
+The fix is a single line: list the CIDR range(s) your destinations live on in `VOLUMEVAULT_SSRF_ALLOWED_IPS` (comma-separated), after which everything works normally while `169.254.169.254` and friends stay blocked:
+
+```env
+# e.g. a NAS on your home LAN
+VOLUMEVAULT_SSRF_ALLOWED_IPS=192.168.1.0/24
+```
+
+The host is resolved just before connecting, so a determined attacker controlling DNS could still rebind it afterwards — accepted here because every guarded action is admin-gated. Notification channels (Gotify, Ntfy, SMTP, …) are **not** guarded: they are blind, admin-configured, and commonly self-hosted on the LAN.
+
 Keep your `APP_KEY` safe: it is required to decrypt destinations, notifications, and installation saves.
 
 ## Documentation

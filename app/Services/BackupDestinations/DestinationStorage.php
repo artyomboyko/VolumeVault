@@ -4,6 +4,7 @@ namespace App\Services\BackupDestinations;
 
 use App\Models\BackupDestination;
 use App\Services\S3\S3ClientFactory;
+use App\Services\Security\OutboundHostGuard;
 use Illuminate\Http\Client\Response;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\File;
@@ -18,10 +19,19 @@ class DestinationStorage
     /** phpseclib's NET_SFTP_TYPE_DIRECTORY — only defined once an SFTP instance is constructed, so we mirror it here. */
     private const SFTP_TYPE_DIRECTORY = 2;
 
-    public function __construct(private readonly S3ClientFactory $s3ClientFactory) {}
+    private readonly OutboundHostGuard $outboundHostGuard;
+
+    public function __construct(
+        private readonly S3ClientFactory $s3ClientFactory,
+        ?OutboundHostGuard $outboundHostGuard = null,
+    ) {
+        $this->outboundHostGuard = $outboundHostGuard ?? new OutboundHostGuard;
+    }
 
     public function test(BackupDestination $destination): void
     {
+        $this->guardOutbound($destination);
+
         match ($destination->provider) {
             BackupDestination::PROVIDER_AWS_S3,
             BackupDestination::PROVIDER_CLOUDFLARE_R2,
@@ -38,6 +48,8 @@ class DestinationStorage
 
     public function listBackupObjects(BackupDestination $destination): array
     {
+        $this->guardOutbound($destination);
+
         $objects = match ($destination->provider) {
             BackupDestination::PROVIDER_AWS_S3,
             BackupDestination::PROVIDER_CLOUDFLARE_R2,
@@ -73,6 +85,8 @@ class DestinationStorage
      */
     private function aggregateUsage(BackupDestination $destination): array
     {
+        $this->guardOutbound($destination);
+
         $usedBytes = 0;
         $objectCount = 0;
         $accumulate = function (array $object) use (&$usedBytes, &$objectCount): void {
@@ -96,6 +110,8 @@ class DestinationStorage
 
     public function upload(BackupDestination $destination, string $sourcePath, string $filename, ?string $directory = null): string
     {
+        $this->guardOutbound($destination);
+
         return match ($destination->provider) {
             BackupDestination::PROVIDER_AWS_S3,
             BackupDestination::PROVIDER_CLOUDFLARE_R2,
@@ -112,6 +128,8 @@ class DestinationStorage
 
     public function download(BackupDestination $destination, string $key, string $targetPath): void
     {
+        $this->guardOutbound($destination);
+
         match ($destination->provider) {
             BackupDestination::PROVIDER_AWS_S3,
             BackupDestination::PROVIDER_CLOUDFLARE_R2,
@@ -393,6 +411,8 @@ class DestinationStorage
      */
     public function probeHostKey(string $host, int $port = 22): array
     {
+        $this->outboundHostGuard->assertHostAllowed($host);
+
         $key = $this->newSftp($host, $port)->getServerPublicHostKey();
 
         if (! is_string($key) || $key === '') {
@@ -1038,5 +1058,43 @@ class DestinationStorage
     private function plausibleBackupKey(string $key): bool
     {
         return filled($key) && preg_match('/\.(tar|tar\.gz|tgz|tar\.zst|gz|zst)(\.(gpg|age))?$/i', $key) === 1;
+    }
+
+    /**
+     * Refuse a destination whose remote host resolves to an internal address
+     * before VolumeVault opens any connection to it (SSRF / metadata endpoint).
+     */
+    private function guardOutbound(BackupDestination $destination): void
+    {
+        foreach ($this->outboundHosts($destination) as $host) {
+            $this->outboundHostGuard->assertHostAllowed($host);
+        }
+    }
+
+    /**
+     * The remote host(s) VolumeVault itself connects to for a destination.
+     * Providers backed by a fixed public API (Dropbox, Google Drive) or with no
+     * network host (local) contribute nothing; standard AWS S3 / R2 only carry
+     * a host when a custom endpoint is set.
+     *
+     * @return array<int, string>
+     */
+    private function outboundHosts(BackupDestination $destination): array
+    {
+        $hosts = match ($destination->provider) {
+            BackupDestination::PROVIDER_AWS_S3,
+            BackupDestination::PROVIDER_CLOUDFLARE_R2,
+            BackupDestination::PROVIDER_CUSTOM_S3 => [parse_url((string) $destination->setting('endpoint'), PHP_URL_HOST)],
+            BackupDestination::PROVIDER_WEBDAV => [parse_url((string) $destination->setting('url'), PHP_URL_HOST)],
+            BackupDestination::PROVIDER_SSH => [$destination->setting('host')],
+            BackupDestination::PROVIDER_AZURE_BLOB => [parse_url((string) $this->azureConfig($destination)['endpoint'], PHP_URL_HOST)],
+            default => [],
+        };
+
+        return collect($hosts)
+            ->map(fn (mixed $host): string => trim((string) $host))
+            ->filter()
+            ->values()
+            ->all();
     }
 }

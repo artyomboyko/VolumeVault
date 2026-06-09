@@ -1,6 +1,10 @@
 <?php
 
 return [
+    'ssrf_destination_guard' => [
+        'title' => 'Los destinos de copia de seguridad con IP privada ahora estan protegidos (SSRF)',
+        'description' => 'VolumeVault ahora se niega por defecto a conectarse a un destino de copia de seguridad cuyo host se resuelve en una direccion privada, de bucle local (loopback) o de enlace local (incluido el punto de metadatos de la nube 169.254.169.254). Esto solo afecta a los destinos con IP privada, como un NAS en la LAN o un S3/MinIO autoalojado; los destinos en la nube accesibles por una URL publica no se ven afectados. Las copias programadas siguen ejecutandose, pero la prueba de destino, la restauracion (listado y descarga) y la alerta de cuota de almacenamiento quedan bloqueadas hasta que indique el rango del destino en VOLUMEVAULT_SSRF_ALLOWED_IPS (CIDR separados por comas, p. ej. 192.168.1.0/24). Los canales de notificacion no se ven afectados.',
+    ],
     'host_path_allowlist_fail_closed' => [
         'title' => 'La lista de permitidos de rutas del host ahora es fail-closed',
         'description' => 'VOLUMEVAULT_HOST_PATH_ALLOWLIST ahora deniega de forma predeterminada: cuando esta vacia, las fuentes de copia por ruta del host y los destinos locales se rechazan en lugar de permitir cualquier ruta. La misma lista ahora tambien protege los destinos locales, y las rutas se vuelven a comprobar en tiempo de ejecucion para bloquear el cambio de enlaces simbolicos. Las instalaciones existentes que dependian del comportamiento abierto anterior deben enumerar sus rutas: ejecuta "php artisan volumevault:host-path-allowlist:audit" para obtener el valor exacto que debes definir.',

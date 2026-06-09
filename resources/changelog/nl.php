@@ -1,6 +1,10 @@
 <?php
 
 return [
+    'ssrf_destination_guard' => [
+        'title' => 'Back-upbestemmingen met een prive-IP zijn nu beveiligd (SSRF)',
+        'description' => 'VolumeVault weigert nu standaard verbinding te maken met een back-upbestemming waarvan de host wordt herleid naar een prive-, loopback- of link-local-adres (inclusief het cloud-metadata-eindpunt 169.254.169.254). Dit betreft alleen bestemmingen met een prive-IP, zoals een NAS in het LAN of een zelf-gehoste S3/MinIO - cloudbestemmingen via een openbare URL worden niet beinvloed. Geplande back-ups blijven draaien, maar de bestemmingstest, het herstel (lijst en download) en de waarschuwing voor het opslagquotum worden geblokkeerd totdat u het bereik van de bestemming opgeeft in VOLUMEVAULT_SSRF_ALLOWED_IPS (door komma\'s gescheiden CIDR-reeksen, bijv. 192.168.1.0/24). Notificatiekanalen worden niet beveiligd.',
+    ],
     'host_path_allowlist_fail_closed' => [
         'title' => 'De hostpad-toelatingslijst is nu fail-closed',
         'description' => 'VOLUMEVAULT_HOST_PATH_ALLOWLIST weigert nu standaard: wanneer deze leeg is, worden back-upbronnen op basis van een hostpad en lokale bestemmingen geweigerd in plaats van elk pad toe te staan. Dezelfde lijst beschermt nu ook lokale bestemmingen, en paden worden tijdens runtime opnieuw gecontroleerd om het verwisselen van symbolische koppelingen te blokkeren. Bestaande installaties die op het vorige open standaardgedrag vertrouwden, moeten hun paden opgeven - voer "php artisan volumevault:host-path-allowlist:audit" uit voor de exacte in te stellen waarde.',
