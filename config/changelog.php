@@ -7,25 +7,25 @@ return [
             'key' => 'host_path_allowlist_fail_closed',
         ],
         [
-            'type' => 'change',
-            'key' => 'auth_rate_limiting',
-        ],
-        [
-            'type' => 'change',
-            'key' => 'restore_input_hardening',
-        ],
-        [
-            'type' => 'feature',
-            'key' => 'sftp_host_key_pinning',
-        ],
-        [
             'type' => 'breaking',
             'key' => 'api_token_expiration',
         ],
         [
             'type' => 'breaking',
             'key' => 'ssrf_destination_guard',
+        ],  
+        [
+            'type' => 'feature',
+            'key' => 'sftp_host_key_pinning',
         ],
+        [
+            'type' => 'change',
+            'key' => 'auth_rate_limiting',
+        ],
+        [
+            'type' => 'change',
+            'key' => 'restore_input_hardening',
+        ],  
     ],
     'releases' => [
         'v1.7.3' => [
