@@ -1,33 +1,38 @@
 <?php
 
 return [
-    'unreleased' => [
-        [
-            'type' => 'breaking',
-            'key' => 'host_path_allowlist_fail_closed',
-        ],
-        [
-            'type' => 'breaking',
-            'key' => 'api_token_expiration',
-        ],
-        [
-            'type' => 'breaking',
-            'key' => 'ssrf_destination_guard',
-        ],  
-        [
-            'type' => 'feature',
-            'key' => 'sftp_host_key_pinning',
-        ],
-        [
-            'type' => 'change',
-            'key' => 'auth_rate_limiting',
-        ],
-        [
-            'type' => 'change',
-            'key' => 'restore_input_hardening',
-        ],  
-    ],
+    'unreleased' => [],
     'releases' => [
+        'v1.8.0' => [
+            'date' => '2026-06-09',
+            'url' => 'https://github.com/Darkdragon14/VolumeVault/releases/tag/v1.8.0',
+            'items' => [
+                [
+                    'type' => 'breaking',
+                    'key' => 'host_path_allowlist_fail_closed',
+                ],
+                [
+                    'type' => 'breaking',
+                    'key' => 'api_token_expiration',
+                ],
+                [
+                    'type' => 'breaking',
+                    'key' => 'ssrf_destination_guard',
+                ],
+                [
+                    'type' => 'feature',
+                    'key' => 'sftp_host_key_pinning',
+                ],
+                [
+                    'type' => 'change',
+                    'key' => 'auth_rate_limiting',
+                ],
+                [
+                    'type' => 'change',
+                    'key' => 'restore_input_hardening',
+                ],
+            ],
+        ],
         'v1.7.3' => [
             'date' => '2026-06-08',
             'url' => 'https://github.com/Darkdragon14/VolumeVault/releases/tag/v1.7.3',
