@@ -384,9 +384,44 @@ class DestinationStorage
         }
     }
 
+    /**
+     * Connect to an SSH server and read the host key it presents, without
+     * authenticating (the key exchange happens before login). Used by the UI
+     * to let an admin trust a server's key on first use.
+     *
+     * @return array{key: string, fingerprint: string}
+     */
+    public function probeHostKey(string $host, int $port = 22): array
+    {
+        $key = $this->newSftp($host, $port)->getServerPublicHostKey();
+
+        if (! is_string($key) || $key === '') {
+            throw new RuntimeException('Unable to read the host key from the SSH server.');
+        }
+
+        return [
+            'key' => $key,
+            'fingerprint' => self::hostKeyFingerprint($key),
+        ];
+    }
+
+    protected function newSftp(string $host, int $port): SFTP
+    {
+        return new SFTP($host, $port, 15);
+    }
+
     protected function sftp(BackupDestination $destination): SFTP
     {
-        $sftp = new SFTP((string) $destination->setting('host'), (int) $destination->setting('port', 22), 15);
+        $sftp = $this->newSftp((string) $destination->setting('host'), (int) $destination->setting('port', 22));
+
+        // Pin the server host key BEFORE authenticating, so a man-in-the-middle
+        // never receives the username/password/private key. This only guards
+        // VolumeVault's own SFTP operations (test, listing, restore download):
+        // the offen backup container ignores host keys entirely (upstream
+        // hardcodes ssh.InsecureIgnoreHostKey), so the actual backup upload
+        // cannot be pinned here.
+        $this->verifyHostKey($destination, $sftp);
+
         $credential = (string) $destination->secret('password', '');
 
         if (filled($destination->secret('private_key'))) {
@@ -398,6 +433,95 @@ class DestinationStorage
         }
 
         return $sftp;
+    }
+
+    /**
+     * Reject the connection when a pinned host key is configured and the key
+     * the server presents does not match it. No pin configured => no check
+     * (trust-on-first-use is left to the admin, who can read the fingerprint
+     * via hostKeyFingerprint()).
+     */
+    protected function verifyHostKey(BackupDestination $destination, SFTP $sftp): void
+    {
+        $pinned = trim((string) $destination->setting('host_key', ''));
+
+        if ($pinned === '') {
+            return;
+        }
+
+        $presented = $sftp->getServerPublicHostKey();
+
+        if (! is_string($presented) || $presented === '') {
+            throw new RuntimeException('Unable to read the SFTP server host key for verification.');
+        }
+
+        if (! self::hostKeyMatches($pinned, $presented)) {
+            throw new RuntimeException(sprintf(
+                'SFTP host key verification failed: the server key does not match the pinned key. Presented fingerprint: %s',
+                self::hostKeyFingerprint($presented) ?: 'unknown',
+            ));
+        }
+    }
+
+    /**
+     * Compare a pinned host key against the one the server presented. The pin
+     * may be an OpenSSH public key line ("ssh-ed25519 AAAA...", with or
+     * without a trailing comment), a bare base64 key blob, or a SHA256
+     * fingerprint ("SHA256:...").
+     */
+    public static function hostKeyMatches(string $pinned, string $presented): bool
+    {
+        $pinned = trim($pinned);
+        $presentedBlob = self::hostKeyBlob($presented);
+
+        if ($presentedBlob === '') {
+            return false;
+        }
+
+        if (preg_match('/^sha256:/i', $pinned)) {
+            $pinnedDigest = trim(substr($pinned, strlen('SHA256:')));
+            $presentedDigest = substr(self::hostKeyFingerprint($presented), strlen('SHA256:'));
+
+            return $pinnedDigest !== '' && hash_equals($presentedDigest, $pinnedDigest);
+        }
+
+        $pinnedBlob = self::hostKeyBlob($pinned);
+
+        return $pinnedBlob !== '' && hash_equals($pinnedBlob, $presentedBlob);
+    }
+
+    /**
+     * SHA256 fingerprint of a host key, in OpenSSH's "SHA256:<base64>" form
+     * (matching `ssh-keygen -lf`). Empty string when no key blob is found.
+     */
+    public static function hostKeyFingerprint(string $key): string
+    {
+        $blob = self::hostKeyBlob($key);
+
+        if ($blob === '') {
+            return '';
+        }
+
+        return 'SHA256:'.rtrim(base64_encode(hash('sha256', $blob, true)), '=');
+    }
+
+    /**
+     * Extract the raw (base64-decoded) key blob from an OpenSSH key line or a
+     * bare base64 string. The key type ("ssh-rsa") and any comment are not
+     * valid base64 in strict mode, so we keep the first part that decodes to a
+     * plausible key.
+     */
+    private static function hostKeyBlob(string $key): string
+    {
+        foreach (preg_split('/\s+/', trim($key)) ?: [] as $part) {
+            $decoded = base64_decode($part, true);
+
+            if ($decoded !== false && strlen($decoded) > 8) {
+                return $decoded;
+            }
+        }
+
+        return '';
     }
 
     private function collectSftpFiles(SFTP $sftp, string $directory, string $prefix, callable $onObject, int $limit, int &$count): void

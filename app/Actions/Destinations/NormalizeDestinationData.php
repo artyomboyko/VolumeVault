@@ -104,7 +104,7 @@ class NormalizeDestinationData
             BackupDestination::PROVIDER_CLOUDFLARE_R2,
             BackupDestination::PROVIDER_CUSTOM_S3 => ['endpoint', 'region', 'bucket', 'path_prefix', 'use_path_style_endpoint'],
             BackupDestination::PROVIDER_WEBDAV => ['url', 'path', 'insecure'],
-            BackupDestination::PROVIDER_SSH => ['host', 'port', 'remote_path', 'identity_file'],
+            BackupDestination::PROVIDER_SSH => ['host', 'port', 'remote_path', 'identity_file', 'host_key'],
             BackupDestination::PROVIDER_AZURE_BLOB => ['account_name', 'container', 'endpoint', 'access_tier'],
             BackupDestination::PROVIDER_DROPBOX => ['remote_path', 'concurrency_level'],
             BackupDestination::PROVIDER_GOOGLE_DRIVE => ['folder_id', 'impersonate_subject', 'endpoint', 'token_url'],

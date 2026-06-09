@@ -13,6 +13,14 @@ return [
         'title' => 'Validacion mas estricta de las entradas de restauracion y copia',
         'description' => 'La copia seleccionada para una restauracion ahora debe coincidir con el listado del destino, lo que bloquea claves de salto de ruta como "../../etc/passwd". Los nombres de volumenes Docker se limitan a caracteres seguros, y la extraccion de restauracion se confina para que un archivo manipulado no pueda escribir fuera del volumen de destino.',
     ],
+    'sftp_host_key_pinning' => [
+        'title' => 'Fijacion de la clave de host SSH para destinos SFTP',
+        'description' => 'Los destinos SSH/SFTP ahora pueden fijar la clave de host del servidor para bloquear los ataques de intermediario. Use el boton "Obtener clave del servidor" - o el nuevo endpoint POST /api/v1/destinations/host-key - para confiar en la clave presentada, o pegue una clave de host o una huella SHA256. La clave se verifica antes de enviar cualquier credencial, para las operaciones SFTP propias de VolumeVault (prueba, listado, restauracion). Dejarla vacia mantiene el comportamiento anterior.',
+    ],
+    'api_token_expiration' => [
+        'title' => 'Los tokens de API ahora caducan por defecto',
+        'description' => 'Los tokens de API ahora caducan 60 dias despues de su creacion por defecto, lo que limita el impacto de un token filtrado. Los tokens existentes mas antiguos dejan de funcionar tras la actualizacion y deben recrearse. Defina SANCTUM_TOKEN_EXPIRATION (en minutos) para cambiar el periodo, o null para mantener tokens sin caducidad. Una caducidad por token solo puede acortar este periodo, nunca ampliarlo.',
+    ],
     'alert_check_isolation' => [
         'title' => 'Comprobaciones de alerta mas robustas',
         'description' => 'Una regla de alerta que falla ya no impide que se comprueben las demas reglas. Cada regla se evalua ahora de forma independiente y los fallos se registran, de modo que una sola comprobacion defectuosa ya no puede desactivar silenciosamente tus demas alertas.',

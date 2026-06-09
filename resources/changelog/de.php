@@ -13,6 +13,14 @@ return [
         'title' => 'Strengere Pruefung von Wiederherstellungs- und Sicherungseingaben',
         'description' => 'Die fuer eine Wiederherstellung ausgewaehlte Sicherung muss jetzt mit der Auflistung des Ziels uebereinstimmen, wodurch Pfaddurchquerungs-Schluessel wie "../../etc/passwd" blockiert werden. Docker-Volumenamen sind auf sichere Zeichen beschraenkt, und die Wiederherstellungsentpackung wird eingegrenzt, sodass ein gefaelschtes Archiv nicht ausserhalb des Zielvolumes schreiben kann.',
     ],
+    'sftp_host_key_pinning' => [
+        'title' => 'Anpinnen des SSH-Hostschluessels fuer SFTP-Ziele',
+        'description' => 'SSH/SFTP-Ziele koennen jetzt den Hostschluessel des Servers anpinnen, um Man-in-the-Middle-Angriffe zu blockieren. Verwenden Sie die Schaltflaeche "Schluessel vom Server abrufen" - oder den neuen Endpunkt POST /api/v1/destinations/host-key -, um dem praesentierten Schluessel zu vertrauen, oder fuegen Sie einen Hostschluessel oder SHA256-Fingerabdruck ein. Der Schluessel wird vor dem Senden von Anmeldedaten geprueft, fuer die von VolumeVault durchgefuehrten SFTP-Vorgaenge (Test, Auflistung, Wiederherstellung). Leer lassen behaelt das bisherige Verhalten bei.',
+    ],
+    'api_token_expiration' => [
+        'title' => 'API-Tokens laufen jetzt standardmaessig ab',
+        'description' => 'API-Tokens laufen jetzt standardmaessig 60 Tage nach der Erstellung ab, was die Auswirkungen eines geleakten Tokens begrenzt. Bestehende, aeltere Tokens funktionieren nach dem Upgrade nicht mehr und muessen neu erstellt werden. Setzen Sie SANCTUM_TOKEN_EXPIRATION (in Minuten), um den Zeitraum zu aendern, oder null, um nicht ablaufende Tokens zu behalten. Ein Ablauf pro Token kann diesen Zeitraum nur verkuerzen, niemals verlaengern.',
+    ],
     'alert_check_isolation' => [
         'title' => 'Robustere Alarmpruefungen',
         'description' => 'Eine Alarmregel, die einen Fehler ausloest, verhindert nicht mehr die Pruefung der uebrigen Regeln. Jede Regel wird jetzt unabhaengig ausgewertet und Fehler werden protokolliert, sodass eine fehlerhafte Pruefung die anderen Alarme nicht mehr stillschweigend deaktivieren kann.',

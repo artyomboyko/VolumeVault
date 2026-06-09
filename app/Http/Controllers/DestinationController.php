@@ -8,6 +8,7 @@ use App\Http\Requests\StoreDestinationRequest;
 use App\Http\Requests\UpdateDestinationRequest;
 use App\Models\ActivityLog;
 use App\Models\BackupDestination;
+use App\Services\BackupDestinations\DestinationStorage;
 use App\Services\BackupDestinations\TestBackupDestination;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -103,5 +104,21 @@ class DestinationController extends Controller
         $result = $testBackupDestination->handle($destination);
 
         return back()->with($result['ok'] ? 'success' : 'error', $result['message']);
+    }
+
+    public function hostKey(Request $request, DestinationStorage $storage)
+    {
+        $data = $request->validate([
+            'host' => ['required', 'string', 'max:255'],
+            'port' => ['nullable', 'integer', 'min:1', 'max:65535'],
+        ]);
+
+        try {
+            return response()->json($storage->probeHostKey($data['host'], (int) ($data['port'] ?? 22)));
+        } catch (\Throwable $exception) {
+            return response()->json([
+                'message' => str(trim($exception->getMessage()) ?: 'Unable to reach the SSH server.')->limit(300)->toString(),
+            ], 422);
+        }
     }
 }

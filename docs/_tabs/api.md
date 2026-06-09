@@ -12,6 +12,8 @@ This makes the project friendly to automation tools, monitoring scripts, dashboa
 
 API tokens are created by admins from the `API tokens` screen. Tokens are displayed only once at creation and stored hashed after that.
 
+Tokens expire by default to limit the blast radius of a leaked token. The default lifetime is 60 days and is configurable with `SANCTUM_TOKEN_EXPIRATION` (in minutes); set it to `null` to allow non-expiring tokens. A per-token expiry chosen at creation can only shorten this window, never extend it.
+
 Use API tokens with the Bearer scheme:
 
 ```bash
@@ -27,6 +29,12 @@ Token abilities:
 
 Write operations still require an admin user, and secrets are never returned in plaintext by the API. Responses only include masked indicators such as `has_access_key_id`, `has_secret_access_key`, and `masked_*` fields.
 
+When restoring, `selected_backup_key` must be one of the keys returned by `GET /api/v1/backup-jobs/{id}/backups` - it is checked against the destination listing, so arbitrary or path-traversal keys are rejected. Volume names (`volume_name`, `target_volume_name`) must match `^[A-Za-z0-9_.-]+$`.
+
+Host-path backup sources and local destinations (`settings.archive_path` / `archive_mount_source`) must match the fail-closed `VOLUMEVAULT_HOST_PATH_ALLOWLIST`. `GET /api/v1/host-path-allowlist` returns the allowed prefixes (`configured: false` means host paths are refused), so an integration can validate paths before creating a job or destination instead of relying on `422` errors.
+
+For SSH/SFTP destinations, set `settings.host_key` (an OpenSSH public host key line or a `SHA256:` fingerprint) on create/update to pin the server and block man-in-the-middle attacks. `POST /api/v1/destinations/host-key` (`{ "host": "...", "port": 22 }`) connects without authenticating and returns the key and fingerprint a server currently presents, so an integration can pin it (trust on first use).
+
 Useful API calls:
 
 ```text
@@ -35,6 +43,7 @@ GET    /api/v1/me
 GET    /api/v1/dashboard
 GET    /api/v1/volumes
 POST   /api/v1/volumes/sync
+GET    /api/v1/host-path-allowlist
 GET    /api/v1/backup-jobs
 POST   /api/v1/backup-jobs
 GET    /api/v1/backup-jobs/{id}
@@ -51,6 +60,7 @@ GET    /api/v1/restore-runs
 GET    /api/v1/restore-runs/{id}
 GET    /api/v1/destinations
 POST   /api/v1/destinations
+POST   /api/v1/destinations/host-key
 GET    /api/v1/destinations/{id}
 PUT    /api/v1/destinations/{id}
 DELETE /api/v1/destinations/{id}

@@ -13,6 +13,14 @@ return [
         'title' => 'Prisnejsi overovani vstupu pro obnoveni a zalohovani',
         'description' => 'Zaloha vybrana pro obnoveni se nyni musi shodovat se seznamem cile, coz blokuje klice pro prochazeni cest jako "../../etc/passwd". Nazvy svazku Docker jsou omezeny na bezpecne znaky a extrakce pri obnoveni je omezena tak, aby podvrzeny archiv nemohl zapisovat mimo cilovy svazek.',
     ],
+    'sftp_host_key_pinning' => [
+        'title' => 'Pripnuti SSH klice hostitele pro cile SFTP',
+        'description' => 'Cile SSH/SFTP nyni mohou pripnout klic hostitele serveru a blokovat tak utoky typu man-in-the-middle. Pomoci tlacitka "Nacist klic ze serveru" - nebo noveho endpointu POST /api/v1/destinations/host-key - duverujte predlozenemu klici, nebo vlozte klic hostitele ci otisk SHA256. Klic se overuje pred odeslanim jakychkoli prihlasovacich udaju, pro operace SFTP provadene aplikaci VolumeVault (test, vypis, obnoveni). Ponechani prazdne zachova predchozi chovani.',
+    ],
+    'api_token_expiration' => [
+        'title' => 'Tokeny API nyni ve vychozim nastaveni vyprsi',
+        'description' => 'Tokeny API nyni ve vychozim nastaveni vyprsi 60 dni po vytvoreni, coz omezuje dopad uniku tokenu. Stavajici starsi tokeny po aktualizaci prestanou fungovat a je nutne je znovu vytvorit. Nastavte SANCTUM_TOKEN_EXPIRATION (v minutach) pro zmenu doby platnosti, nebo null pro zachovani tokenu bez expirace. Expirace jednotliveho tokenu muze tuto dobu pouze zkratit, nikdy prodlouzit.',
+    ],
     'alert_check_isolation' => [
         'title' => 'Odolnejsi kontroly upozorneni',
         'description' => 'Pravidlo upozorneni, ktere skonci chybou, jiz nebrani kontrole ostatnich pravidel. Kazde pravidlo se nyni vyhodnocuje samostatne a chyby se zaznamenavaji, takze jedna chybna kontrola jiz nemuze tise vypnout ostatni upozorneni.',

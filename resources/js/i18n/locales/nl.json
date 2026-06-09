@@ -442,5 +442,11 @@
   "Previous": "Vorige",
   "Next": "Volgende",
   "All": "Alle",
-  "Pagination": "Paginering"
+  "Pagination": "Paginering",
+  "Pinned host key": "Vastgezette hostsleutel",
+  "Fetch key from server": "Sleutel van server ophalen",
+  "Server key trusted (fingerprint {fingerprint}). Compare it with the server before saving to rule out a first-contact attack.": "Serversleutel vertrouwd (vingerafdruk {fingerprint}). Vergelijk deze met de server voordat u opslaat om een aanval bij eerste contact uit te sluiten.",
+  "Unable to reach the SSH server.": "Kan de SSH-server niet bereiken.",
+  "Optional but recommended. Use the button to trust the current server key, or paste a host key (e.g. from ssh-keyscan) or its SHA256 fingerprint. Blocks man-in-the-middle attacks on the SFTP operations performed by VolumeVault; the backup container cannot verify host keys.": "Optioneel maar aanbevolen. Gebruik de knop om de huidige serversleutel te vertrouwen, of plak een hostsleutel (bijv. uit ssh-keyscan) of de SHA256-vingerafdruk ervan. Blokkeert man-in-the-middle-aanvallen op de SFTP-bewerkingen die door VolumeVault worden uitgevoerd; de back-upcontainer kan hostsleutels niet verifieren.",
+  "Fetching...": "Ophalen..."
 }

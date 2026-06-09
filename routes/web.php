@@ -68,6 +68,7 @@ Route::middleware('auth')->group(function () {
         Route::post('/backup-jobs/{backupJob}/resume', [BackupJobController::class, 'resume'])->name('backup-jobs.resume');
 
         Route::resource('destinations', DestinationController::class)->except(['show']);
+        Route::post('/destinations/host-key', [DestinationController::class, 'hostKey'])->name('destinations.host-key');
         Route::patch('/destinations/{destination}/active', [DestinationController::class, 'updateActive'])->name('destinations.active');
         Route::post('/destinations/{destination}/test', [DestinationController::class, 'test'])->name('destinations.test');
 

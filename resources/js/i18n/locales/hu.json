@@ -442,5 +442,11 @@
   "Previous": "Elozo",
   "Next": "Kovetkezo",
   "All": "Összes",
-  "Pagination": "Lapozas"
+  "Pagination": "Lapozas",
+  "Pinned host key": "Rogzitett gazdakulcs",
+  "Fetch key from server": "Kulcs lekerese a szerverrol",
+  "Server key trusted (fingerprint {fingerprint}). Compare it with the server before saving to rule out a first-contact attack.": "A szerver kulcsa megbizhato (ujjlenyomat {fingerprint}). Mentes elott vesse ossze a szerverrel, hogy kizarja az elso kapcsolatfelvetelkori tamadast.",
+  "Unable to reach the SSH server.": "Az SSH-szerver nem erheto el.",
+  "Optional but recommended. Use the button to trust the current server key, or paste a host key (e.g. from ssh-keyscan) or its SHA256 fingerprint. Blocks man-in-the-middle attacks on the SFTP operations performed by VolumeVault; the backup container cannot verify host keys.": "Valaszthato, de ajanlott. A gombbal bizzon meg a szerver jelenlegi kulcsaban, vagy illesszen be egy gazdakulcsot (pl. ssh-keyscan kimenetebol) vagy annak SHA256 ujjlenyomatat. Blokkolja a koztes ember (man-in-the-middle) tamadasokat a VolumeVault altal vegzett SFTP-muveleteken; a biztonsagi mentesi konteiner nem tudja ellenorizni a gazdakulcsokat.",
+  "Fetching...": "Lekeres..."
 }

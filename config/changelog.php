@@ -14,6 +14,14 @@ return [
             'type' => 'change',
             'key' => 'restore_input_hardening',
         ],
+        [
+            'type' => 'feature',
+            'key' => 'sftp_host_key_pinning',
+        ],
+        [
+            'type' => 'breaking',
+            'key' => 'api_token_expiration',
+        ],
     ],
     'releases' => [
         'v1.7.3' => [

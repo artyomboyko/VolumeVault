@@ -13,6 +13,14 @@ return [
         'title' => 'Convalida piu rigorosa degli input di ripristino e backup',
         'description' => 'Il backup selezionato per un ripristino ora deve corrispondere all\'elenco della destinazione, bloccando le chiavi di attraversamento dei percorsi come "../../etc/passwd". I nomi dei volumi Docker sono limitati a caratteri sicuri e l\'estrazione di ripristino e confinata in modo che un archivio contraffatto non possa scrivere al di fuori del volume di destinazione.',
     ],
+    'sftp_host_key_pinning' => [
+        'title' => 'Blocco della chiave host SSH per le destinazioni SFTP',
+        'description' => 'Le destinazioni SSH/SFTP ora possono bloccare la chiave host del server per impedire gli attacchi man-in-the-middle. Usa il pulsante "Recupera la chiave dal server" - o il nuovo endpoint POST /api/v1/destinations/host-key - per considerare attendibile la chiave presentata, oppure incolla una chiave host o un\'impronta SHA256. La chiave viene verificata prima di inviare qualsiasi credenziale, per le operazioni SFTP eseguite da VolumeVault (test, elenco, ripristino). Lasciarla vuota mantiene il comportamento precedente.',
+    ],
+    'api_token_expiration' => [
+        'title' => 'I token API ora scadono per impostazione predefinita',
+        'description' => 'I token API ora scadono 60 giorni dopo la creazione per impostazione predefinita, limitando l\'impatto di un token trafugato. I token esistenti piu vecchi smettono di funzionare dopo l\'aggiornamento e devono essere ricreati. Imposta SANCTUM_TOKEN_EXPIRATION (in minuti) per modificare la durata, oppure null per mantenere token senza scadenza. Una scadenza per token puo solo ridurre questa durata, mai estenderla.',
+    ],
     'alert_check_isolation' => [
         'title' => 'Controlli degli avvisi piu robusti',
         'description' => 'Una regola di avviso che genera un errore non impedisce piu il controllo delle altre regole. Ogni regola viene ora valutata in modo indipendente e gli errori vengono registrati, cosi un singolo controllo difettoso non puo piu disattivare silenziosamente gli altri avvisi.',

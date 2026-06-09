@@ -13,6 +13,14 @@ return [
         'title' => 'Validation renforcee des entrees de restauration et de sauvegarde',
         'description' => 'La sauvegarde selectionnee pour une restauration doit desormais correspondre au listing de la destination, ce qui bloque les cles de traversee de chemin comme "../../etc/passwd". Les noms de volumes Docker sont limites a des caracteres surs, et l\'extraction de restauration est confinee afin qu\'une archive falsifiee ne puisse pas ecrire en dehors du volume cible.',
     ],
+    'sftp_host_key_pinning' => [
+        'title' => 'Epinglage de la cle d\'hote SSH pour les destinations SFTP',
+        'description' => 'Les destinations SSH/SFTP peuvent desormais epingler la cle d\'hote du serveur pour bloquer les attaques de l\'homme du milieu. Utilisez le bouton "Recuperer la cle du serveur" - ou le nouvel endpoint POST /api/v1/destinations/host-key - pour approuver la cle presentee, ou collez une cle d\'hote ou une empreinte SHA256. La cle est verifiee avant tout envoi d\'identifiants, pour les operations SFTP propres a VolumeVault (test, listing, restauration). La laisser vide conserve le comportement precedent.',
+    ],
+    'api_token_expiration' => [
+        'title' => 'Les tokens API expirent desormais par defaut',
+        'description' => 'Les tokens API expirent desormais 60 jours apres leur creation par defaut, ce qui limite l\'impact d\'un token divulgue. Les tokens existants plus anciens cessent de fonctionner apres la mise a jour et doivent etre recrees. Definissez SANCTUM_TOKEN_EXPIRATION (en minutes) pour modifier la duree, ou null pour conserver des tokens sans expiration. Une expiration definie par token ne peut que raccourcir cette duree, jamais l\'allonger.',
+    ],
     'alert_check_isolation' => [
         'title' => 'Verifications d\'alerte plus robustes',
         'description' => 'Une regle d\'alerte qui echoue n\'empeche plus la verification des autres regles. Chaque regle est desormais evaluee independamment et les echecs sont journalises, de sorte qu\'une seule verification defaillante ne peut plus desactiver silencieusement vos autres alertes.',

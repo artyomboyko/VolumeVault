@@ -13,6 +13,14 @@ return [
         'title' => 'Strengere validatie van herstel- en back-upinvoer',
         'description' => 'De voor een herstel geselecteerde back-up moet nu overeenkomen met de lijst van de bestemming, waardoor pad-traversal-sleutels zoals "../../etc/passwd" worden geblokkeerd. Docker-volumenamen zijn beperkt tot veilige tekens en de herstelextractie wordt ingeperkt zodat een vervalst archief niet buiten het doelvolume kan schrijven.',
     ],
+    'sftp_host_key_pinning' => [
+        'title' => 'SSH-hostsleutel vastzetten voor SFTP-bestemmingen',
+        'description' => 'SSH/SFTP-bestemmingen kunnen nu de hostsleutel van de server vastzetten om man-in-the-middle-aanvallen te blokkeren. Gebruik de knop "Sleutel van server ophalen" - of het nieuwe eindpunt POST /api/v1/destinations/host-key - om de gepresenteerde sleutel te vertrouwen, of plak een hostsleutel of SHA256-vingerafdruk. De sleutel wordt geverifieerd voordat er inloggegevens worden verzonden, voor de SFTP-bewerkingen die door VolumeVault worden uitgevoerd (test, lijst, herstel). Leeg laten behoudt het vorige gedrag.',
+    ],
+    'api_token_expiration' => [
+        'title' => 'API-tokens verlopen nu standaard',
+        'description' => 'API-tokens verlopen nu standaard 60 dagen na het aanmaken, wat de impact van een gelekte token beperkt. Bestaande oudere tokens werken na de upgrade niet meer en moeten opnieuw worden aangemaakt. Stel SANCTUM_TOKEN_EXPIRATION (in minuten) in om de periode te wijzigen, of null om niet-verlopende tokens te behouden. Een verloopdatum per token kan deze periode alleen verkorten, nooit verlengen.',
+    ],
     'alert_check_isolation' => [
         'title' => 'Robuustere alertcontroles',
         'description' => 'Een alertregel die een fout veroorzaakt, verhindert niet langer dat de overige regels worden gecontroleerd. Elke regel wordt nu onafhankelijk geevalueerd en fouten worden gelogd, zodat een enkele falende controle je overige alerts niet meer stilletjes kan uitschakelen.',

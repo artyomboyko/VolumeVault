@@ -67,6 +67,7 @@ trait ValidatesBackupDestination
                 'settings.port' => ['nullable', 'integer', 'min:1', 'max:65535'],
                 'settings.remote_path' => ['required', 'string', 'max:2048'],
                 'settings.identity_file' => ['nullable', 'string', 'max:2048'],
+                'settings.host_key' => ['nullable', 'string', 'max:4096'],
                 'secrets.user' => [$secretsRequired ? 'required' : 'nullable', 'string'],
                 'secrets.password' => $secretsRequired
                     ? ['nullable', 'required_without:secrets.private_key', 'string']

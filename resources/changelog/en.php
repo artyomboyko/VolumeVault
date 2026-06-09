@@ -13,6 +13,14 @@ return [
         'title' => 'Stricter restore and backup input validation',
         'description' => 'The backup selected for a restore must now match the destination listing, blocking path-traversal keys such as "../../etc/passwd". Docker volume names are limited to safe characters, and restore extraction is confined so a forged archive cannot write outside the target volume.',
     ],
+    'sftp_host_key_pinning' => [
+        'title' => 'SSH host key pinning for SFTP destinations',
+        'description' => 'SSH/SFTP destinations can now pin the server host key to block man-in-the-middle attacks. Use the "Fetch key from server" button - or the new POST /api/v1/destinations/host-key endpoint - to trust the key a server presents, or paste a host key or SHA256 fingerprint. The key is verified before any credentials are sent, for VolumeVault\'s own SFTP operations (test, listing, restore). Leaving it empty keeps the previous behaviour.',
+    ],
+    'api_token_expiration' => [
+        'title' => 'API tokens now expire by default',
+        'description' => 'API tokens now expire 60 days after creation by default, limiting the impact of a leaked token. Existing tokens older than this stop working after the upgrade and must be recreated. Set SANCTUM_TOKEN_EXPIRATION (in minutes) to change the window, or to null to keep non-expiring tokens. A per-token expiry can only shorten this window, never extend it.',
+    ],
     'alert_check_isolation' => [
         'title' => 'More resilient alert checks',
         'description' => 'A single alert rule that errors out no longer stops the other rules from being checked. Each rule is now evaluated independently and failures are logged, so one misbehaving check can no longer silently disable your remaining alerts.',

@@ -4,6 +4,7 @@ use App\Http\Controllers\Api\V1\BackupJobController;
 use App\Http\Controllers\Api\V1\BackupRunController;
 use App\Http\Controllers\Api\V1\DashboardController;
 use App\Http\Controllers\Api\V1\DestinationController;
+use App\Http\Controllers\Api\V1\HostPathAllowlistController;
 use App\Http\Controllers\Api\V1\MeController;
 use App\Http\Controllers\Api\V1\NotificationChannelController;
 use App\Http\Controllers\Api\V1\OpenApiController;
@@ -26,6 +27,7 @@ Route::prefix('v1')->group(function () {
         Route::get('/backup-runs/{backupRun}', [BackupRunController::class, 'show']);
         Route::get('/restore-runs', [RestoreRunController::class, 'index']);
         Route::get('/restore-runs/{restoreRun}', [RestoreRunController::class, 'show']);
+        Route::get('/host-path-allowlist', HostPathAllowlistController::class)->middleware('admin');
         Route::get('/destinations', [DestinationController::class, 'index'])->middleware('admin');
         Route::get('/destinations/{destination}', [DestinationController::class, 'show'])->middleware('admin');
         Route::get('/notifications', [NotificationChannelController::class, 'index'])->middleware('admin');
@@ -42,6 +44,7 @@ Route::prefix('v1')->group(function () {
         Route::post('/backup-jobs/{backupJob}/resume', [BackupJobController::class, 'resume']);
         Route::post('/backup-jobs/{backupJob}/restore', [RestoreController::class, 'store']);
         Route::post('/destinations', [DestinationController::class, 'store']);
+        Route::post('/destinations/host-key', [DestinationController::class, 'hostKey']);
         Route::put('/destinations/{destination}', [DestinationController::class, 'update']);
         Route::delete('/destinations/{destination}', [DestinationController::class, 'destroy']);
         Route::post('/destinations/{destination}/test', [DestinationController::class, 'test']);
