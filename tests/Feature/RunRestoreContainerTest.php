@@ -37,6 +37,9 @@ class RunRestoreContainerTest extends TestCase
         $this->assertContains('-xzf', $command);
         $this->assertContains('--strip-components', $command);
         $this->assertSame('2', $command[array_search('--strip-components', $command, true) + 1]);
+
+        // A forged archive cannot escape /restore via absolute paths.
+        $this->assertContains('--no-absolute-names', $command);
     }
 
     public function test_restore_container_id_is_persisted(): void

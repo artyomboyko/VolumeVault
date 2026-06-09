@@ -5,6 +5,14 @@ return [
         'title' => 'Die Hostpfad-Zulassungsliste ist jetzt fail-closed',
         'description' => 'VOLUMEVAULT_HOST_PATH_ALLOWLIST verweigert jetzt standardmaessig: wenn sie leer ist, werden Hostpfad-Sicherungsquellen und lokale Ziele abgelehnt, statt jeden Pfad zuzulassen. Dieselbe Liste schuetzt nun auch lokale Ziele, und Pfade werden zur Laufzeit erneut geprueft, um den Austausch symbolischer Links zu blockieren. Bestehende Installationen, die sich auf das bisherige offene Standardverhalten verlassen haben, muessen ihre Pfade auflisten - fuehren Sie "php artisan volumevault:host-path-allowlist:audit" aus, um den genau einzutragenden Wert zu erhalten.',
     ],
+    'auth_rate_limiting' => [
+        'title' => 'Ratenbegrenzte Anmeldung und Passwortruecksetzung',
+        'description' => 'Anmelde- und Passwortruecksetzungsanfragen sind jetzt auf 5 Versuche pro Minute begrenzt, was Brute-Force-Angriffe auf das Administratorpasswort verlangsamt. Beim Ueberschreiten des Limits wird eine voruebergehende "zu viele Anfragen"-Antwort zurueckgegeben, die sich nach einer Minute zuruecksetzt.',
+    ],
+    'restore_input_hardening' => [
+        'title' => 'Strengere Pruefung von Wiederherstellungs- und Sicherungseingaben',
+        'description' => 'Die fuer eine Wiederherstellung ausgewaehlte Sicherung muss jetzt mit der Auflistung des Ziels uebereinstimmen, wodurch Pfaddurchquerungs-Schluessel wie "../../etc/passwd" blockiert werden. Docker-Volumenamen sind auf sichere Zeichen beschraenkt, und die Wiederherstellungsentpackung wird eingegrenzt, sodass ein gefaelschtes Archiv nicht ausserhalb des Zielvolumes schreiben kann.',
+    ],
     'alert_check_isolation' => [
         'title' => 'Robustere Alarmpruefungen',
         'description' => 'Eine Alarmregel, die einen Fehler ausloest, verhindert nicht mehr die Pruefung der uebrigen Regeln. Jede Regel wird jetzt unabhaengig ausgewertet und Fehler werden protokolliert, sodass eine fehlerhafte Pruefung die anderen Alarme nicht mehr stillschweigend deaktivieren kann.',

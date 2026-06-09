@@ -5,6 +5,14 @@ return [
         'title' => 'L\'elenco di autorizzazione dei percorsi host ora e fail-closed',
         'description' => 'VOLUMEVAULT_HOST_PATH_ALLOWLIST ora nega in modo predefinito: quando e vuoto, le sorgenti di backup per percorso host e le destinazioni locali vengono rifiutate invece di consentire qualsiasi percorso. Lo stesso elenco ora protegge anche le destinazioni locali e i percorsi vengono ricontrollati in fase di esecuzione per bloccare la sostituzione dei collegamenti simbolici. Le installazioni esistenti che si basavano sul precedente comportamento aperto devono elencare i propri percorsi: esegui "php artisan volumevault:host-path-allowlist:audit" per ottenere il valore esatto da impostare.',
     ],
+    'auth_rate_limiting' => [
+        'title' => 'Accesso e reimpostazione password con limite di frequenza',
+        'description' => 'Le richieste di accesso e di reimpostazione della password sono ora limitate a 5 tentativi al minuto, rallentando gli attacchi a forza bruta contro la password dell\'amministratore. Superando il limite viene restituita una risposta temporanea "troppe richieste" che si reimposta dopo un minuto.',
+    ],
+    'restore_input_hardening' => [
+        'title' => 'Convalida piu rigorosa degli input di ripristino e backup',
+        'description' => 'Il backup selezionato per un ripristino ora deve corrispondere all\'elenco della destinazione, bloccando le chiavi di attraversamento dei percorsi come "../../etc/passwd". I nomi dei volumi Docker sono limitati a caratteri sicuri e l\'estrazione di ripristino e confinata in modo che un archivio contraffatto non possa scrivere al di fuori del volume di destinazione.',
+    ],
     'alert_check_isolation' => [
         'title' => 'Controlli degli avvisi piu robusti',
         'description' => 'Una regola di avviso che genera un errore non impedisce piu il controllo delle altre regole. Ogni regola viene ora valutata in modo indipendente e gli errori vengono registrati, cosi un singolo controllo difettoso non puo piu disattivare silenziosamente gli altri avvisi.',

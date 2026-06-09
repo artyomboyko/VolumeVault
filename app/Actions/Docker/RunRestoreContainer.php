@@ -34,6 +34,10 @@ class RunRestoreContainer
             '/restore',
             '--strip-components',
             '2',
+            // Confine extraction to /restore even if the archive (from a possibly
+            // untrusted destination) contains absolute paths or directory escapes.
+            '--no-absolute-names',
+            '--no-overwrite-dir',
         ];
 
         $run->forceFill(['docker_container_id' => $containerName])->save();

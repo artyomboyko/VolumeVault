@@ -1,10 +1,10 @@
 <?php
 
-use App\Http\Controllers\ApiTokenController;
 use App\Http\Controllers\AlertController;
 use App\Http\Controllers\AlertRuleController;
-use App\Http\Controllers\AvailableUpdateController;
+use App\Http\Controllers\ApiTokenController;
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\AvailableUpdateController;
 use App\Http\Controllers\BackupJobController;
 use App\Http\Controllers\BackupRunController;
 use App\Http\Controllers\ChangelogController;
@@ -32,9 +32,9 @@ Route::middleware('guest')->group(function () {
     Route::post('/onboarding', [OnboardingController::class, 'store'])->name('onboarding.store');
     Route::post('/onboarding/import', [OnboardingController::class, 'import'])->name('onboarding.import');
     Route::get('/login', [AuthController::class, 'create'])->name('login');
-    Route::post('/login', [AuthController::class, 'store'])->name('login.store');
+    Route::post('/login', [AuthController::class, 'store'])->middleware('throttle:5,1')->name('login.store');
     Route::get('/forgot-password', [PasswordResetController::class, 'create'])->name('password.request');
-    Route::post('/forgot-password', [PasswordResetController::class, 'store'])->name('password.email');
+    Route::post('/forgot-password', [PasswordResetController::class, 'store'])->middleware('throttle:5,1')->name('password.email');
     Route::get('/reset-password/{token}', [PasswordResetController::class, 'edit'])->name('password.reset');
     Route::post('/reset-password', [PasswordResetController::class, 'update'])->name('password.update');
 });

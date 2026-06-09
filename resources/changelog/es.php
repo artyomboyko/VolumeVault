@@ -5,6 +5,14 @@ return [
         'title' => 'La lista de permitidos de rutas del host ahora es fail-closed',
         'description' => 'VOLUMEVAULT_HOST_PATH_ALLOWLIST ahora deniega de forma predeterminada: cuando esta vacia, las fuentes de copia por ruta del host y los destinos locales se rechazan en lugar de permitir cualquier ruta. La misma lista ahora tambien protege los destinos locales, y las rutas se vuelven a comprobar en tiempo de ejecucion para bloquear el cambio de enlaces simbolicos. Las instalaciones existentes que dependian del comportamiento abierto anterior deben enumerar sus rutas: ejecuta "php artisan volumevault:host-path-allowlist:audit" para obtener el valor exacto que debes definir.',
     ],
+    'auth_rate_limiting' => [
+        'title' => 'Inicio de sesion y restablecimiento de contrasena con limite de velocidad',
+        'description' => 'Las solicitudes de inicio de sesion y de restablecimiento de contrasena ahora estan limitadas a 5 intentos por minuto, lo que ralentiza los ataques de fuerza bruta contra la contrasena del administrador. Al superar el limite se devuelve una respuesta temporal de "demasiadas solicitudes" que se restablece despues de un minuto.',
+    ],
+    'restore_input_hardening' => [
+        'title' => 'Validacion mas estricta de las entradas de restauracion y copia',
+        'description' => 'La copia seleccionada para una restauracion ahora debe coincidir con el listado del destino, lo que bloquea claves de salto de ruta como "../../etc/passwd". Los nombres de volumenes Docker se limitan a caracteres seguros, y la extraccion de restauracion se confina para que un archivo manipulado no pueda escribir fuera del volumen de destino.',
+    ],
     'alert_check_isolation' => [
         'title' => 'Comprobaciones de alerta mas robustas',
         'description' => 'Una regla de alerta que falla ya no impide que se comprueben las demas reglas. Cada regla se evalua ahora de forma independiente y los fallos se registran, de modo que una sola comprobacion defectuosa ya no puede desactivar silenciosamente tus demas alertas.',

@@ -5,6 +5,14 @@ return [
         'title' => 'Host path allowlist is now fail-closed',
         'description' => 'VOLUMEVAULT_HOST_PATH_ALLOWLIST now denies by default: when it is empty, host-path backup sources and local destinations are refused instead of any path being allowed. The same allowlist now also protects local destinations, and paths are re-checked at run time to block symlink swaps. Existing installations that relied on the previous open default must list their paths - run "php artisan volumevault:host-path-allowlist:audit" for the exact value to set.',
     ],
+    'auth_rate_limiting' => [
+        'title' => 'Rate-limited sign-in and password reset',
+        'description' => 'Sign-in and password-reset requests are now rate-limited to 5 attempts per minute, slowing down brute-force attempts against the admin password. Going over the limit returns a temporary "too many requests" response that clears after a minute.',
+    ],
+    'restore_input_hardening' => [
+        'title' => 'Stricter restore and backup input validation',
+        'description' => 'The backup selected for a restore must now match the destination listing, blocking path-traversal keys such as "../../etc/passwd". Docker volume names are limited to safe characters, and restore extraction is confined so a forged archive cannot write outside the target volume.',
+    ],
     'alert_check_isolation' => [
         'title' => 'More resilient alert checks',
         'description' => 'A single alert rule that errors out no longer stops the other rules from being checked. Each rule is now evaluated independently and failures are logged, so one misbehaving check can no longer silently disable your remaining alerts.',

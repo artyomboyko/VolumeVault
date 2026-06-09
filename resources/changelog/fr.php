@@ -5,6 +5,14 @@ return [
         'title' => 'La liste d\'autorisation des chemins hote est desormais fail-closed',
         'description' => 'VOLUMEVAULT_HOST_PATH_ALLOWLIST refuse desormais par defaut : lorsqu\'elle est vide, les sources de sauvegarde par chemin hote et les destinations locales sont refusees au lieu d\'autoriser n\'importe quel chemin. La meme liste protege maintenant aussi les destinations locales, et les chemins sont reverifies a l\'execution pour bloquer les substitutions de liens symboliques. Les installations existantes qui s\'appuyaient sur l\'ancien comportement ouvert doivent lister leurs chemins - executez "php artisan volumevault:host-path-allowlist:audit" pour obtenir la valeur exacte a definir.',
     ],
+    'auth_rate_limiting' => [
+        'title' => 'Connexion et reinitialisation de mot de passe limitees',
+        'description' => 'Les requetes de connexion et de reinitialisation de mot de passe sont desormais limitees a 5 tentatives par minute, ce qui ralentit les attaques par force brute sur le mot de passe administrateur. Au-dela de la limite, une reponse temporaire "trop de requetes" est renvoyee et se reinitialise au bout d\'une minute.',
+    ],
+    'restore_input_hardening' => [
+        'title' => 'Validation renforcee des entrees de restauration et de sauvegarde',
+        'description' => 'La sauvegarde selectionnee pour une restauration doit desormais correspondre au listing de la destination, ce qui bloque les cles de traversee de chemin comme "../../etc/passwd". Les noms de volumes Docker sont limites a des caracteres surs, et l\'extraction de restauration est confinee afin qu\'une archive falsifiee ne puisse pas ecrire en dehors du volume cible.',
+    ],
     'alert_check_isolation' => [
         'title' => 'Verifications d\'alerte plus robustes',
         'description' => 'Une regle d\'alerte qui echoue n\'empeche plus la verification des autres regles. Chaque regle est desormais evaluee independamment et les echecs sont journalises, de sorte qu\'une seule verification defaillante ne peut plus desactiver silencieusement vos autres alertes.',

@@ -44,7 +44,7 @@ class BackupJobRequest extends FormRequest
                 BackupJob::SOURCE_TYPE_DOCKER_VOLUME,
                 BackupJob::SOURCE_TYPE_HOST_PATH,
             ])],
-            'volume_name' => ['required_if:source_type,'.BackupJob::SOURCE_TYPE_DOCKER_VOLUME, 'nullable', 'string', 'max:255'],
+            'volume_name' => ['required_if:source_type,'.BackupJob::SOURCE_TYPE_DOCKER_VOLUME, 'nullable', 'string', 'max:255', 'regex:/^[A-Za-z0-9_.-]+$/'],
             'host_path' => ['required_if:source_type,'.BackupJob::SOURCE_TYPE_HOST_PATH, 'nullable', 'string', 'max:255'],
             'backup_destination_id' => ['required', 'integer', 'exists:backup_destinations,id'],
             'schedule_type' => ['required', 'string', Rule::in([

@@ -6,6 +6,14 @@ return [
             'type' => 'breaking',
             'key' => 'host_path_allowlist_fail_closed',
         ],
+        [
+            'type' => 'change',
+            'key' => 'auth_rate_limiting',
+        ],
+        [
+            'type' => 'change',
+            'key' => 'restore_input_hardening',
+        ],
     ],
     'releases' => [
         'v1.7.3' => [

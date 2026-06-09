@@ -5,6 +5,14 @@ return [
         'title' => 'A hoteleresi utak engedelyezesi listaja mostantol fail-closed',
         'description' => 'A VOLUMEVAULT_HOST_PATH_ALLOWLIST mostantol alapertelmezetten elutasit: ha ures, a hoteleresi uton alapulo mentesi forrasokat es a helyi celokat elutasitja ahelyett, hogy barmely utat engedelyezne. Ugyanez a lista mostantol a helyi celokat is vedi, es az utak futasidoben ujra ellenorzesre kerulnek a szimbolikus linkek lecserelesenek megakadalyozasara. A korabbi nyitott alapertelmezett viselkedesre tamaszkodo meglevo telepiteseknek fel kell sorolniuk az utjaikat - futtassa a "php artisan volumevault:host-path-allowlist:audit" parancsot a pontosan beallitando ertek megszerzesehez.',
     ],
+    'auth_rate_limiting' => [
+        'title' => 'Bejelentkezes es jelszo-visszaallitas sebessegkorlatozassal',
+        'description' => 'A bejelentkezesi es jelszo-visszaallitasi kereseket mostantol percenkent 5 probalkozasra korlatozzuk, ami lassitja az adminisztratori jelszo elleni nyers ero alapu tamadasokat. A korlat tullepesekor ideiglenes "tul sok keres" valasz erkezik, amely egy perc utan visszaallodik.',
+    ],
+    'restore_input_hardening' => [
+        'title' => 'Szigorubb visszaallitasi es mentesi bemenet-ellenorzes',
+        'description' => 'A visszaallitashoz kivalasztott mentesnek mostantol egyeznie kell a cel listajaval, ami blokkolja az olyan utvonalbejaro kulcsokat, mint a "../../etc/passwd". A Docker-kotetnevek biztonsagos karakterekre vannak korlatozva, es a visszaallitasi kicsomagolas korlatozott, igy egy hamisitott archivum nem irhat a celkoteten kivulre.',
+    ],
     'alert_check_isolation' => [
         'title' => 'Ellenallobb riasztasellenorzesek',
         'description' => 'Egy hibara futo riasztasi szabaly mar nem akadalyozza meg a tobbi szabaly ellenorzeset. Minden szabaly mostantol fuggetlenul ertekelodik ki, es a hibak naplozasra kerulnek, igy egyetlen hibas ellenorzes mar nem tudja csendben kikapcsolni a tobbi riasztast.',

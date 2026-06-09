@@ -63,6 +63,26 @@ class AuthAccessTest extends TestCase
         $this->assertAuthenticatedAs($user);
     }
 
+    public function test_login_is_rate_limited_after_too_many_attempts(): void
+    {
+        User::factory()->create([
+            'email' => 'user@example.com',
+            'password' => Hash::make('secret-password'),
+        ]);
+
+        for ($attempt = 0; $attempt < 5; $attempt++) {
+            $this->post('/login', [
+                'email' => 'user@example.com',
+                'password' => 'wrong-password',
+            ]);
+        }
+
+        $this->post('/login', [
+            'email' => 'user@example.com',
+            'password' => 'wrong-password',
+        ])->assertStatus(429);
+    }
+
     public function test_guest_is_redirected_to_login_for_dashboard_after_onboarding(): void
     {
         User::factory()->admin()->create();
