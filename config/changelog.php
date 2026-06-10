@@ -1,17 +1,22 @@
 <?php
 
 return [
-    'unreleased' => [
-        [
-            'type' => 'feature',
-            'key' => 'host_path_stop_containers',
-        ],
-        [
-            'type' => 'change',
-            'key' => 'self_container_backup_guard',
-        ],
-    ],
+    'unreleased' => [],
     'releases' => [
+        'v1.9.0' => [
+            'date' => '2026-06-10',
+            'url' => 'https://github.com/Darkdragon14/VolumeVault/releases/tag/v1.9.0',
+            'items' => [
+                [
+                    'type' => 'feature',
+                    'key' => 'host_path_stop_containers',
+                ],
+                [
+                    'type' => 'change',
+                    'key' => 'self_container_backup_guard',
+                ],
+            ],
+        ],
         'v1.8.0' => [
             'date' => '2026-06-09',
             'url' => 'https://github.com/Darkdragon14/VolumeVault/releases/tag/v1.8.0',
