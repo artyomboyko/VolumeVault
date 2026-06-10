@@ -170,6 +170,11 @@ class OpenApiController extends Controller
                         'description' => 'Notification channel IDs selected for this backup job. Omit on create to use the default notification channel when one is configured.',
                     ],
                     'stop_containers_before_backup' => ['type' => 'boolean'],
+                    'stop_container_names' => [
+                        'type' => ['array', 'null'],
+                        'items' => ['type' => 'string', 'maxLength' => 255],
+                        'description' => 'Names of the containers to stop before backup. Only honoured when source_type is host_path and stop_containers_before_backup is true; ignored for docker_volume sources, which discover containers automatically.',
+                    ],
                 ],
             ],
             'PauseRequest' => [

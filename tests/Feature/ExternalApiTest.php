@@ -166,6 +166,76 @@ class ExternalApiTest extends TestCase
             ->assertJsonPath('data.source_label', '/srv/app-data');
     }
 
+    public function test_host_path_backup_job_can_select_containers_to_stop(): void
+    {
+        config(['volumevault.host_path_allowlist' => ['/srv', '/mnt/data']]);
+        $this->app->instance(DockerProcess::class, new class extends DockerProcess
+        {
+            public function run(array $command, int $timeout = 300, array $environment = []): DockerProcessResult
+            {
+                return new DockerProcessResult($command, 0, 'ok', '');
+            }
+        });
+
+        $admin = User::factory()->admin()->create();
+        $destination = BackupDestination::create([
+            'name' => 'Local',
+            'provider' => BackupDestination::PROVIDER_LOCAL,
+            'bucket' => 'local',
+            'access_key_id' => '',
+            'secret_access_key' => '',
+            'settings' => ['archive_path' => '/archive', 'archive_mount_source' => '/host/archive'],
+            'is_active' => true,
+        ]);
+        $token = $admin->createToken('openclaw-write', ['read', 'write'])->plainTextToken;
+
+        $this->withToken($token)
+            ->postJson('/api/v1/backup-jobs', [
+                'name' => 'Daily host path',
+                'source_type' => BackupJob::SOURCE_TYPE_HOST_PATH,
+                'host_path' => '/srv/app-data',
+                'backup_destination_id' => $destination->id,
+                'schedule_type' => BackupJob::SCHEDULE_DAILY,
+                'schedule_config' => ['time' => '02:00'],
+                'stop_containers_before_backup' => true,
+                'stop_container_names' => ['app', 'worker'],
+            ])
+            ->assertCreated()
+            ->assertJsonPath('data.stop_containers_before_backup', true)
+            ->assertJsonPath('data.stop_container_names', ['app', 'worker']);
+    }
+
+    public function test_docker_volume_backup_job_ignores_manually_supplied_container_names(): void
+    {
+        $admin = User::factory()->admin()->create();
+        DockerVolume::create(['name' => 'app_data', 'exists' => true]);
+        $destination = BackupDestination::create([
+            'name' => 'Local',
+            'provider' => BackupDestination::PROVIDER_LOCAL,
+            'bucket' => 'local',
+            'access_key_id' => '',
+            'secret_access_key' => '',
+            'settings' => ['archive_path' => '/archive', 'archive_mount_source' => '/host/archive'],
+            'is_active' => true,
+        ]);
+        $token = $admin->createToken('openclaw-write', ['read', 'write'])->plainTextToken;
+
+        $this->withToken($token)
+            ->postJson('/api/v1/backup-jobs', [
+                'name' => 'Daily volume',
+                'source_type' => BackupJob::SOURCE_TYPE_DOCKER_VOLUME,
+                'volume_name' => 'app_data',
+                'backup_destination_id' => $destination->id,
+                'schedule_type' => BackupJob::SCHEDULE_DAILY,
+                'schedule_config' => ['time' => '02:00'],
+                'stop_containers_before_backup' => true,
+                'stop_container_names' => ['app'],
+            ])
+            ->assertCreated()
+            ->assertJsonPath('data.stop_containers_before_backup', true)
+            ->assertJsonPath('data.stop_container_names', null);
+    }
+
     public function test_host_path_backup_job_outside_allowlist_returns_validation_error(): void
     {
         config(['volumevault.host_path_allowlist' => ['/srv']]);

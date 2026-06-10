@@ -9,6 +9,7 @@ import { bestSizeUnit, bytesToUnitValue, sizeUnits, type SizeUnit, unitValueToBy
 const props = defineProps<{
     job: any | null;
     volumes: any[];
+    containers?: any[];
     destinations: any[];
     notificationChannels: any[];
     defaultNotificationChannelIds: number[];
@@ -64,6 +65,7 @@ const form = useForm({
     alert_notifications_enabled: props.job?.alert_notifications_enabled ?? true,
     alert_configs: initialAlertConfigs,
     stop_containers_before_backup: props.job?.stop_containers_before_backup || false,
+    stop_container_names: (props.job?.stop_container_names || []) as string[],
 });
 
 const volumeSearch = ref(form.volume_name);
@@ -156,12 +158,21 @@ const toggleStopContainersBeforeBackup = () => {
     form.stop_containers_before_backup = !form.stop_containers_before_backup;
 };
 
+const containerList = computed(() => props.containers || []);
+const containerName = (container: any): string => String(container?.names || '').split(',')[0].replace(/^\/+/, '').trim();
+
+const toggleStopContainerName = (name: string) => {
+    const names = form.stop_container_names as string[];
+    form.stop_container_names = names.includes(name) ? names.filter((n) => n !== name) : [...names, name];
+};
+
 watch(() => form.source_type, (sourceType) => {
     if (sourceType === 'host_path') {
         form.volume_name = '';
         volumeSearch.value = '';
-        form.stop_containers_before_backup = false;
         volumeSelectorOpen.value = false;
+    } else {
+        form.stop_container_names = [];
     }
 });
 
@@ -314,10 +325,10 @@ const submit = () => {
                     <span class="label">{{ t('Retention count') }}</span>
                     <input v-model="form.retention_count" class="input" type="number" min="1" :placeholder="t('Optional')">
                 </label>
-                <div v-if="isDockerVolumeSource" class="flex items-center justify-between gap-4 rounded-xl border border-amber-300/20 bg-amber-300/10 p-3 text-sm sm:mt-7">
+                <div class="flex items-center justify-between gap-4 rounded-xl border border-amber-300/20 bg-amber-300/10 p-3 text-sm sm:mt-7">
                     <div class="flex items-center gap-2">
                         <p class="font-medium text-white">{{ t('Stop containers before backup') }}</p>
-                        <InfoTooltip :text="t('May temporarily interrupt containers using this volume.')" />
+                        <InfoTooltip :text="isDockerVolumeSource ? t('May temporarily interrupt containers using this volume.') : t('Select the containers to stop while this path is backed up. They are restarted afterwards.')" />
                     </div>
                     <button
                         type="button"
@@ -332,6 +343,37 @@ const submit = () => {
                     </button>
                 </div>
             </div>
+
+            <section v-if="!isDockerVolumeSource && form.stop_containers_before_backup" class="rounded-2xl border border-white/10 bg-white/5 p-4 sm:p-5">
+                <div class="flex items-center gap-2">
+                    <h2 class="text-lg font-semibold">{{ t('Containers to stop') }}</h2>
+                    <InfoTooltip :text="t('These containers are stopped before the backup and restarted afterwards. Containers that no longer exist or are already stopped are skipped.')" />
+                </div>
+                <p class="mt-1 text-sm text-slate-400">{{ t('Selection is stored by container name, so it survives container recreation.') }}</p>
+
+                <div v-if="containerList.length" class="mt-4 grid gap-2 sm:grid-cols-2">
+                    <button
+                        v-for="container in containerList"
+                        :key="container.id"
+                        type="button"
+                        role="switch"
+                        class="flex items-center justify-between gap-3 rounded-xl border border-white/10 bg-slate-950/60 p-3 text-left text-sm transition focus:outline-none focus:ring-2 focus:ring-sky-500/30 dark:focus:ring-sky-400/30"
+                        :aria-checked="form.stop_container_names.includes(containerName(container))"
+                        :aria-label="t('Toggle container')"
+                        @click="toggleStopContainerName(containerName(container))"
+                    >
+                        <span class="min-w-0">
+                            <span class="block break-all font-medium text-white">{{ containerName(container) }}</span>
+                            <span class="mt-1 block break-all text-slate-400">{{ container.image }}<template v-if="container.state"> · {{ container.state }}</template></span>
+                        </span>
+                        <span class="relative inline-flex h-7 w-12 shrink-0 items-center rounded-full border p-1 transition" :class="form.stop_container_names.includes(containerName(container)) ? 'border-emerald-700 bg-emerald-600 dark:border-emerald-300/50 dark:bg-emerald-500/50' : 'border-slate-300 bg-slate-200 dark:border-white/10 dark:bg-slate-800'">
+                            <span class="h-5 w-5 rounded-full bg-white shadow-sm transition-transform" :class="form.stop_container_names.includes(containerName(container)) ? 'translate-x-5' : 'translate-x-0 bg-slate-400'"></span>
+                        </span>
+                    </button>
+                </div>
+                <p v-else class="mt-4 rounded-xl border border-amber-300/30 bg-amber-300/10 p-3 text-sm text-amber-100">{{ t('No Docker containers found. They may be unavailable, or Docker is not reachable.') }}</p>
+                <span v-if="form.errors.stop_container_names" class="mt-2 block text-sm text-rose-300">{{ form.errors.stop_container_names }}</span>
+            </section>
 
             <section class="rounded-2xl border border-white/10 bg-white/5 p-4 sm:p-5">
                 <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">

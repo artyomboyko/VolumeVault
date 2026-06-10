@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Actions\Alerts\EnsureAlertRules;
 use App\Actions\Backup\CreateBackupRun;
+use App\Actions\Docker\ListDockerContainers;
 use App\Concerns\PaginateWithPreference;
 use App\Enums\AlertType;
 use App\Http\Requests\BackupJobRequest;
@@ -159,6 +160,7 @@ class BackupJobController extends Controller
         return [
             'job' => null,
             'volumes' => DockerVolume::where('exists', true)->orderBy('name')->get(['name']),
+            'containers' => $this->dockerContainers(),
             'destinations' => BackupDestination::where('is_active', true)->orderBy('name')->get()->map->safeForFrontend(),
             'notificationChannels' => NotificationChannel::with('backupJobs')->orderBy('name')->get()->map->safeForFrontend(),
             'defaultNotificationChannelIds' => $this->defaultNotificationChannelIds(),
@@ -167,6 +169,20 @@ class BackupJobController extends Controller
                 ->get()
                 ->map(fn (AlertRule $rule): array => $this->serializeAlertRule($rule)),
         ];
+    }
+
+    /**
+     * Running/known Docker containers offered in the host-path "stop containers"
+     * picker. Returns an empty list when Docker is unreachable so the form still
+     * loads — the picker simply shows nothing to select.
+     */
+    private function dockerContainers(): array
+    {
+        try {
+            return app(ListDockerContainers::class)->handle();
+        } catch (\Throwable) {
+            return [];
+        }
     }
 
     private function payload(BackupJobRequest $request, ?string $status = BackupJob::STATUS_ACTIVE, ?BackupJob $job = null): array
@@ -194,7 +210,10 @@ class BackupJobController extends Controller
             'retention_days' => $request->input('retention_days'),
             'retention_count' => $request->input('retention_count'),
             'backup_exclude_regexp' => $backupExcludeRegexp !== '' ? $backupExcludeRegexp : null,
-            'stop_containers_before_backup' => ! $isHostPath && $request->boolean('stop_containers_before_backup'),
+            'stop_containers_before_backup' => $request->boolean('stop_containers_before_backup'),
+            'stop_container_names' => $isHostPath && $request->boolean('stop_containers_before_backup')
+                ? array_values(array_filter((array) $request->input('stop_container_names', [])))
+                : null,
         ];
     }
 

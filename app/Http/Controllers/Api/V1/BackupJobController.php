@@ -135,7 +135,10 @@ class BackupJobController extends Controller
             'retention_days' => $request->input('retention_days'),
             'retention_count' => $request->input('retention_count'),
             'backup_exclude_regexp' => $backupExcludeRegexp !== '' ? $backupExcludeRegexp : null,
-            'stop_containers_before_backup' => ! $isHostPath && $request->boolean('stop_containers_before_backup'),
+            'stop_containers_before_backup' => $request->boolean('stop_containers_before_backup'),
+            'stop_container_names' => $isHostPath && $request->boolean('stop_containers_before_backup')
+                ? array_values(array_filter((array) $request->input('stop_container_names', [])))
+                : null,
         ];
     }
 

@@ -56,6 +56,7 @@ class BackupJob extends Model
         'retention_count',
         'backup_exclude_regexp',
         'stop_containers_before_backup',
+        'stop_container_names',
     ];
 
     protected $attributes = [
@@ -82,6 +83,7 @@ class BackupJob extends Model
             'use_custom_alert_settings' => 'boolean',
             'alert_notifications_enabled' => 'boolean',
             'stop_containers_before_backup' => 'boolean',
+            'stop_container_names' => 'array',
         ];
     }
 

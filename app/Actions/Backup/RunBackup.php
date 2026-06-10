@@ -4,6 +4,7 @@ namespace App\Actions\Backup;
 
 use App\Actions\Docker\FindContainersUsingVolume;
 use App\Actions\Docker\InspectDockerVolume;
+use App\Actions\Docker\ListDockerContainers;
 use App\Actions\Docker\RunBackupContainer;
 use App\Actions\Docker\StartDockerContainers;
 use App\Actions\Docker\StopDockerContainers;
@@ -13,6 +14,7 @@ use App\Models\BackupRun;
 use App\Models\DockerVolume;
 use App\Services\BackupDestinations\ListBackupObjects;
 use App\Services\BackupSources\HostPathPolicy;
+use App\Services\Docker\SelfContainerResolver;
 use App\Services\Logging\AppendRunLog;
 use App\Services\Notifications\SendShoutrrrNotification;
 use App\Services\Scheduling\BackupScheduleCalculator;
@@ -24,9 +26,11 @@ class RunBackup
     public function __construct(
         private readonly InspectDockerVolume $inspectDockerVolume,
         private readonly FindContainersUsingVolume $findContainersUsingVolume,
+        private readonly ListDockerContainers $listDockerContainers,
         private readonly StopDockerContainers $stopDockerContainers,
         private readonly StartDockerContainers $startDockerContainers,
         private readonly RunBackupContainer $runBackupContainer,
+        private readonly SelfContainerResolver $selfContainerResolver,
         private readonly AppendRunLog $appendRunLog,
         private readonly ListBackupObjects $listBackupObjects,
         private readonly HostPathPolicy $hostPathPolicy,
@@ -68,8 +72,24 @@ class RunBackup
                 $this->hostPathPolicy->assertValid((string) $job->host_path);
             }
 
-            if ($job->isDockerVolumeSource() && $job->stop_containers_before_backup) {
-                $containers = $this->findContainersUsingVolume->handle($job->volume_name);
+            if ($job->stop_containers_before_backup) {
+                // Docker volumes auto-discover the containers mounting them; host
+                // path jobs can't be mapped back to containers, so the user picks
+                // them by name and we resolve those to running containers here.
+                $containers = $job->isDockerVolumeSource()
+                    ? $this->findContainersUsingVolume->handle($job->volume_name)
+                    : $this->selectContainersByName($run, $job->stop_container_names ?? []);
+
+                // Never stop VolumeVault's own container: if it happens to mount
+                // the targeted volume, stopping it would kill this very backup
+                // (and the worker) mid-run. Skip and log it instead.
+                [$containers, $selfContainers] = $this->selfContainerResolver->partitionSelf($containers);
+
+                if ($selfContainers) {
+                    $skipped = collect($selfContainers)->pluck('id')->filter()->implode(', ');
+                    $this->appendRunLog->handle($run, "Skipping VolumeVault's own container ({$skipped}) to avoid interrupting the backup.");
+                }
+
                 $stoppedContainers = collect($containers)->pluck('id')->filter()->values()->all();
 
                 if ($stoppedContainers) {
@@ -150,6 +170,63 @@ class RunBackup
         ActivityLog::record('backup_run_containers_reconciled', $message, $run, [
             'backup_job_id' => $run->backup_job_id,
         ]);
+    }
+
+    /**
+     * Resolve the container names a host-path job selected to the running
+     * containers that still carry them.
+     *
+     * Names (not ids) are stored so the selection survives container
+     * recreation. Names that no longer resolve to a container are logged and
+     * skipped — a missing or removed container must never fail the backup.
+     * Only running containers are returned: we must not "restart" a container
+     * the user had deliberately stopped, so it never enters stopped_container_ids.
+     */
+    private function selectContainersByName(BackupRun $run, array $names): array
+    {
+        $wanted = collect($names)
+            ->map(fn ($name) => strtolower(trim((string) $name, " \t\n\r\0\x0B/")))
+            ->filter()
+            ->unique()
+            ->values();
+
+        if ($wanted->isEmpty()) {
+            return [];
+        }
+
+        $containers = $this->listDockerContainers->handle();
+        $matched = [];
+        $seen = collect();
+
+        foreach ($containers as $container) {
+            $containerNames = collect(explode(',', (string) ($container['names'] ?? '')))
+                ->map(fn ($name) => strtolower(trim($name, " \t\n\r\0\x0B/")))
+                ->filter();
+
+            $hit = $containerNames->first(fn (string $name) => $wanted->contains($name));
+
+            if (! $hit) {
+                continue;
+            }
+
+            $seen->push($hit);
+
+            if (strtolower((string) ($container['state'] ?? '')) !== 'running') {
+                $this->appendRunLog->handle($run, "Selected container \"{$hit}\" is not running, skipping.");
+
+                continue;
+            }
+
+            $matched[] = $container;
+        }
+
+        $missing = $wanted->reject(fn (string $name) => $seen->contains($name));
+
+        foreach ($missing as $name) {
+            $this->appendRunLog->handle($run, "Selected container \"{$name}\" not found, skipping.");
+        }
+
+        return $matched;
     }
 
     /**
