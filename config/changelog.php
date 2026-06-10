@@ -6,6 +6,10 @@ return [
             'type' => 'change',
             'key' => 'self_container_backup_guard',
         ],
+        [
+            'type' => 'feature',
+            'key' => 'host_path_stop_containers',
+        ],
     ],
     'releases' => [
         'v1.8.0' => [

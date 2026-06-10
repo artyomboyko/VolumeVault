@@ -74,6 +74,8 @@ class BackupJobRequest extends FormRequest
             'alert_configs.*.config.backup_size_out_of_range_min_bytes' => ['nullable', 'integer', 'min:0'],
             'alert_configs.*.config.backup_size_out_of_range_max_bytes' => ['nullable', 'integer', 'min:1'],
             'stop_containers_before_backup' => ['boolean'],
+            'stop_container_names' => ['nullable', 'array'],
+            'stop_container_names.*' => ['string', 'max:255'],
         ];
     }
 
@@ -112,10 +114,6 @@ class BackupJobRequest extends FormRequest
 
         if ($message = $policy->validationError($hostPath)) {
             $validator->errors()->add('host_path', $message);
-        }
-
-        if ($this->boolean('stop_containers_before_backup')) {
-            $validator->errors()->add('stop_containers_before_backup', 'Stopping containers before backup is only available for Docker volume sources.');
         }
 
         if ($validator->errors()->has('host_path')) {

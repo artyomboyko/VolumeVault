@@ -60,6 +60,66 @@ class SelfContainerExclusionTest extends TestCase
         $this->assertStringContainsString("Skipping VolumeVault's own container (aaaaaaaaaaaa)", $run->logs);
     }
 
+    public function test_host_path_backup_stops_only_selected_running_containers(): void
+    {
+        $archivePath = sys_get_temp_dir().'/volumevault-host-path-stop';
+        File::deleteDirectory($archivePath);
+        File::ensureDirectoryExists($archivePath);
+
+        // The listed containers cover every case: self (excluded), a genuine
+        // running consumer (stopped), an already-stopped one (skipped) — plus a
+        // selected name that no container carries (skipped).
+        $docker = $this->dockerProcess([
+            ['ID' => 'aaaaaaaaaaaa', 'Names' => 'volumevault', 'Image' => 'volumevault:local', 'State' => 'running', 'Status' => 'Up'],
+            ['ID' => 'bbbbbbbbbbbb', 'Names' => 'app', 'Image' => 'app:latest', 'State' => 'running', 'Status' => 'Up'],
+            ['ID' => 'cccccccccccc', 'Names' => 'idle', 'Image' => 'idle:latest', 'State' => 'exited', 'Status' => 'Exited (0)'],
+        ], $archivePath);
+        $this->app->instance(DockerProcess::class, $docker);
+
+        $this->app->instance(SelfContainerResolver::class, new class extends SelfContainerResolver
+        {
+            public function identifiers(): array
+            {
+                return ['aaaaaaaaaaaa'];
+            }
+        });
+
+        $destination = BackupDestination::create([
+            'name' => 'Local',
+            'provider' => BackupDestination::PROVIDER_LOCAL,
+            'bucket' => 'local',
+            'access_key_id' => '',
+            'secret_access_key' => '',
+            'settings' => ['archive_path' => $archivePath, 'archive_mount_source' => $archivePath],
+        ]);
+        $job = BackupJob::create([
+            'name' => 'Host path backup',
+            'source_type' => BackupJob::SOURCE_TYPE_HOST_PATH,
+            'host_path' => $archivePath,
+            'backup_destination_id' => $destination->id,
+            'schedule_type' => BackupJob::SCHEDULE_DAILY,
+            'schedule_config' => ['time' => '02:00'],
+            'cron_expression' => '0 2 * * *',
+            'status' => BackupJob::STATUS_ACTIVE,
+            'stop_containers_before_backup' => true,
+            'stop_container_names' => ['app', 'idle', 'ghost', 'volumevault'],
+        ]);
+        $run = BackupRun::create([
+            'backup_job_id' => $job->id,
+            'status' => BackupRun::STATUS_QUEUED,
+            'trigger' => BackupRun::TRIGGER_MANUAL,
+        ]);
+
+        app(RunBackup::class)->handle($run);
+        $run->refresh();
+
+        $this->assertSame(BackupRun::STATUS_SUCCESS, $run->status);
+        $this->assertSame([['stop', 'bbbbbbbbbbbb'], ['start', 'bbbbbbbbbbbb']], $docker->lifecycleCalls);
+        $this->assertStringContainsString("Skipping VolumeVault's own container (aaaaaaaaaaaa)", $run->logs);
+        $this->assertStringContainsString('Selected container "idle" is not running, skipping.', $run->logs);
+        $this->assertStringContainsString('Selected container "ghost" not found, skipping.', $run->logs);
+    }
+
     private function backupRun(string $archivePath): BackupRun
     {
         DockerVolume::create(['name' => 'app_data', 'exists' => true]);

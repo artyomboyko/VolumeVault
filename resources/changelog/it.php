@@ -5,6 +5,10 @@ return [
         'title' => 'VolumeVault non arresta piu il proprio container durante un backup',
         'description' => 'Quando un\'attivita di backup ha attivo "arresta i container prima del backup" e ha come destinazione un volume montato anche dal container VolumeVault stesso, VolumeVault non arresta piu il proprio container - cosa che avrebbe interrotto il backup in corso. Il container viene rilevato automaticamente dal suo hostname e dal cgroup; imposta VOLUMEVAULT_CONTAINER_ID o VOLUMEVAULT_CONTAINER_NAME se il rilevamento automatico non e affidabile (hostname personalizzato o rete host).',
     ],
+    'host_path_stop_containers' => [
+        'title' => 'Ferma i container selezionati per i backup di percorso host',
+        'description' => 'Le attivita di backup di tipo percorso host possono ora fermare i container prima del backup e riavviarli al termine, come gia facevano le attivita su volume Docker. Poiche un percorso host non puo essere associato automaticamente ai container, li scegli per nome nel modulo dell\'attivita. La selezione viene salvata per nome, quindi sopravvive alla ricreazione dei container; i container che non esistono piu o gia fermi vengono ignorati, e VolumeVault non ferma mai il proprio container.',
+    ],
     'ssrf_destination_guard' => [
         'title' => 'Le destinazioni di backup con IP privato ora sono protette (SSRF)',
         'description' => 'VolumeVault ora rifiuta per impostazione predefinita di connettersi a una destinazione di backup il cui host si risolve in un indirizzo privato, di loopback o link-local (incluso l\'endpoint dei metadati cloud 169.254.169.254). Questo riguarda solo le destinazioni con IP privato, come un NAS in LAN o un S3/MinIO self-hosted; le destinazioni cloud raggiungibili tramite un URL pubblico non sono interessate. I backup pianificati continuano a essere eseguiti, ma il test della destinazione, il ripristino (elenco e download) e l\'avviso sulla quota di archiviazione sono bloccati finche non si elenca l\'intervallo della destinazione in VOLUMEVAULT_SSRF_ALLOWED_IPS (CIDR separati da virgole, ad es. 192.168.1.0/24). I canali di notifica non sono protetti.',
