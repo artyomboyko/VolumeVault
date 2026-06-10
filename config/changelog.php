@@ -3,12 +3,12 @@
 return [
     'unreleased' => [
         [
-            'type' => 'change',
-            'key' => 'self_container_backup_guard',
-        ],
-        [
             'type' => 'feature',
             'key' => 'host_path_stop_containers',
+        ],
+        [
+            'type' => 'change',
+            'key' => 'self_container_backup_guard',
         ],
     ],
     'releases' => [
