@@ -1,6 +1,10 @@
 <?php
 
 return [
+    'self_container_backup_guard' => [
+        'title' => 'VolumeVault jiz behem zalohovani nezastavuje vlastni kontejner',
+        'description' => 'Kdyz ma zalohovaci uloha zapnuto "zastavit kontejnery pred zalohou" a cili na svazek, ktery pripojuje i samotny kontejner VolumeVault, VolumeVault jiz nezastavuje vlastni kontejner - coz by prerusilo probihajici zalohu. Kontejner je automaticky rozpoznan podle nazvu hostitele (hostname) a cgroup; nastavte VOLUMEVAULT_CONTAINER_ID nebo VOLUMEVAULT_CONTAINER_NAME, pokud automaticka detekce neni spolehliva (vlastni hostname nebo sit hostitele).',
+    ],
     'ssrf_destination_guard' => [
         'title' => 'Cilove destinace zaloh se soukromou IP jsou nyni chranene (SSRF)',
         'description' => 'VolumeVault nyni ve vychozim nastaveni odmita pripojeni k zalozni destinaci, jejiz hostitel se preklada na soukromou, smyckovou (loopback) nebo link-local adresu (vcetne cloudoveho metadatoveho koncoveho bodu 169.254.169.254). Tyka se to pouze destinaci se soukromou IP, jako je NAS v LAN nebo vlastni S3/MinIO - cloudove destinace dostupne pres verejnou URL nejsou dotceny. Naplanovane zalohy stale bezi, ale test destinace, obnoveni (vypis a stazeni) a upozorneni na kvotu uloziste jsou blokovany, dokud rozsah destinace neuvedete v VOLUMEVAULT_SSRF_ALLOWED_IPS (CIDR oddelene carkami, napr. 192.168.1.0/24). Notifikacni kanaly nejsou chranene.',

@@ -20,6 +20,16 @@ return [
         ))),
     ],
 
+    'self_container' => [
+        // Identifiers (id or name) of the VolumeVault container itself. Used to
+        // skip it when a backup job targets a volume it also mounts, so the
+        // backup never stops the container running it. Hostname and /proc are
+        // auto-detected; set these only when autodetection is unreliable (custom
+        // --hostname, host networking).
+        'id' => trim((string) env('VOLUMEVAULT_CONTAINER_ID', '')),
+        'name' => trim((string) env('VOLUMEVAULT_CONTAINER_NAME', '')),
+    ],
+
     'update_check' => [
         'enabled' => (bool) env('VOLUMEVAULT_UPDATE_CHECK_ENABLED', true),
         'cache_ttl_seconds' => (int) env('VOLUMEVAULT_UPDATE_CHECK_CACHE_TTL', 43200),

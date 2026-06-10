@@ -1,6 +1,10 @@
 <?php
 
 return [
+    'self_container_backup_guard' => [
+        'title' => 'A VolumeVault mar nem allitja le a sajat konteneret a mentes alatt',
+        'description' => 'Ha egy mentesi feladatnal be van kapcsolva a "konterek leallitasa mentes elott", es olyan kotetet celoz, amelyet maga a VolumeVault konteneren is csatol, a VolumeVault mar nem allitja le a sajat konteneret - ami megszakitotta volna a folyamatban levo mentest. A konteneren automatikusan felismerheto a gepnev (hostname) es a cgroup alapjan; allitsa be a VOLUMEVAULT_CONTAINER_ID vagy VOLUMEVAULT_CONTAINER_NAME erteket, ha az automatikus felismeres nem megbizhato (egyedi gepnev vagy host-halozat).',
+    ],
     'ssrf_destination_guard' => [
         'title' => 'A privat IP-cimu mentesi celok mostantol vedettek (SSRF)',
         'description' => 'A VolumeVault mostantol alapertelmezetten megtagadja a kapcsolodast olyan mentesi celhoz, amelynek a gazdaneve privat, loopback vagy link-local cimre oldodik fel (beleertve a 169.254.169.254 felho-metaadat vegpontot). Ez csak a privat IP-cimu celokat erinti, peldaul egy LAN-on levo NAS-t vagy egy sajat uzemeltetesu S3/MinIO-t - a nyilvanos URL-en elerheto felho celok nem erintettek. Az utemezett mentesek tovabbra is futnak, de a celteszt, a visszaallitas (listazas es letoltes) es a tarhelykvota-riasztas blokkolva van, amig fel nem veszi a cel tartomanyat a VOLUMEVAULT_SSRF_ALLOWED_IPS valtozoba (vesszovel elvalasztott CIDR-ek, pl. 192.168.1.0/24). Az ertesitesi csatornak nincsenek vedve.',

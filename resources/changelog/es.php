@@ -1,6 +1,10 @@
 <?php
 
 return [
+    'self_container_backup_guard' => [
+        'title' => 'VolumeVault ya no detiene su propio contenedor durante una copia de seguridad',
+        'description' => 'Cuando una tarea de copia de seguridad tiene activado "detener contenedores antes de la copia" y apunta a un volumen que el propio contenedor de VolumeVault tambien monta, VolumeVault ya no detiene su propio contenedor, lo que habria interrumpido la copia en curso. El contenedor se detecta automaticamente a partir de su nombre de host y su cgroup; define VOLUMEVAULT_CONTAINER_ID o VOLUMEVAULT_CONTAINER_NAME si la deteccion automatica no es fiable (nombre de host personalizado o red de host).',
+    ],
     'ssrf_destination_guard' => [
         'title' => 'Los destinos de copia de seguridad con IP privada ahora estan protegidos (SSRF)',
         'description' => 'VolumeVault ahora se niega por defecto a conectarse a un destino de copia de seguridad cuyo host se resuelve en una direccion privada, de bucle local (loopback) o de enlace local (incluido el punto de metadatos de la nube 169.254.169.254). Esto solo afecta a los destinos con IP privada, como un NAS en la LAN o un S3/MinIO autoalojado; los destinos en la nube accesibles por una URL publica no se ven afectados. Las copias programadas siguen ejecutandose, pero la prueba de destino, la restauracion (listado y descarga) y la alerta de cuota de almacenamiento quedan bloqueadas hasta que indique el rango del destino en VOLUMEVAULT_SSRF_ALLOWED_IPS (CIDR separados por comas, p. ej. 192.168.1.0/24). Los canales de notificacion no se ven afectados.',

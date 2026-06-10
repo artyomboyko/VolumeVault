@@ -1,6 +1,10 @@
 <?php
 
 return [
+    'self_container_backup_guard' => [
+        'title' => 'VolumeVault stopt zijn eigen container niet meer tijdens een back-up',
+        'description' => 'Wanneer een back-uptaak "containers stoppen voor back-up" heeft ingeschakeld en gericht is op een volume dat de VolumeVault-container zelf ook koppelt, stopt VolumeVault zijn eigen container niet langer - wat de lopende back-up zou hebben afgebroken. De container wordt automatisch gedetecteerd via zijn hostnaam en cgroup; stel VOLUMEVAULT_CONTAINER_ID of VOLUMEVAULT_CONTAINER_NAME in als automatische detectie onbetrouwbaar is (aangepaste hostnaam of host-netwerk).',
+    ],
     'ssrf_destination_guard' => [
         'title' => 'Back-upbestemmingen met een prive-IP zijn nu beveiligd (SSRF)',
         'description' => 'VolumeVault weigert nu standaard verbinding te maken met een back-upbestemming waarvan de host wordt herleid naar een prive-, loopback- of link-local-adres (inclusief het cloud-metadata-eindpunt 169.254.169.254). Dit betreft alleen bestemmingen met een prive-IP, zoals een NAS in het LAN of een zelf-gehoste S3/MinIO - cloudbestemmingen via een openbare URL worden niet beinvloed. Geplande back-ups blijven draaien, maar de bestemmingstest, het herstel (lijst en download) en de waarschuwing voor het opslagquotum worden geblokkeerd totdat u het bereik van de bestemming opgeeft in VOLUMEVAULT_SSRF_ALLOWED_IPS (door komma\'s gescheiden CIDR-reeksen, bijv. 192.168.1.0/24). Notificatiekanalen worden niet beveiligd.',

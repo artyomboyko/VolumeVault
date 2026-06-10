@@ -1,6 +1,10 @@
 <?php
 
 return [
+    'self_container_backup_guard' => [
+        'title' => 'VolumeVault n\'arrete plus son propre conteneur pendant une sauvegarde',
+        'description' => 'Lorsqu\'un job de sauvegarde a « arreter les conteneurs avant la sauvegarde » active et cible un volume que le conteneur VolumeVault monte lui aussi, VolumeVault n\'arrete plus son propre conteneur - ce qui aurait interrompu la sauvegarde en cours. Le conteneur est detecte automatiquement via son nom d\'hote et son cgroup ; definissez VOLUMEVAULT_CONTAINER_ID ou VOLUMEVAULT_CONTAINER_NAME si la detection automatique n\'est pas fiable (nom d\'hote personnalise ou reseau hote).',
+    ],
     'ssrf_destination_guard' => [
         'title' => 'Les destinations de sauvegarde en IP privee sont desormais protegees (SSRF)',
         'description' => 'VolumeVault refuse desormais par defaut de se connecter a une destination de sauvegarde dont l\'hote se resout en une adresse privee, de bouclage (loopback) ou lien-local (y compris le point de terminaison de metadonnees cloud 169.254.169.254). Cela ne concerne que les destinations sur IP privee, comme un NAS local ou un S3/MinIO auto-heberge - les destinations cloud accessibles par une URL publique ne sont pas affectees. Les sauvegardes planifiees continuent de s\'executer, mais le test de destination, la restauration (listing et telechargement) et l\'alerte de quota de stockage sont bloques tant que vous n\'avez pas liste la plage de la destination dans VOLUMEVAULT_SSRF_ALLOWED_IPS (CIDR separes par des virgules, par ex. 192.168.1.0/24). Les canaux de notification ne sont pas concernes.',

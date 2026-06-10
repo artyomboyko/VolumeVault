@@ -1,6 +1,10 @@
 <?php
 
 return [
+    'self_container_backup_guard' => [
+        'title' => 'VolumeVault stoppt waehrend eines Backups nicht mehr den eigenen Container',
+        'description' => 'Wenn fuer einen Backup-Auftrag "Container vor dem Backup stoppen" aktiviert ist und er auf ein Volume zielt, das auch der VolumeVault-Container selbst einbindet, stoppt VolumeVault nicht mehr den eigenen Container - was das laufende Backup beendet haette. Der Container wird automatisch anhand seines Hostnamens und seiner cgroup erkannt; setze VOLUMEVAULT_CONTAINER_ID oder VOLUMEVAULT_CONTAINER_NAME, falls die automatische Erkennung unzuverlaessig ist (eigener Hostname oder Host-Netzwerk).',
+    ],
     'ssrf_destination_guard' => [
         'title' => 'Backup-Ziele mit privater IP sind jetzt geschuetzt (SSRF)',
         'description' => 'VolumeVault weigert sich jetzt standardmaessig, eine Verbindung zu einem Backup-Ziel herzustellen, dessen Host zu einer privaten, Loopback- oder Link-Local-Adresse aufgeloest wird (einschliesslich des Cloud-Metadaten-Endpunkts 169.254.169.254). Dies betrifft nur Ziele mit privater IP, etwa ein NAS im LAN oder ein selbst gehostetes S3/MinIO - Cloud-Ziele ueber eine oeffentliche URL sind nicht betroffen. Geplante Backups laufen weiter, aber der Zieltest, die Wiederherstellung (Auflistung und Download) und die Speicherkontingent-Warnung sind blockiert, bis Sie den Bereich des Ziels in VOLUMEVAULT_SSRF_ALLOWED_IPS eintragen (kommagetrennte CIDRs, z. B. 192.168.1.0/24). Benachrichtigungskanaele werden nicht geschuetzt.',

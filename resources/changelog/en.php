@@ -1,6 +1,10 @@
 <?php
 
 return [
+    'self_container_backup_guard' => [
+        'title' => 'VolumeVault no longer stops its own container during a backup',
+        'description' => 'When a backup job has "stop containers before backup" enabled and targets a volume that the VolumeVault container itself also mounts, VolumeVault no longer stops its own container - which would have killed the running backup. The container is auto-detected from its hostname and cgroup; set VOLUMEVAULT_CONTAINER_ID or VOLUMEVAULT_CONTAINER_NAME if autodetection is unreliable (custom hostname or host networking).',
+    ],
     'ssrf_destination_guard' => [
         'title' => 'Private-IP backup destinations are now guarded (SSRF)',
         'description' => 'VolumeVault now refuses by default to connect to a backup destination whose host resolves to a private, loopback or link-local address (including the cloud metadata endpoint 169.254.169.254). This only affects destinations on a private IP, such as a LAN NAS or self-hosted S3/MinIO - cloud destinations on a public URL are unaffected. Scheduled backups still run, but the destination test, restore (listing and download) and the storage-quota alert are blocked until you list the destination\'s range in VOLUMEVAULT_SSRF_ALLOWED_IPS (comma-separated CIDRs, e.g. 192.168.1.0/24). Notification channels are not guarded.',

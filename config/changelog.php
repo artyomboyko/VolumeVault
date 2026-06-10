@@ -1,7 +1,12 @@
 <?php
 
 return [
-    'unreleased' => [],
+    'unreleased' => [
+        [
+            'type' => 'change',
+            'key' => 'self_container_backup_guard',
+        ],
+    ],
     'releases' => [
         'v1.8.0' => [
             'date' => '2026-06-09',

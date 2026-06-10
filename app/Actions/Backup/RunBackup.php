@@ -13,6 +13,7 @@ use App\Models\BackupRun;
 use App\Models\DockerVolume;
 use App\Services\BackupDestinations\ListBackupObjects;
 use App\Services\BackupSources\HostPathPolicy;
+use App\Services\Docker\SelfContainerResolver;
 use App\Services\Logging\AppendRunLog;
 use App\Services\Notifications\SendShoutrrrNotification;
 use App\Services\Scheduling\BackupScheduleCalculator;
@@ -27,6 +28,7 @@ class RunBackup
         private readonly StopDockerContainers $stopDockerContainers,
         private readonly StartDockerContainers $startDockerContainers,
         private readonly RunBackupContainer $runBackupContainer,
+        private readonly SelfContainerResolver $selfContainerResolver,
         private readonly AppendRunLog $appendRunLog,
         private readonly ListBackupObjects $listBackupObjects,
         private readonly HostPathPolicy $hostPathPolicy,
@@ -70,6 +72,17 @@ class RunBackup
 
             if ($job->isDockerVolumeSource() && $job->stop_containers_before_backup) {
                 $containers = $this->findContainersUsingVolume->handle($job->volume_name);
+
+                // Never stop VolumeVault's own container: if it happens to mount
+                // the targeted volume, stopping it would kill this very backup
+                // (and the worker) mid-run. Skip and log it instead.
+                [$containers, $selfContainers] = $this->selfContainerResolver->partitionSelf($containers);
+
+                if ($selfContainers) {
+                    $skipped = collect($selfContainers)->pluck('id')->filter()->implode(', ');
+                    $this->appendRunLog->handle($run, "Skipping VolumeVault's own container ({$skipped}) to avoid interrupting the backup.");
+                }
+
                 $stoppedContainers = collect($containers)->pluck('id')->filter()->values()->all();
 
                 if ($stoppedContainers) {
