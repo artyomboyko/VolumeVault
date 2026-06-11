@@ -1,13 +1,18 @@
 <?php
 
 return [
-    'unreleased' => [
-        [
-            'type' => 'feature',
-            'key' => 'customizable_dashboard',
-        ],
-    ],
+    'unreleased' => [],
     'releases' => [
+        'v1.10.0' => [
+            'date' => '2026-06-11',
+            'url' => 'https://github.com/Darkdragon14/VolumeVault/releases/tag/v1.10.0',
+            'items' => [
+                [
+                    'type' => 'feature',
+                    'key' => 'customizable_dashboard',
+                ],
+            ],
+        ],
         'v1.9.0' => [
             'date' => '2026-06-10',
             'url' => 'https://github.com/Darkdragon14/VolumeVault/releases/tag/v1.9.0',
