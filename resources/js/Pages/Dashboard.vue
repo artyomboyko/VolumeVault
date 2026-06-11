@@ -1,18 +1,34 @@
 <script setup lang="ts">
-import StatusBadge from '@/Components/StatusBadge.vue';
 import AppLayout from '@/Layouts/AppLayout.vue';
-import { Head, Link } from '@inertiajs/vue3';
+import StatCard from '@/Components/Dashboard/StatCard.vue';
+import DashboardSection from '@/Components/Dashboard/DashboardSection.vue';
+import { Head, router } from '@inertiajs/vue3';
+import { computed, ref } from 'vue';
+import draggable from 'vuedraggable';
 import { useI18n } from '@/i18n';
 import { formatBytes } from '@/Composables/useFormatBytes';
 
-defineProps<{
+type WidgetPref = { key: string; visible: boolean };
+
+const props = defineProps<{
     stats: Record<string, any>;
     recentBackupRuns: any[];
     recentRestoreRuns: any[];
     jobsWithErrors: any[];
+    dashboardPreferences: { stats: WidgetPref[]; sections: WidgetPref[] };
 }>();
 
 const { t, formatDate } = useI18n();
+
+// Canonical defaults, mirroring App\Support\DashboardWidgets (used by "Reset").
+const DEFAULT_STAT_KEYS = [
+    'total_volumes', 'existing_volumes', 'missing_volumes', 'backed_up_volumes',
+    'configured_volumes', 'unprotected_volumes', 'total_jobs', 'active_jobs',
+    'paused_jobs', 'error_jobs', 'last_backup_run_status', 'last_successful_backup_size',
+    'next_scheduled_backup',
+];
+const DEFAULT_SECTION_KEYS = ['recent_backups', 'recent_restores', 'jobs_with_errors'];
+const HIDDEN_BY_DEFAULT = ['last_successful_backup_size'];
 
 const statLabels: Record<string, string> = {
     total_volumes: 'Total volumes',
@@ -30,7 +46,15 @@ const statLabels: Record<string, string> = {
     next_scheduled_backup: 'Next scheduled backup',
 };
 
+const sectionLabels: Record<string, string> = {
+    recent_backups: 'Recent backup runs',
+    recent_restores: 'Recent restore runs',
+    jobs_with_errors: 'Jobs with errors',
+};
+
 const statLabel = (key: string) => t(statLabels[key] || key.replaceAll('_', ' '));
+const sectionLabel = (key: string) => t(sectionLabels[key] || key.replaceAll('_', ' '));
+
 const statValue = (key: string, value: any) => {
     if (key.includes('scheduled')) return formatDate(value);
     if (key.includes('size')) return formatBytes(value, t('Unknown'));
@@ -38,60 +62,115 @@ const statValue = (key: string, value: any) => {
 
     return value ?? t('None');
 };
+const statValueFor = (key: string) => statValue(key, props.stats[key]);
+
+const sectionItemClass = (key: string) => (key === 'jobs_with_errors' ? 'lg:col-span-2' : '');
+
+// --- Display (read from server-provided, normalized preferences) ---
+const visibleStats = computed(() => props.dashboardPreferences.stats.filter((w) => w.visible));
+const visibleSections = computed(() => props.dashboardPreferences.sections.filter((w) => w.visible));
+
+// --- Edit mode ---
+const editing = ref(false);
+const editStats = ref<WidgetPref[]>([]);
+const editSections = ref<WidgetPref[]>([]);
+const saving = ref(false);
+
+const startEdit = () => {
+    editStats.value = props.dashboardPreferences.stats.map((w) => ({ ...w }));
+    editSections.value = props.dashboardPreferences.sections.map((w) => ({ ...w }));
+    editing.value = true;
+};
+
+const cancelEdit = () => {
+    editing.value = false;
+};
+
+const resetToDefaults = () => {
+    editStats.value = DEFAULT_STAT_KEYS.map((key) => ({ key, visible: !HIDDEN_BY_DEFAULT.includes(key) }));
+    editSections.value = DEFAULT_SECTION_KEYS.map((key) => ({ key, visible: true }));
+};
+
+const save = () => {
+    saving.value = true;
+    router.patch('/user/dashboard-preferences', {
+        stats: editStats.value.map(({ key, visible }) => ({ key, visible })),
+        sections: editSections.value.map(({ key, visible }) => ({ key, visible })),
+    }, {
+        preserveScroll: true,
+        onSuccess: () => { editing.value = false; },
+        onFinish: () => { saving.value = false; },
+    });
+};
 </script>
 
 <template>
     <Head :title="t('Dashboard')" />
     <AppLayout :title="t('Dashboard')">
-        <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-            <div v-for="(value, key) in stats" :key="key" class="card p-5" :class="{ hidden: key === 'last_successful_backup_size' }">
-                <p class="text-xs font-semibold uppercase tracking-wide text-slate-400">{{ statLabel(String(key)) }}</p>
-                <p class="mt-3 break-words text-2xl font-bold text-white">{{ statValue(String(key), value) }}</p>
+        <template #actions>
+            <button v-if="!editing" type="button" class="btn-secondary" @click="startEdit">
+                {{ t('Customize') }}
+            </button>
+            <div v-else class="flex flex-wrap gap-2">
+                <button type="button" class="btn-secondary" @click="resetToDefaults">{{ t('Reset to defaults') }}</button>
+                <button type="button" class="btn-secondary" @click="cancelEdit">{{ t('Cancel') }}</button>
+                <button type="button" class="btn-primary" :disabled="saving" @click="save">{{ t('Done') }}</button>
             </div>
-        </div>
+        </template>
 
-        <div class="mt-8 grid gap-6 lg:grid-cols-2">
-            <section class="card p-5">
-                <div class="mb-4 flex flex-wrap items-center justify-between gap-3">
-                    <h2 class="text-lg font-semibold">{{ t('Recent backup runs') }}</h2>
-                    <Link href="/backup-jobs" class="text-sm text-sky-300 hover:text-sky-200">{{ t('View jobs') }}</Link>
-                </div>
-                <div v-if="recentBackupRuns.length" class="space-y-3">
-                    <Link v-for="run in recentBackupRuns" :key="run.id" :href="`/backup-runs/${run.id}`" class="flex flex-col gap-2 rounded-xl bg-white/5 px-4 py-3 hover:bg-slate-100 dark:hover:bg-white/10 sm:flex-row sm:items-center sm:justify-between">
-                        <div class="min-w-0">
-                            <p class="break-words font-medium">{{ run.job?.name || t('Backup run #{id}', { id: run.id }) }}</p>
-                            <p class="text-xs text-slate-400">{{ formatDate(run.started_at || run.created_at) }} <span v-if="run.backup_size_bytes">/ {{ formatBytes(run.backup_size_bytes) }}</span></p>
-                        </div>
-                        <StatusBadge :status="run.status" />
-                    </Link>
-                </div>
-                <p v-else class="rounded-xl border border-dashed border-white/10 p-4 text-sm text-slate-400">{{ t('No backup runs yet.') }}</p>
-            </section>
-
-            <section class="card p-5">
-                <h2 class="mb-4 text-lg font-semibold">{{ t('Recent restore runs') }}</h2>
-                <div v-if="recentRestoreRuns.length" class="space-y-3">
-                    <Link v-for="run in recentRestoreRuns" :key="run.id" :href="`/restore-runs/${run.id}`" class="flex flex-col gap-2 rounded-xl bg-white/5 px-4 py-3 hover:bg-slate-100 dark:hover:bg-white/10 sm:flex-row sm:items-center sm:justify-between">
-                        <div class="min-w-0">
-                            <p class="break-all font-medium">{{ run.source_volume_name }} to {{ run.target_volume_name }}</p>
-                            <p class="text-xs text-slate-400">{{ formatDate(run.started_at || run.created_at) }}</p>
-                        </div>
-                        <StatusBadge :status="run.status" />
-                    </Link>
-                </div>
-                <p v-else class="rounded-xl border border-dashed border-white/10 p-4 text-sm text-slate-400">{{ t('No restore runs yet.') }}</p>
-            </section>
-        </div>
-
-        <section class="card mt-6 p-5">
-            <h2 class="mb-4 text-lg font-semibold">{{ t('Jobs with errors') }}</h2>
-            <div v-if="jobsWithErrors.length" class="space-y-3">
-                <Link v-for="job in jobsWithErrors" :key="job.id" :href="`/backup-jobs/${job.id}`" class="block rounded-xl bg-rose-400/10 px-4 py-3 hover:bg-rose-400/15">
-                    <p class="break-words font-medium text-rose-100">{{ job.name }}</p>
-                    <p class="break-words text-sm text-rose-200/80">{{ job.last_error || t('Unknown error') }}</p>
-                </Link>
+        <!-- Display mode -->
+        <template v-if="!editing">
+            <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+                <StatCard v-for="w in visibleStats" :key="w.key" :label="statLabel(w.key)" :value="String(statValueFor(w.key))" />
             </div>
-            <p v-else class="text-sm text-slate-400">{{ t('No jobs are currently in error.') }}</p>
-        </section>
+
+            <div class="mt-8 grid gap-6 lg:grid-cols-2">
+                <div v-for="w in visibleSections" :key="w.key" :class="sectionItemClass(w.key)">
+                    <DashboardSection
+                        :section-key="w.key"
+                        :recent-backup-runs="recentBackupRuns"
+                        :recent-restore-runs="recentRestoreRuns"
+                        :jobs-with-errors="jobsWithErrors"
+                    />
+                </div>
+            </div>
+        </template>
+
+        <!-- Edit mode -->
+        <template v-else>
+            <p class="mb-4 text-sm text-slate-400">{{ t('Drag widgets to reorder, toggle the eye to show or hide. Click Done to save.') }}</p>
+
+            <h2 class="mb-3 text-sm font-semibold uppercase tracking-wide text-slate-400">{{ t('Statistics') }}</h2>
+            <draggable v-model="editStats" item-key="key" handle=".drag-handle" :animation="150" class="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+                <template #item="{ element }">
+                    <div class="card relative h-full p-5 transition-opacity" :class="{ 'opacity-40': !element.visible }">
+                        <div class="absolute right-2 top-2 flex items-center gap-1">
+                            <button type="button" class="drag-handle cursor-move rounded p-1 text-slate-400 hover:bg-white/10" :title="t('Drag to reorder')">⠿</button>
+                            <button type="button" class="rounded p-1 text-slate-400 hover:bg-white/10" :title="element.visible ? t('Hide') : t('Show')" @click="element.visible = !element.visible">
+                                {{ element.visible ? '👁' : '🚫' }}
+                            </button>
+                        </div>
+                        <p class="pr-14 text-xs font-semibold uppercase tracking-wide text-slate-400">{{ statLabel(element.key) }}</p>
+                        <p class="mt-3 break-words text-2xl font-bold text-white">{{ statValueFor(element.key) }}</p>
+                    </div>
+                </template>
+            </draggable>
+
+            <h2 class="mb-3 mt-8 text-sm font-semibold uppercase tracking-wide text-slate-400">{{ t('Sections') }}</h2>
+            <draggable v-model="editSections" item-key="key" handle=".drag-handle" :animation="150" class="grid gap-4 sm:grid-cols-2">
+                <template #item="{ element }">
+                    <div class="card relative h-full p-5 transition-opacity" :class="{ 'opacity-40': !element.visible }">
+                        <div class="absolute right-2 top-2 flex items-center gap-1">
+                            <button type="button" class="drag-handle cursor-move rounded p-1 text-slate-400 hover:bg-white/10" :title="t('Drag to reorder')">⠿</button>
+                            <button type="button" class="rounded p-1 text-slate-400 hover:bg-white/10" :title="element.visible ? t('Hide') : t('Show')" @click="element.visible = !element.visible">
+                                {{ element.visible ? '👁' : '🚫' }}
+                            </button>
+                        </div>
+                        <p class="pr-14 text-lg font-semibold">{{ sectionLabel(element.key) }}</p>
+                        <p class="mt-1 text-xs text-slate-400">{{ t('Section') }}</p>
+                    </div>
+                </template>
+            </draggable>
+        </template>
     </AppLayout>
 </template>

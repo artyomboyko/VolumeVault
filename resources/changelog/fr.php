@@ -1,6 +1,10 @@
 <?php
 
 return [
+    'customizable_dashboard' => [
+        'title' => 'Tableau de bord personnalisable',
+        'description' => 'Vous pouvez desormais choisir quels widgets afficher sur le tableau de bord et dans quel ordre. Cliquez sur « Personnaliser » pour masquer ou afficher n\'importe quelle carte de statistique ou section, glissez-les pour les reordonner, puis cliquez sur « Terminer » pour enregistrer. Chaque utilisateur conserve sa propre disposition, et « Reinitialiser » restaure l\'agencement d\'origine.',
+    ],
     'self_container_backup_guard' => [
         'title' => 'VolumeVault n\'arrete plus son propre conteneur pendant une sauvegarde',
         'description' => 'Lorsqu\'un job de sauvegarde a « arreter les conteneurs avant la sauvegarde » active et cible un volume que le conteneur VolumeVault monte lui aussi, VolumeVault n\'arrete plus son propre conteneur - ce qui aurait interrompu la sauvegarde en cours. Le conteneur est detecte automatiquement via son nom d\'hote et son cgroup ; definissez VOLUMEVAULT_CONTAINER_ID ou VOLUMEVAULT_CONTAINER_NAME si la detection automatique n\'est pas fiable (nom d\'hote personnalise ou reseau hote).',

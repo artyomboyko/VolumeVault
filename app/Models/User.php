@@ -41,6 +41,7 @@ class User extends Authenticatable
         'locale',
         'theme',
         'default_per_page',
+        'dashboard_preferences',
         'last_seen_app_version',
         'last_seen_changelog_id',
         'last_dismissed_available_version',
@@ -67,6 +68,7 @@ class User extends Authenticatable
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
             'default_per_page' => 'integer',
+            'dashboard_preferences' => 'array',
         ];
     }
 

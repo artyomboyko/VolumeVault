@@ -18,6 +18,7 @@
         "@inertiajs/vue3": "^3.0.3",
         "@vitejs/plugin-vue": "^6.0.6",
         "typescript": "^6.0.3",
-        "vue": "^3.5.33"
+        "vue": "^3.5.33",
+        "vuedraggable": "^4.1.0"
     }
 }

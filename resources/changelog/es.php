@@ -1,6 +1,10 @@
 <?php
 
 return [
+    'customizable_dashboard' => [
+        'title' => 'Panel personalizable',
+        'description' => 'Ahora puedes elegir que widgets mostrar en el panel y en que orden. Haz clic en "Personalizar" para ocultar o mostrar cualquier tarjeta de estadistica o seccion, arrastralas para reordenarlas y luego haz clic en "Listo" para guardar. Cada usuario conserva su propia disposicion, y "Restablecer valores predeterminados" restaura la disposicion original.',
+    ],
     'self_container_backup_guard' => [
         'title' => 'VolumeVault ya no detiene su propio contenedor durante una copia de seguridad',
         'description' => 'Cuando una tarea de copia de seguridad tiene activado "detener contenedores antes de la copia" y apunta a un volumen que el propio contenedor de VolumeVault tambien monta, VolumeVault ya no detiene su propio contenedor, lo que habria interrumpido la copia en curso. El contenedor se detecta automaticamente a partir de su nombre de host y su cgroup; define VOLUMEVAULT_CONTAINER_ID o VOLUMEVAULT_CONTAINER_NAME si la deteccion automatica no es fiable (nombre de host personalizado o red de host).',

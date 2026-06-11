@@ -1,6 +1,10 @@
 <?php
 
 return [
+    'customizable_dashboard' => [
+        'title' => 'Aanpasbaar dashboard',
+        'description' => 'U kunt nu kiezen welke dashboardwidgets worden weergegeven en in welke volgorde. Klik op "Aanpassen" om een statistiekkaart of sectie te verbergen of te tonen, sleep ze om de volgorde te wijzigen en klik daarna op "Klaar" om op te slaan. Elke gebruiker behoudt zijn eigen indeling, en "Standaardwaarden herstellen" zet de oorspronkelijke indeling terug.',
+    ],
     'self_container_backup_guard' => [
         'title' => 'VolumeVault stopt zijn eigen container niet meer tijdens een back-up',
         'description' => 'Wanneer een back-uptaak "containers stoppen voor back-up" heeft ingeschakeld en gericht is op een volume dat de VolumeVault-container zelf ook koppelt, stopt VolumeVault zijn eigen container niet langer - wat de lopende back-up zou hebben afgebroken. De container wordt automatisch gedetecteerd via zijn hostnaam en cgroup; stel VOLUMEVAULT_CONTAINER_ID of VOLUMEVAULT_CONTAINER_NAME in als automatische detectie onbetrouwbaar is (aangepaste hostnaam of host-netwerk).',

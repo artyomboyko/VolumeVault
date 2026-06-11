@@ -1,6 +1,10 @@
 <?php
 
 return [
+    'customizable_dashboard' => [
+        'title' => 'Anpassbares Dashboard',
+        'description' => 'Sie konnen jetzt auswahlen, welche Dashboard-Widgets angezeigt werden und in welcher Reihenfolge. Klicken Sie auf "Anpassen", um beliebige Statistikkarten oder Abschnitte aus- oder einzublenden, ziehen Sie sie zum Neuordnen und klicken Sie dann auf "Fertig" zum Speichern. Jeder Benutzer behalt sein eigenes Layout, und "Auf Standard zurucksetzen" stellt die ursprungliche Anordnung wieder her.',
+    ],
     'self_container_backup_guard' => [
         'title' => 'VolumeVault stoppt waehrend eines Backups nicht mehr den eigenen Container',
         'description' => 'Wenn fuer einen Backup-Auftrag "Container vor dem Backup stoppen" aktiviert ist und er auf ein Volume zielt, das auch der VolumeVault-Container selbst einbindet, stoppt VolumeVault nicht mehr den eigenen Container - was das laufende Backup beendet haette. Der Container wird automatisch anhand seines Hostnamens und seiner cgroup erkannt; setze VOLUMEVAULT_CONTAINER_ID oder VOLUMEVAULT_CONTAINER_NAME, falls die automatische Erkennung unzuverlaessig ist (eigener Hostname oder Host-Netzwerk).',

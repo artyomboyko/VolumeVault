@@ -1,6 +1,10 @@
 <?php
 
 return [
+    'customizable_dashboard' => [
+        'title' => 'Customizable dashboard',
+        'description' => 'You can now choose which dashboard widgets to show and in which order. Click "Customize" on the dashboard to hide or show any statistic card or section, drag them to reorder, then click "Done" to save. Each user keeps their own layout, and "Reset to defaults" restores the original arrangement.',
+    ],
     'self_container_backup_guard' => [
         'title' => 'VolumeVault no longer stops its own container during a backup',
         'description' => 'When a backup job has "stop containers before backup" enabled and targets a volume that the VolumeVault container itself also mounts, VolumeVault no longer stops its own container - which would have killed the running backup. The container is auto-detected from its hostname and cgroup; set VOLUMEVAULT_CONTAINER_ID or VOLUMEVAULT_CONTAINER_NAME if autodetection is unreliable (custom hostname or host networking).',

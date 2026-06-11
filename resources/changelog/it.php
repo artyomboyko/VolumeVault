@@ -1,6 +1,10 @@
 <?php
 
 return [
+    'customizable_dashboard' => [
+        'title' => 'Dashboard personalizzabile',
+        'description' => 'Ora puoi scegliere quali widget mostrare nella dashboard e in quale ordine. Fai clic su "Personalizza" per nascondere o mostrare qualsiasi scheda statistica o sezione, trascinale per riordinarle, quindi fai clic su "Fine" per salvare. Ogni utente mantiene la propria disposizione e "Ripristina predefiniti" ripristina la disposizione originale.',
+    ],
     'self_container_backup_guard' => [
         'title' => 'VolumeVault non arresta piu il proprio container durante un backup',
         'description' => 'Quando un\'attivita di backup ha attivo "arresta i container prima del backup" e ha come destinazione un volume montato anche dal container VolumeVault stesso, VolumeVault non arresta piu il proprio container - cosa che avrebbe interrotto il backup in corso. Il container viene rilevato automaticamente dal suo hostname e dal cgroup; imposta VOLUMEVAULT_CONTAINER_ID o VOLUMEVAULT_CONTAINER_NAME se il rilevamento automatico non e affidabile (hostname personalizzato o rete host).',
