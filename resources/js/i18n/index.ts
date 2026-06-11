@@ -26,7 +26,7 @@ export const languageNames: Record<Locale, string> = {
     cs: 'Cestina',
     nl: 'Nederlands',
     hu: 'Magyar',
-    ru: 'Russkiy',
+    ru: 'Russian',
 };
 
 const translations: Record<Locale, Catalog> = { en, fr, es, it, de, cs, nl, hu, ru };
