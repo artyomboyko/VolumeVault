@@ -2,6 +2,7 @@
 import AppLayout from '@/Layouts/AppLayout.vue';
 import StatCard from '@/Components/Dashboard/StatCard.vue';
 import DashboardSection from '@/Components/Dashboard/DashboardSection.vue';
+import VisibilityToggleIcon from '@/Components/Dashboard/VisibilityToggleIcon.vue';
 import { Head, router } from '@inertiajs/vue3';
 import { computed, ref } from 'vue';
 import draggable from 'vuedraggable';
@@ -146,8 +147,8 @@ const save = () => {
                     <div class="card relative h-full p-5 transition-opacity" :class="{ 'opacity-40': !element.visible }">
                         <div class="absolute right-2 top-2 flex items-center gap-1">
                             <button type="button" class="drag-handle cursor-move rounded p-1 text-slate-400 hover:bg-white/10" :title="t('Drag to reorder')">⠿</button>
-                            <button type="button" class="rounded p-1 text-slate-400 hover:bg-white/10" :title="element.visible ? t('Hide') : t('Show')" @click="element.visible = !element.visible">
-                                {{ element.visible ? '👁' : '🚫' }}
+                            <button type="button" class="rounded p-1 transition hover:bg-white/10" :class="element.visible ? 'text-sky-300' : 'text-slate-500'" :title="element.visible ? t('Hide') : t('Show')" @click="element.visible = !element.visible">
+                                <VisibilityToggleIcon :open="element.visible" />
                             </button>
                         </div>
                         <p class="pr-14 text-xs font-semibold uppercase tracking-wide text-slate-400">{{ statLabel(element.key) }}</p>
@@ -162,8 +163,8 @@ const save = () => {
                     <div class="card relative h-full p-5 transition-opacity" :class="{ 'opacity-40': !element.visible }">
                         <div class="absolute right-2 top-2 flex items-center gap-1">
                             <button type="button" class="drag-handle cursor-move rounded p-1 text-slate-400 hover:bg-white/10" :title="t('Drag to reorder')">⠿</button>
-                            <button type="button" class="rounded p-1 text-slate-400 hover:bg-white/10" :title="element.visible ? t('Hide') : t('Show')" @click="element.visible = !element.visible">
-                                {{ element.visible ? '👁' : '🚫' }}
+                            <button type="button" class="rounded p-1 transition hover:bg-white/10" :class="element.visible ? 'text-sky-300' : 'text-slate-500'" :title="element.visible ? t('Hide') : t('Show')" @click="element.visible = !element.visible">
+                                <VisibilityToggleIcon :open="element.visible" />
                             </button>
                         </div>
                         <p class="pr-14 text-lg font-semibold">{{ sectionLabel(element.key) }}</p>
