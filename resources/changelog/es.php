@@ -1,6 +1,10 @@
 <?php
 
 return [
+    'russian_translation_consistency' => [
+        'title' => 'Traducciones al ruso refinadas',
+        'description' => 'El texto de la interfaz en ruso se actualizó para mejorar la coherencia, y el glosario para traductores de ruso se movió fuera de los archivos de idioma incluidos hacia una documentación dedicada del proyecto. Esto mantiene más limpios los recursos de idioma incluidos sin perder el glosario para quienes contribuyen.',
+    ],
     'customizable_dashboard' => [
         'title' => 'Panel personalizable',
         'description' => 'Ahora puedes elegir que widgets mostrar en el panel y en que orden. Haz clic en "Personalizar" para ocultar o mostrar cualquier tarjeta de estadistica o seccion, arrastralas para reordenarlas y luego haz clic en "Listo" para guardar. Cada usuario conserva su propia disposicion, y "Restablecer valores predeterminados" restaura la disposicion original.',

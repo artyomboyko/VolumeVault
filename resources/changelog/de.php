@@ -1,6 +1,10 @@
 <?php
 
 return [
+    'russian_translation_consistency' => [
+        'title' => 'Überarbeitete russische Übersetzungen',
+        'description' => 'Die russischen Oberflächentexte wurden für mehr Einheitlichkeit überarbeitet, und das Glossar für russische Übersetzer wurde aus den mitgelieferten Sprachdateien in eine eigene Projektdokumentation verschoben. So bleiben die gebündelten Sprachressourcen sauberer, während das Glossar für Mitwirkende erhalten bleibt.',
+    ],
     'customizable_dashboard' => [
         'title' => 'Anpassbares Dashboard',
         'description' => 'Sie konnen jetzt auswahlen, welche Dashboard-Widgets angezeigt werden und in welcher Reihenfolge. Klicken Sie auf "Anpassen", um beliebige Statistikkarten oder Abschnitte aus- oder einzublenden, ziehen Sie sie zum Neuordnen und klicken Sie dann auf "Fertig" zum Speichern. Jeder Benutzer behalt sein eigenes Layout, und "Auf Standard zurucksetzen" stellt die ursprungliche Anordnung wieder her.',

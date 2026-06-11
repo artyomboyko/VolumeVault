@@ -1,6 +1,10 @@
 <?php
 
 return [
+    'russian_translation_consistency' => [
+        'title' => 'Vyladěné ruské překlady',
+        'description' => 'Ruské texty rozhraní byly upraveny pro větší konzistenci a glosář pro ruské překladatele byl přesunut z dodávaných jazykových souborů do samostatné projektové dokumentace. Přibalené jazykové prostředky tak zůstávají čistší a glosář je stále k dispozici přispěvatelům.',
+    ],
     'customizable_dashboard' => [
         'title' => 'Prizpusobitelny prehled',
         'description' => 'Nyni si muzete vybrat, ktere widgety prehledu se maji zobrazit a v jakem poradi. Kliknutim na "Prizpusobit" muzete skryt nebo zobrazit libovolnou statistickou kartu nebo sekci, pretazenim zmenite jejich poradi a kliknutim na "Hotovo" ulozite. Kazdy uzivatel ma vlastni rozlozeni a "Obnovit vychozi" obnovi puvodni usporadani.',

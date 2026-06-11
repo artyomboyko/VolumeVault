@@ -1,6 +1,10 @@
 <?php
 
 return [
+    'russian_translation_consistency' => [
+        'title' => 'Finomított orosz fordítások',
+        'description' => 'Az orosz felületi szövegek egységesebbek lettek, az orosz fordítói glosszárium pedig kikerült a szállított nyelvi fájlokból a projekt külön dokumentációjába. Így a csomagolt nyelvi erőforrások tisztábbak maradnak, miközben a glosszárium továbbra is elérhető a közreműködőknek.',
+    ],
     'customizable_dashboard' => [
         'title' => 'Testreszabhato iranyitopult',
         'description' => 'Most mar kivalaszthatja, mely iranyitopult-widgetek jelenjenek meg es milyen sorrendben. Kattintson a "Testreszabas" gombra barmely statisztikai kartya vagy szakasz elrejtesehez vagy megjelenitesehez, huzassal rendezze at oket, majd kattintson a "Kesz" gombra a menteshez. Minden felhasznalo sajat elrendezest tart meg, az "Alapertekek visszaallitasa" pedig visszaallitja az eredeti elrendezest.',

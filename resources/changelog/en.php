@@ -1,6 +1,10 @@
 <?php
 
 return [
+    'russian_translation_consistency' => [
+        'title' => 'Refined Russian translations',
+        'description' => 'Russian interface text was updated for better consistency, and the Russian translator glossary was moved out of the shipped locale files into dedicated project documentation. This keeps the bundled language resources cleaner while preserving the glossary for contributors.',
+    ],
     'customizable_dashboard' => [
         'title' => 'Customizable dashboard',
         'description' => 'You can now choose which dashboard widgets to show and in which order. Click "Customize" on the dashboard to hide or show any statistic card or section, drag them to reorder, then click "Done" to save. Each user keeps their own layout, and "Reset to defaults" restores the original arrangement.',

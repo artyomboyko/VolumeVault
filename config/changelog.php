@@ -3,6 +3,16 @@
 return [
     'unreleased' => [],
     'releases' => [
+        'v1.10.1' => [
+            'date' => '2026-06-11',
+            'url' => 'https://github.com/Darkdragon14/VolumeVault/releases/tag/v1.10.1',
+            'items' => [
+                [
+                    'type' => 'change',
+                    'key' => 'russian_translation_consistency',
+                ],
+            ],
+        ],
         'v1.10.0' => [
             'date' => '2026-06-11',
             'url' => 'https://github.com/Darkdragon14/VolumeVault/releases/tag/v1.10.0',

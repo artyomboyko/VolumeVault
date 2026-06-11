@@ -1,6 +1,10 @@
 <?php
 
 return [
+    'russian_translation_consistency' => [
+        'title' => 'Bijgewerkte Russische vertalingen',
+        'description' => 'De Russische interface-teksten zijn bijgewerkt voor meer consistentie, en de Russische vertalerswoordenlijst is uit de meegeleverde taalbestanden verplaatst naar aparte projectdocumentatie. Daardoor blijven de meegeleverde taalresources schoner, terwijl de woordenlijst beschikbaar blijft voor bijdragers.',
+    ],
     'customizable_dashboard' => [
         'title' => 'Aanpasbaar dashboard',
         'description' => 'U kunt nu kiezen welke dashboardwidgets worden weergegeven en in welke volgorde. Klik op "Aanpassen" om een statistiekkaart of sectie te verbergen of te tonen, sleep ze om de volgorde te wijzigen en klik daarna op "Klaar" om op te slaan. Elke gebruiker behoudt zijn eigen indeling, en "Standaardwaarden herstellen" zet de oorspronkelijke indeling terug.',
