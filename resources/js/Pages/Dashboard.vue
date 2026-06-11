@@ -65,11 +65,14 @@ const statValue = (key: string, value: any) => {
 };
 const statValueFor = (key: string) => statValue(key, props.stats[key]);
 
-const sectionItemClass = (key: string) => (key === 'jobs_with_errors' ? 'lg:col-span-2' : '');
-
 // --- Display (read from server-provided, normalized preferences) ---
 const visibleStats = computed(() => props.dashboardPreferences.stats.filter((w) => w.visible));
 const visibleSections = computed(() => props.dashboardPreferences.sections.filter((w) => w.visible));
+
+// Keep the 2-column grid balanced whatever the visible set is: a lone trailing
+// section (odd count) spans both columns instead of leaving an empty gap.
+const sectionSpanClass = (index: number) =>
+    visibleSections.value.length % 2 === 1 && index === visibleSections.value.length - 1 ? 'lg:col-span-2' : '';
 
 // --- Edit mode ---
 const editing = ref(false);
@@ -126,7 +129,7 @@ const save = () => {
             </div>
 
             <div class="mt-8 grid gap-6 lg:grid-cols-2">
-                <div v-for="w in visibleSections" :key="w.key" :class="sectionItemClass(w.key)">
+                <div v-for="(w, i) in visibleSections" :key="w.key" :class="sectionSpanClass(i)">
                     <DashboardSection
                         :section-key="w.key"
                         :recent-backup-runs="recentBackupRuns"
