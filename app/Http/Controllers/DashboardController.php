@@ -7,13 +7,17 @@ use App\Models\BackupRun;
 use App\Models\DockerVolume;
 use App\Models\RestoreRun;
 use App\Services\Volumes\VolumeBackupSummaries;
+use App\Support\DashboardWidgets;
+use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Inertia\Response;
 
 class DashboardController extends Controller
 {
-    public function __invoke(VolumeBackupSummaries $volumeBackupSummaries): Response
+    public function __invoke(Request $request, VolumeBackupSummaries $volumeBackupSummaries): Response
     {
+        $preferences = DashboardWidgets::normalize($request->user()->dashboard_preferences);
+
         $volumeSummaries = $volumeBackupSummaries->forVolumes(DockerVolume::query()->get());
         $coverageStats = $volumeBackupSummaries->coverageStats($volumeSummaries);
         $lastBackupRun = BackupRun::with('job')->latest()->first();
@@ -29,6 +33,7 @@ class DashboardController extends Controller
             ->first();
 
         return Inertia::render('Dashboard', [
+            'dashboardPreferences' => $preferences,
             'stats' => [
                 'total_volumes' => DockerVolume::count(),
                 'existing_volumes' => DockerVolume::where('exists', true)->count(),
@@ -44,13 +49,19 @@ class DashboardController extends Controller
                 'last_successful_backup_size' => $lastSuccessfulBackupRun?->backup_size_bytes,
                 'next_scheduled_backup' => $nextJob?->next_run_at,
             ],
-            'recentBackupRuns' => BackupRun::with('job')->latest()->limit(8)->get(),
-            'recentRestoreRuns' => RestoreRun::with('job')->latest()->limit(8)->get(),
-            'jobsWithErrors' => BackupJob::with('destination')
-                ->where('status', BackupJob::STATUS_ERROR)
-                ->latest()
-                ->limit(8)
-                ->get(),
+            'recentBackupRuns' => DashboardWidgets::isSectionVisible($preferences, 'recent_backups')
+                ? BackupRun::with('job')->latest()->limit(8)->get()
+                : [],
+            'recentRestoreRuns' => DashboardWidgets::isSectionVisible($preferences, 'recent_restores')
+                ? RestoreRun::with('job')->latest()->limit(8)->get()
+                : [],
+            'jobsWithErrors' => DashboardWidgets::isSectionVisible($preferences, 'jobs_with_errors')
+                ? BackupJob::with('destination')
+                    ->where('status', BackupJob::STATUS_ERROR)
+                    ->latest()
+                    ->limit(8)
+                    ->get()
+                : [],
         ]);
     }
 }

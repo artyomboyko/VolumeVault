@@ -9,6 +9,7 @@ use App\Http\Controllers\BackupJobController;
 use App\Http\Controllers\BackupRunController;
 use App\Http\Controllers\ChangelogController;
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\DashboardPreferenceController;
 use App\Http\Controllers\DestinationController;
 use App\Http\Controllers\InstallationSaveController;
 use App\Http\Controllers\NotificationChannelController;
@@ -44,6 +45,7 @@ Route::post('/logout', [AuthController::class, 'destroy'])->middleware('auth')->
 Route::middleware('auth')->group(function () {
     Route::patch('/user/locale', [UserLocaleController::class, 'update'])->name('user.locale.update');
     Route::patch('/user/theme', [UserThemeController::class, 'update'])->name('user.theme.update');
+    Route::patch('/user/dashboard-preferences', [DashboardPreferenceController::class, 'update'])->name('user.dashboard-preferences.update');
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::put('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::get('/changelog', [ChangelogController::class, 'index'])->name('changelog.index');

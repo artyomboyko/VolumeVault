@@ -1,7 +1,12 @@
 <?php
 
 return [
-    'unreleased' => [],
+    'unreleased' => [
+        [
+            'type' => 'feature',
+            'key' => 'customizable_dashboard',
+        ],
+    ],
     'releases' => [
         'v1.9.0' => [
             'date' => '2026-06-10',

@@ -1,6 +1,10 @@
 <?php
 
 return [
+    'customizable_dashboard' => [
+        'title' => 'Testreszabhato iranyitopult',
+        'description' => 'Most mar kivalaszthatja, mely iranyitopult-widgetek jelenjenek meg es milyen sorrendben. Kattintson a "Testreszabas" gombra barmely statisztikai kartya vagy szakasz elrejtesehez vagy megjelenitesehez, huzassal rendezze at oket, majd kattintson a "Kesz" gombra a menteshez. Minden felhasznalo sajat elrendezest tart meg, az "Alapertekek visszaallitasa" pedig visszaallitja az eredeti elrendezest.',
+    ],
     'self_container_backup_guard' => [
         'title' => 'A VolumeVault mar nem allitja le a sajat konteneret a mentes alatt',
         'description' => 'Ha egy mentesi feladatnal be van kapcsolva a "konterek leallitasa mentes elott", es olyan kotetet celoz, amelyet maga a VolumeVault konteneren is csatol, a VolumeVault mar nem allitja le a sajat konteneret - ami megszakitotta volna a folyamatban levo mentest. A konteneren automatikusan felismerheto a gepnev (hostname) es a cgroup alapjan; allitsa be a VOLUMEVAULT_CONTAINER_ID vagy VOLUMEVAULT_CONTAINER_NAME erteket, ha az automatikus felismeres nem megbizhato (egyedi gepnev vagy host-halozat).',

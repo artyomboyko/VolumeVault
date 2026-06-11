@@ -1,6 +1,10 @@
 <?php
 
 return [
+    'customizable_dashboard' => [
+        'title' => 'Prizpusobitelny prehled',
+        'description' => 'Nyni si muzete vybrat, ktere widgety prehledu se maji zobrazit a v jakem poradi. Kliknutim na "Prizpusobit" muzete skryt nebo zobrazit libovolnou statistickou kartu nebo sekci, pretazenim zmenite jejich poradi a kliknutim na "Hotovo" ulozite. Kazdy uzivatel ma vlastni rozlozeni a "Obnovit vychozi" obnovi puvodni usporadani.',
+    ],
     'self_container_backup_guard' => [
         'title' => 'VolumeVault jiz behem zalohovani nezastavuje vlastni kontejner',
         'description' => 'Kdyz ma zalohovaci uloha zapnuto "zastavit kontejnery pred zalohou" a cili na svazek, ktery pripojuje i samotny kontejner VolumeVault, VolumeVault jiz nezastavuje vlastni kontejner - coz by prerusilo probihajici zalohu. Kontejner je automaticky rozpoznan podle nazvu hostitele (hostname) a cgroup; nastavte VOLUMEVAULT_CONTAINER_ID nebo VOLUMEVAULT_CONTAINER_NAME, pokud automaticka detekce neni spolehliva (vlastni hostname nebo sit hostitele).',
