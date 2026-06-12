@@ -114,3 +114,5 @@ Huge thanks to Offen and the maintainers of `offen/docker-volume-backup` for the
 ## Contributing
 
 All contributions are welcome.
+
+- Contributor acknowledgements: [`CONTRIBUTORS.md`](CONTRIBUTORS.md)
