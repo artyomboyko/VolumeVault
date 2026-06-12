@@ -7,7 +7,7 @@ return [
     ],
     'russian_translation_consistency' => [
         'title' => 'Traducciones al ruso refinadas',
-        'description' => 'El texto de la interfaz en ruso se actualizó para mejorar la coherencia, y el glosario para traductores de ruso se movió fuera de los archivos de idioma incluidos hacia una documentación dedicada del proyecto. Esto mantiene más limpios los recursos de idioma incluidos sin perder el glosario para quienes contribuyen.',
+        'description' => 'El texto de la interfaz en ruso se actualizó para mejorar la coherencia, y el glosario para traductores de ruso se movió fuera de los archivos de idioma incluidos hacia una documentación dedicada del proyecto. Esto mantiene más limpios los recursos de idioma incluidos sin perder el glosario para quienes contribuyen. Gracias a @artyomboyko por esta contribución de traducción.',
     ],
     'customizable_dashboard' => [
         'title' => 'Panel personalizable',

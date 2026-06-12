@@ -7,7 +7,7 @@ return [
     ],
     'russian_translation_consistency' => [
         'title' => 'Vyladěné ruské překlady',
-        'description' => 'Ruské texty rozhraní byly upraveny pro větší konzistenci a glosář pro ruské překladatele byl přesunut z dodávaných jazykových souborů do samostatné projektové dokumentace. Přibalené jazykové prostředky tak zůstávají čistší a glosář je stále k dispozici přispěvatelům.',
+        'description' => 'Ruské texty rozhraní byly upraveny pro větší konzistenci a glosář pro ruské překladatele byl přesunut z dodávaných jazykových souborů do samostatné projektové dokumentace. Přibalené jazykové prostředky tak zůstávají čistší a glosář je stále k dispozici přispěvatelům. Díky @artyomboyko za tento překladatelský příspěvek.',
     ],
     'customizable_dashboard' => [
         'title' => 'Prizpusobitelny prehled',

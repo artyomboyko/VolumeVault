@@ -7,7 +7,7 @@ return [
     ],
     'russian_translation_consistency' => [
         'title' => 'Refined Russian translations',
-        'description' => 'Russian interface text was updated for better consistency, and the Russian translator glossary was moved out of the shipped locale files into dedicated project documentation. This keeps the bundled language resources cleaner while preserving the glossary for contributors.',
+        'description' => 'Russian interface text was updated for better consistency, and the Russian translator glossary was moved out of the shipped locale files into dedicated project documentation. This keeps the bundled language resources cleaner while preserving the glossary for contributors. Thanks to @artyomboyko for the translation contribution.',
     ],
     'customizable_dashboard' => [
         'title' => 'Customizable dashboard',

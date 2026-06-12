@@ -7,7 +7,7 @@ return [
     ],
     'russian_translation_consistency' => [
         'title' => 'Bijgewerkte Russische vertalingen',
-        'description' => 'De Russische interface-teksten zijn bijgewerkt voor meer consistentie, en de Russische vertalerswoordenlijst is uit de meegeleverde taalbestanden verplaatst naar aparte projectdocumentatie. Daardoor blijven de meegeleverde taalresources schoner, terwijl de woordenlijst beschikbaar blijft voor bijdragers.',
+        'description' => 'De Russische interface-teksten zijn bijgewerkt voor meer consistentie, en de Russische vertalerswoordenlijst is uit de meegeleverde taalbestanden verplaatst naar aparte projectdocumentatie. Daardoor blijven de meegeleverde taalresources schoner, terwijl de woordenlijst beschikbaar blijft voor bijdragers. Dank aan @artyomboyko voor deze vertaalbijdrage.',
     ],
     'customizable_dashboard' => [
         'title' => 'Aanpasbaar dashboard',

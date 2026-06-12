@@ -7,7 +7,7 @@ return [
     ],
     'russian_translation_consistency' => [
         'title' => 'Traductions russes harmonisées',
-        'description' => 'Les textes russes de l\'interface ont été mis à jour pour plus de cohérence, et le glossaire des traducteurs russes a été déplacé hors des fichiers de langue fournis vers une documentation dédiée du projet. Les ressources de langue embarquées restent ainsi plus propres tout en conservant le glossaire pour les contributeurs.',
+        'description' => 'Les textes russes de l\'interface ont été mis à jour pour plus de cohérence, et le glossaire des traducteurs russes a été déplacé hors des fichiers de langue fournis vers une documentation dédiée du projet. Les ressources de langue embarquées restent ainsi plus propres tout en conservant le glossaire pour les contributeurs. Merci à @artyomboyko pour cette contribution de traduction.',
     ],
     'customizable_dashboard' => [
         'title' => 'Tableau de bord personnalisable',

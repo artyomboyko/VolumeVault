@@ -7,7 +7,7 @@ return [
     ],
     'russian_translation_consistency' => [
         'title' => 'Überarbeitete russische Übersetzungen',
-        'description' => 'Die russischen Oberflächentexte wurden für mehr Einheitlichkeit überarbeitet, und das Glossar für russische Übersetzer wurde aus den mitgelieferten Sprachdateien in eine eigene Projektdokumentation verschoben. So bleiben die gebündelten Sprachressourcen sauberer, während das Glossar für Mitwirkende erhalten bleibt.',
+        'description' => 'Die russischen Oberflächentexte wurden für mehr Einheitlichkeit überarbeitet, und das Glossar für russische Übersetzer wurde aus den mitgelieferten Sprachdateien in eine eigene Projektdokumentation verschoben. So bleiben die gebündelten Sprachressourcen sauberer, während das Glossar für Mitwirkende erhalten bleibt. Danke an @artyomboyko für den Übersetzungsbeitrag.',
     ],
     'customizable_dashboard' => [
         'title' => 'Anpassbares Dashboard',

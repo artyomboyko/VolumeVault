@@ -7,7 +7,7 @@ return [
     ],
     'russian_translation_consistency' => [
         'title' => 'Finomított orosz fordítások',
-        'description' => 'Az orosz felületi szövegek egységesebbek lettek, az orosz fordítói glosszárium pedig kikerült a szállított nyelvi fájlokból a projekt külön dokumentációjába. Így a csomagolt nyelvi erőforrások tisztábbak maradnak, miközben a glosszárium továbbra is elérhető a közreműködőknek.',
+        'description' => 'Az orosz felületi szövegek egységesebbek lettek, az orosz fordítói glosszárium pedig kikerült a szállított nyelvi fájlokból a projekt külön dokumentációjába. Így a csomagolt nyelvi erőforrások tisztábbak maradnak, miközben a glosszárium továbbra is elérhető a közreműködőknek. Köszönet @artyomboyko részére ezért a fordítási hozzájárulásért.',
     ],
     'customizable_dashboard' => [
         'title' => 'Testreszabhato iranyitopult',
