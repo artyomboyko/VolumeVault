@@ -133,7 +133,7 @@ const toggleDestinationActive = (destination: any) => router.patch(`/destination
             </div>
             <div v-else class="p-10 text-center">
                 <p class="text-lg font-semibold">{{ t('No backup destination yet.') }}</p>
-                <p class="mt-2 text-sm text-slate-400">Add S3, WebDAV, SSH/SFTP, Azure, Dropbox, Google Drive, or local storage.</p>
+                <p class="mt-2 text-sm text-slate-400">{{ t('Add S3, WebDAV, SSH/SFTP, Azure, Dropbox, Google Drive, or local storage.') }}</p>
                 <Link href="/destinations/create" class="btn-primary mt-5">{{ t('Create destination') }}</Link>
             </div>
         </div>

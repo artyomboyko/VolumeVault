@@ -28,12 +28,12 @@ const form = useForm({
 });
 
 const serviceHelp = computed(() => {
-    if (form.service === 'discord') return 'Paste the Discord webhook URL from Channel settings > Integrations > Webhooks.';
-    if (form.service === 'telegram') return 'Create a bot with BotFather, then add the bot to your chat or channel.';
-    if (form.service === 'ntfy') return 'Pick a private topic name. Public ntfy.sh topics can be guessed by others.';
-    if (form.service === 'gotify') return 'Create an application token in Gotify and paste your Gotify host.';
-    if (form.service === 'smtp') return 'Use your SMTP server details. The password is encrypted after saving.';
-    return 'Paste a complete Shoutrrr URL for any supported service.';
+    if (form.service === 'discord') return t('Paste the Discord webhook URL from Channel settings > Integrations > Webhooks.');
+    if (form.service === 'telegram') return t('Create a bot with BotFather, then add the bot to your chat or channel.');
+    if (form.service === 'ntfy') return t('Pick a private topic name. Public ntfy.sh topics can be guessed by others.');
+    if (form.service === 'gotify') return t('Create an application token in Gotify and paste your Gotify host.');
+    if (form.service === 'smtp') return t('Use your SMTP server details. The password is encrypted after saving.');
+    return t('Paste a complete Shoutrrr URL for any supported service.');
 });
 
 watch(() => form.service, () => {
@@ -89,40 +89,40 @@ const submit = () => {
 
             <section class="rounded-2xl border border-white/10 bg-white/5 p-4 sm:p-5">
                 <div class="mb-4">
-                    <h2 class="text-lg font-semibold">Guided setup</h2>
+                    <h2 class="text-lg font-semibold">{{ t('Guided setup') }}</h2>
                     <p class="mt-1 text-sm text-slate-400">{{ serviceHelp }}</p>
-                    <p v-if="editing" class="mt-2 text-xs text-slate-400">Leave setup fields empty to keep the saved encrypted Shoutrrr URL.</p>
+                    <p v-if="editing" class="mt-2 text-xs text-slate-400">{{ t('Leave setup fields empty to keep the saved encrypted Shoutrrr URL.') }}</p>
                 </div>
 
                 <div v-if="form.service === 'discord'" class="grid gap-4 sm:grid-cols-2">
                     <label class="space-y-2 sm:col-span-2">
-                        <span class="label">Discord webhook URL</span>
+                        <span class="label">{{ t('Discord webhook URL') }}</span>
                         <input v-model="form.config.webhook_url" class="input" :required="!editing" placeholder="https://discord.com/api/webhooks/...">
                     </label>
                     <label class="space-y-2">
-                        <span class="label">Bot username</span>
+                        <span class="label">{{ t('Bot username') }}</span>
                         <input v-model="form.config.username" class="input" placeholder="VolumeVault">
                     </label>
                 </div>
 
                 <div v-else-if="form.service === 'telegram'" class="grid gap-4 sm:grid-cols-2">
                     <label class="space-y-2">
-                        <span class="label">Bot token</span>
+                        <span class="label">{{ t('Bot token') }}</span>
                         <input v-model="form.config.token" class="input" :required="!editing" autocomplete="off" placeholder="123456:ABC...">
                     </label>
                     <label class="space-y-2">
-                        <span class="label">Chats or channels</span>
+                        <span class="label">{{ t('Chats or channels') }}</span>
                         <input v-model="form.config.chats" class="input" :required="!editing" placeholder="@mychannel or -1001234567890">
                     </label>
                 </div>
 
                 <div v-else-if="form.service === 'ntfy'" class="grid gap-4 sm:grid-cols-2">
                     <label class="space-y-2">
-                        <span class="label">Ntfy host</span>
+                        <span class="label">{{ t('Ntfy host') }}</span>
                         <input v-model="form.config.host" class="input" placeholder="ntfy.sh">
                     </label>
                     <label class="space-y-2">
-                        <span class="label">Topic</span>
+                        <span class="label">{{ t('Topic') }}</span>
                         <input v-model="form.config.topic" class="input" :required="!editing" placeholder="volumevault-private-topic">
                     </label>
                     <label class="space-y-2">
@@ -137,22 +137,22 @@ const submit = () => {
 
                 <div v-else-if="form.service === 'gotify'" class="grid gap-4 sm:grid-cols-2">
                     <label class="space-y-2">
-                        <span class="label">Gotify host</span>
+                        <span class="label">{{ t('Gotify host') }}</span>
                         <input v-model="form.config.host" class="input" :required="!editing" placeholder="gotify.example.com:443">
                     </label>
                     <label class="space-y-2">
-                        <span class="label">Application token</span>
+                        <span class="label">{{ t('Application token') }}</span>
                         <input v-model="form.config.token" class="input" :required="!editing" autocomplete="off">
                     </label>
                 </div>
 
                 <div v-else-if="form.service === 'smtp'" class="grid gap-4 sm:grid-cols-2">
                     <label class="space-y-2">
-                        <span class="label">SMTP host</span>
+                        <span class="label">{{ t('SMTP host') }}</span>
                         <input v-model="form.config.host" class="input" :required="!editing" placeholder="smtp.example.com">
                     </label>
                     <label class="space-y-2">
-                        <span class="label">Port</span>
+                        <span class="label">{{ t('Port') }}</span>
                         <input v-model="form.config.port" class="input" type="number" placeholder="587">
                     </label>
                     <label class="space-y-2">
@@ -164,7 +164,7 @@ const submit = () => {
                         <PasswordInput v-model="form.config.password" autocomplete="new-password" />
                     </label>
                     <label class="space-y-2">
-                        <span class="label">From address</span>
+                        <span class="label">{{ t('From address') }}</span>
                         <input v-model="form.config.from" class="input" :required="!editing" placeholder="volumevault@example.com">
                     </label>
                     <label class="space-y-2">
@@ -174,7 +174,7 @@ const submit = () => {
                 </div>
 
                 <label v-else class="block space-y-2">
-                    <span class="label">Shoutrrr URL</span>
+                    <span class="label">{{ t('Shoutrrr URL') }}</span>
                     <input v-model="form.config.url" class="input" :required="!editing" placeholder="discord://token@webhookid">
                 </label>
 

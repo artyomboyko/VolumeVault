@@ -27,8 +27,8 @@ const submit = () => form.post(`/backup-jobs/${props.job.id}/restore`);
 </script>
 
 <template>
-    <Head :title="`Restore ${job.name}`" />
-    <AppLayout :title="`Restore ${job.name}`" :subtitle="t('Choose a backup archive and restore it into a new Docker volume.')">
+    <Head :title="t('Restore {name}', { name: job.name })" />
+    <AppLayout :title="t('Restore {name}', { name: job.name })" :subtitle="t('Choose a backup archive and restore it into a new Docker volume.')">
         <template #actions>
             <Link :href="`/backup-jobs/${job.id}`" class="btn-secondary">{{ t('Back to job') }}</Link>
         </template>
@@ -41,7 +41,7 @@ const submit = () => form.post(`/backup-jobs/${props.job.id}/restore`);
 
         <section v-if="step === 1" class="card p-4 sm:p-6">
             <h2 class="text-xl font-semibold">{{ t('Select backup') }}</h2>
-            <p class="mt-1 text-sm text-slate-400">Backups are listed newest first from {{ job.destination?.name }}.</p>
+            <p class="mt-1 text-sm text-slate-400">{{ t('Backups are listed newest first from {name}.', { name: job.destination?.name }) }}</p>
             <p v-if="listError" class="mt-4 rounded-xl bg-rose-400/10 p-3 text-sm text-rose-100">{{ listError }}</p>
 
             <div v-if="backups.length" class="mt-5 space-y-3">
@@ -64,17 +64,17 @@ const submit = () => form.post(`/backup-jobs/${props.job.id}/restore`);
                 <label class="cursor-pointer rounded-2xl border border-sky-300/40 bg-sky-300/10 p-5">
                     <input v-model="form.mode" type="radio" value="new_volume" class="text-sky-400">
                     <span class="mt-3 block text-lg font-semibold">{{ t('Restore to new volume') }}</span>
-                    <span class="mt-2 block text-sm text-slate-300">Recommended. Never overwrites the original volume.</span>
+                    <span class="mt-2 block text-sm text-slate-300">{{ t('Recommended. Never overwrites the original volume.') }}</span>
                 </label>
                 <label class="cursor-not-allowed rounded-2xl border border-white/10 bg-white/5 p-5 opacity-60">
                     <input type="radio" disabled>
                     <span class="mt-3 block text-lg font-semibold">{{ t('Restore in place') }}</span>
-                    <span class="mt-2 block text-sm text-slate-400">Coming later. Requires typed confirmation.</span>
+                    <span class="mt-2 block text-sm text-slate-400">{{ t('Coming later. Requires typed confirmation.') }}</span>
                 </label>
                 <label class="cursor-not-allowed rounded-2xl border border-white/10 bg-white/5 p-5 opacity-60">
                     <input type="radio" disabled>
                     <span class="mt-3 block text-lg font-semibold">{{ t('Safe in-place restore') }}</span>
-                    <span class="mt-2 block text-sm text-slate-400">Coming later. Will stop/restart affected containers.</span>
+                    <span class="mt-2 block text-sm text-slate-400">{{ t('Coming later. Will stop/restart affected containers.') }}</span>
                 </label>
             </div>
 
@@ -93,7 +93,7 @@ const submit = () => form.post(`/backup-jobs/${props.job.id}/restore`);
         <section v-if="step === 3" class="card p-4 sm:p-6">
             <h2 class="text-xl font-semibold">{{ t('Confirm restore') }}</h2>
             <div class="mt-5 rounded-xl border border-amber-300/30 bg-amber-300/10 p-4 text-sm text-amber-100">
-                Restore can take time. The default mode creates a new Docker volume and does not overwrite the source volume.
+                {{ t('Restore can take time. The default mode creates a new Docker volume and does not overwrite the source volume.') }}
             </div>
             <dl class="mt-5 grid gap-4 sm:grid-cols-2">
                 <div class="min-w-0"><dt class="text-xs uppercase text-slate-400">{{ t('Source') }}</dt><dd class="mt-1 break-all text-white">{{ sourceLabel(job) }}</dd></div>
@@ -108,8 +108,8 @@ const submit = () => form.post(`/backup-jobs/${props.job.id}/restore`);
         </section>
 
         <section v-if="step === 4" class="card p-4 sm:p-6">
-            <h2 class="text-xl font-semibold">Result</h2>
-            <p class="mt-2 text-sm text-slate-400">The restore run will appear in the restore run detail after submission.</p>
+            <h2 class="text-xl font-semibold">{{ t('Result') }}</h2>
+            <p class="mt-2 text-sm text-slate-400">{{ t('The restore run will appear in the restore run detail after submission.') }}</p>
         </section>
     </AppLayout>
 </template>

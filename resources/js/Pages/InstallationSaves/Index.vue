@@ -23,22 +23,22 @@ const upload = () => uploadForm.post('/installation-save/upload');
                 <div>
                     <h2 class="text-xl font-semibold text-white">{{ t('Secure save') }}</h2>
                     <p class="mt-2 text-sm text-slate-400">
-                        Creates an encrypted .vvsave from the Laravel storage volume. The archive is locked with this instance APP_KEY and does not include the key.
+                        {{ t('Creates an encrypted .vvsave from the Laravel storage volume. The archive is locked with this instance APP_KEY and does not include the key.') }}
                     </p>
                 </div>
 
                 <div class="rounded-xl border border-amber-300/30 bg-amber-300/10 p-4 text-sm text-amber-100">
-                    Keep APP_KEY outside the save. It is required to unlock this file during onboarding import, and losing it makes encrypted destination credentials unrecoverable.
+                    {{ t('Keep APP_KEY outside the save. It is required to unlock this file during onboarding import, and losing it makes encrypted destination credentials unrecoverable.') }}
                 </div>
 
                 <dl class="grid gap-4 text-sm sm:grid-cols-2">
                     <div class="rounded-xl border border-white/10 bg-white/5 p-4">
                         <dt class="text-xs uppercase tracking-wide text-slate-400">{{ t('Included') }}</dt>
-                        <dd class="mt-2 text-slate-200">SQLite database and useful files from storage.</dd>
+                        <dd class="mt-2 text-slate-200">{{ t('SQLite database and useful files from storage.') }}</dd>
                     </div>
                     <div class="rounded-xl border border-white/10 bg-white/5 p-4">
                         <dt class="text-xs uppercase tracking-wide text-slate-400">{{ t('Excluded') }}</dt>
-                        <dd class="mt-2 text-slate-200">APP_KEY, sessions, cache, queued jobs, temporary restore files, and logs.</dd>
+                        <dd class="mt-2 text-slate-200">{{ t('APP_KEY, sessions, cache, queued jobs, temporary restore files, and logs.') }}</dd>
                     </div>
                 </dl>
 
@@ -48,11 +48,11 @@ const upload = () => uploadForm.post('/installation-save/upload');
             <form class="card space-y-5 p-4 sm:p-6" @submit.prevent="upload">
                 <div>
                     <h2 class="text-xl font-semibold text-white">{{ t('Upload to destination') }}</h2>
-                    <p class="mt-2 text-sm text-slate-400">Pushes the encrypted .vvsave to an active backup destination under installation-saves/ when the provider supports paths.</p>
+                    <p class="mt-2 text-sm text-slate-400">{{ t('Pushes the encrypted .vvsave to an active backup destination under installation-saves/ when the provider supports paths.') }}</p>
                 </div>
 
                 <div v-if="!destinations.length" class="rounded-xl border border-amber-300/30 bg-amber-300/10 p-4 text-sm text-amber-100">
-                    Create and activate a backup destination before uploading installation saves.
+                    {{ t('Create and activate a backup destination before uploading installation saves.') }}
                 </div>
 
                 <label v-else class="space-y-2">

@@ -180,10 +180,10 @@ watch(() => form.source_type, (sourceType) => {
 });
 
 const summary = computed(() => {
-    if (form.schedule_type === 'hourly') return `Every ${form.schedule_config.everyHours || 1} hours`;
-    if (form.schedule_type === 'daily') return `Every day at ${form.schedule_config.time || '02:00'}`;
-    if (form.schedule_type === 'weekly') return `Every ${t(form.schedule_config.dayOfWeek || 'sunday')} at ${form.schedule_config.time || '03:00'}`;
-    return `Cron: ${form.schedule_config.expression || ''}`;
+    if (form.schedule_type === 'hourly') return t('Every {hours} hours', { hours: form.schedule_config.everyHours || 1 });
+    if (form.schedule_type === 'daily') return t('Every day at {time}', { time: form.schedule_config.time || '02:00' });
+    if (form.schedule_type === 'weekly') return t('Every {day} at {time}', { day: t(form.schedule_config.dayOfWeek || 'sunday'), time: form.schedule_config.time || '03:00' });
+    return t('Cron: {expression}', { expression: form.schedule_config.expression || '' });
 });
 
 const submissionPayload = (data: any) => {

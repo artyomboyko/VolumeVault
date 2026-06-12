@@ -1,8 +1,10 @@
 <script setup lang="ts">
 import { ref, useAttrs } from 'vue';
+import { useI18n } from '@/i18n';
 
 defineOptions({ inheritAttrs: false });
 
+const { t } = useI18n();
 const model = defineModel<string>();
 const attrs = useAttrs();
 const visible = ref(false);
@@ -19,7 +21,7 @@ const visible = ref(false);
         <button
             type="button"
             class="absolute inset-y-0 right-0 flex w-11 items-center justify-center text-slate-400 transition hover:text-sky-300 focus:outline-none focus-visible:text-sky-300"
-            :aria-label="visible ? 'Hide password' : 'Show password'"
+            :aria-label="visible ? t('Hide password') : t('Show password')"
             :aria-pressed="visible"
             @click.prevent="visible = !visible"
         >

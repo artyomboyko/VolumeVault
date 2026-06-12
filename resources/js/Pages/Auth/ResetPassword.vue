@@ -1,6 +1,9 @@
 <script setup lang="ts">
 import PasswordInput from '@/Components/PasswordInput.vue';
+import { useI18n } from '@/i18n';
 import { Head, Link, useForm } from '@inertiajs/vue3';
+
+const { t } = useI18n();
 
 const props = defineProps<{
     email?: string;
@@ -18,36 +21,36 @@ const submit = () => form.post('/reset-password');
 </script>
 
 <template>
-    <Head title="Reset password" />
+    <Head :title="t('Reset password')" />
     <main class="auth-shell">
         <form class="card w-full max-w-md space-y-5 p-4 sm:p-6" @submit.prevent="submit">
             <div>
                 <img :src="'/logo.png'" alt="VolumeVault" class="mb-4 h-16 w-auto object-contain">
-                <h1 class="text-2xl font-bold text-white">Choose a new password</h1>
-                <p class="mt-1 text-sm text-slate-400">This will invalidate existing browser sessions for the account.</p>
+                <h1 class="text-2xl font-bold text-white">{{ t('Choose a new password') }}</h1>
+                <p class="mt-1 text-sm text-slate-400">{{ t('This will invalidate existing browser sessions for the account.') }}</p>
             </div>
 
             <label class="space-y-2">
-                <span class="label">Email</span>
+                <span class="label">{{ t('Email') }}</span>
                 <input v-model="form.email" class="input" type="email" required autocomplete="email">
                 <span v-if="form.errors.email" class="text-sm text-rose-300">{{ form.errors.email }}</span>
             </label>
 
             <label class="space-y-2">
-                <span class="label">New password</span>
+                <span class="label">{{ t('New password') }}</span>
                 <PasswordInput v-model="form.password" required autocomplete="new-password" />
                 <span v-if="form.errors.password" class="text-sm text-rose-300">{{ form.errors.password }}</span>
             </label>
 
             <label class="space-y-2">
-                <span class="label">Confirm password</span>
+                <span class="label">{{ t('Confirm password') }}</span>
                 <PasswordInput v-model="form.password_confirmation" required autocomplete="new-password" />
             </label>
 
-            <button class="btn-primary w-full" :disabled="form.processing">Reset password</button>
+            <button class="btn-primary w-full" :disabled="form.processing">{{ t('Reset password') }}</button>
 
             <footer class="border-t border-white/10 pt-4 text-center text-sm text-slate-400">
-                <Link href="/login" class="font-medium text-sky-300 transition hover:text-sky-200">Back to sign in</Link>
+                <Link href="/login" class="font-medium text-sky-300 transition hover:text-sky-200">{{ t('Back to sign in') }}</Link>
             </footer>
         </form>
     </main>
