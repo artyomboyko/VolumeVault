@@ -70,6 +70,7 @@ class CreateBackupRun
                     $job->schedule_type,
                     $job->schedule_config ?? [],
                     $anchor && $anchor->isPast() ? $anchor : null,
+                    $job->timezone,
                 ),
                 'last_error' => null,
                 'last_error_at' => null,

@@ -3,28 +3,37 @@
 namespace App\Console\Commands;
 
 use App\Actions\Backup\RunBackup;
+use App\Actions\Docker\ContainerIsAlive;
 use App\Actions\Restore\RunRestore;
 use App\Models\BackupRun;
 use App\Models\RestoreRun;
 use Carbon\CarbonInterface;
 use Illuminate\Console\Command;
 use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Database\Eloquent\Model;
 use RuntimeException;
 use Throwable;
 
 class ReconcileStaleRuns extends Command
 {
     protected $signature = 'volumevault:reconcile-stale-runs
-        {--minutes= : Age threshold in minutes before a queued/running run is considered stale}';
+        {--minutes= : Age threshold in minutes before a queued/running run with no live container is considered stale}';
 
     protected $description = 'Mark backup/restore runs stuck in queued/running as failed after a worker crash, timeout or restart, and restart application containers left stopped by an interrupted backup.';
 
     /**
-     * Default staleness threshold. Kept in step with the queue jobs'
-     * WithoutOverlapping->expireAfter(86400) so a legitimate long run is
-     * never reconciled before its overlap lock would have expired.
+     * Age threshold for runs that can't be checked for liveness (queued runs a
+     * worker never picked up, or running runs whose container was never
+     * created). Running runs that DID record a container are reconciled purely
+     * on container liveness, so a legitimately long backup is never failed and
+     * this threshold can stay short.
      */
-    public const DEFAULT_THRESHOLD_MINUTES = 1440;
+    public const DEFAULT_THRESHOLD_MINUTES = 15;
+
+    public function __construct(private readonly ContainerIsAlive $containerIsAlive)
+    {
+        parent::__construct();
+    }
 
     public function handle(RunBackup $runBackup, RunRestore $runRestore): int
     {
@@ -71,8 +80,9 @@ class ReconcileStaleRuns extends Command
     {
         return BackupRun::query()
             ->whereIn('status', [BackupRun::STATUS_QUEUED, BackupRun::STATUS_RUNNING])
-            ->where(fn ($query) => $this->staleConstraint($query, $cutoff, BackupRun::STATUS_RUNNING))
-            ->get();
+            ->where(fn ($query) => $this->candidateConstraint($query, $cutoff, BackupRun::STATUS_RUNNING))
+            ->get()
+            ->filter(fn (BackupRun $run) => $this->isStale($run, $cutoff, BackupRun::STATUS_RUNNING));
     }
 
     /** @return Collection<int, RestoreRun> */
@@ -80,8 +90,9 @@ class ReconcileStaleRuns extends Command
     {
         return RestoreRun::query()
             ->whereIn('status', [RestoreRun::STATUS_QUEUED, RestoreRun::STATUS_RUNNING])
-            ->where(fn ($query) => $this->staleConstraint($query, $cutoff, RestoreRun::STATUS_RUNNING))
-            ->get();
+            ->where(fn ($query) => $this->candidateConstraint($query, $cutoff, RestoreRun::STATUS_RUNNING))
+            ->get()
+            ->filter(fn (RestoreRun $run) => $this->isStale($run, $cutoff, RestoreRun::STATUS_RUNNING));
     }
 
     /**
@@ -100,13 +111,46 @@ class ReconcileStaleRuns extends Command
     }
 
     /**
-     * Running runs are aged from started_at; queued runs that a worker never
-     * picked up are aged from created_at.
+     * Narrow the candidate set before the per-run liveness decision: every
+     * running run (its container is checked for liveness regardless of age) plus
+     * queued runs old enough to count as never picked up by a worker.
      */
-    private function staleConstraint($query, CarbonInterface $cutoff, string $runningStatus): void
+    private function candidateConstraint($query, CarbonInterface $cutoff, string $runningStatus): void
     {
         $query
-            ->where(fn ($q) => $q->where('status', $runningStatus)->where('started_at', '<', $cutoff))
+            ->where('status', $runningStatus)
             ->orWhere(fn ($q) => $q->where('status', '!=', $runningStatus)->where('created_at', '<', $cutoff));
+    }
+
+    /**
+     * Decide whether a candidate run is genuinely dead.
+     *
+     * A running run that recorded a Docker container is reconciled only when
+     * that container is confirmed gone — the backup/restore container runs with
+     * `--rm`, so a missing container means the process is gone, while a live one
+     * means a long but healthy run we must leave untouched. When Docker can't be
+     * reached (indeterminate liveness), we fall back to the age threshold rather
+     * than failing a healthy recent run on a transient blip. Running runs with no
+     * recorded container (worker died between marking running and creating the
+     * container) and queued runs also fall back to the age threshold.
+     */
+    private function isStale(Model $run, CarbonInterface $cutoff, string $runningStatus): bool
+    {
+        if ($run->status === $runningStatus) {
+            if (filled($run->docker_container_id)) {
+                $alive = $this->containerIsAlive->handle($run->docker_container_id);
+
+                if ($alive !== null) {
+                    return $alive === false;
+                }
+                // Indeterminate (Docker unreachable): fall through to the age gate.
+            }
+
+            $startedAt = $run->started_at ?? $run->created_at;
+
+            return $startedAt !== null && $startedAt->lessThan($cutoff);
+        }
+
+        return $run->created_at !== null && $run->created_at->lessThan($cutoff);
     }
 }

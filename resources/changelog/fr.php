@@ -1,6 +1,26 @@
 <?php
 
 return [
+    'reliable_run_logs' => [
+        'title' => 'Journaux d\'exécution plus fiables',
+        'description' => 'Les journaux des sauvegardes et des restaurations sont désormais ajoutés de manière atomique : deux écritures simultanées (par exemple le gestionnaire d\'échec d\'un job qui se déclenche pendant qu\'une exécution se termine) ne peuvent plus s\'écraser mutuellement. La troncature des journaux respecte aussi l\'UTF-8, évitant des journaux corrompus dans l\'affichage des détails d\'exécution.',
+    ],
+    'stale_run_liveness_reconcile' => [
+        'title' => 'Récupération plus rapide des sauvegardes interrompues',
+        'description' => 'Les exécutions bloquées après un crash, un délai dépassé ou un redémarrage du worker sont désormais récupérées beaucoup plus vite. Le réconciliateur vérifie si le conteneur de sauvegarde est toujours actif au lieu d\'attendre un délai fixe : les exécutions mortes échouent en quelques minutes, tandis que les sauvegardes réellement longues sont préservées. La récupération s\'exécute aussi automatiquement au démarrage du conteneur et redémarre les conteneurs applicatifs laissés arrêtés.',
+    ],
+    'local_destination_listing_cap' => [
+        'title' => 'Listing borné des destinations locales',
+        'description' => 'Le listing des sauvegardes d\'une destination sur système de fichiers local est désormais limité à 1000 entrées, comme les autres fournisseurs de stockage, afin qu\'un répertoire d\'archives très volumineux ne charge plus toute son arborescence dans une seule réponse.',
+    ],
+    'per_job_schedule_timezone' => [
+        'title' => 'Fuseau horaire par tâche',
+        'description' => 'Chaque tâche de sauvegarde peut désormais définir son propre fuseau horaire : une planification comme « tous les jours à 02:00 » s\'exécute à 02:00 heure locale plutôt que dans le fuseau horaire global de l\'application. Laissez « Valeur par défaut de l\'application » pour conserver le comportement précédent.',
+    ],
+    'http_security_headers' => [
+        'title' => 'En-têtes HTTP de sécurité',
+        'description' => 'Les réponses incluent désormais des en-têtes de sécurité en défense en profondeur (X-Frame-Options, X-Content-Type-Options et Referrer-Policy), ainsi que HSTS lorsque le service est servi en HTTPS. Les déploiements en HTTP simple et sur réseau local ne sont pas affectés : aucune requête n\'est jamais forcée du HTTP vers le HTTPS.',
+    ],
     'local_destination_path_error_feedback' => [
         'title' => 'Erreurs de chemin plus claires pour les destinations locales',
         'description' => 'La création d\'une destination de type système de fichiers local affiche désormais les erreurs de validation du chemin directement dans le formulaire — par exemple un chemin bloqué par la liste d\'autorisation des chemins hôtes — au lieu de revenir silencieusement sur la page de création.',

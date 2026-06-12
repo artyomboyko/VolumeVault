@@ -97,7 +97,7 @@ class BackupJobController extends Controller
             'status' => BackupJob::STATUS_ACTIVE,
             'pause_reason' => null,
             'last_error' => null,
-            'next_run_at' => $this->scheduleCalculator->nextRunAt($backupJob->schedule_type, $backupJob->schedule_config ?? []),
+            'next_run_at' => $this->scheduleCalculator->nextRunAt($backupJob->schedule_type, $backupJob->schedule_config ?? [], null, $backupJob->timezone),
         ])->save();
 
         return response()->json(['data' => $this->serializeJob($backupJob->fresh(['destination', 'notificationChannels']))]);
@@ -116,6 +116,7 @@ class BackupJobController extends Controller
     {
         $scheduleType = $request->input('schedule_type');
         $scheduleConfig = $request->normalizedScheduleConfig();
+        $timezone = $request->filled('timezone') ? $request->input('timezone') : null;
         $backupExcludeRegexp = trim((string) $request->input('backup_exclude_regexp', ''));
         $sourceType = $request->input('source_type', BackupJob::SOURCE_TYPE_DOCKER_VOLUME);
         $isHostPath = $sourceType === BackupJob::SOURCE_TYPE_HOST_PATH;
@@ -129,9 +130,10 @@ class BackupJobController extends Controller
             'schedule_type' => $scheduleType,
             'schedule_config' => $scheduleConfig,
             'cron_expression' => $this->scheduleCalculator->cronExpression($scheduleType, $scheduleConfig),
+            'timezone' => $timezone,
             'status' => $status ?: BackupJob::STATUS_ACTIVE,
             'notifications_enabled' => $request->has('notifications_enabled') ? $request->boolean('notifications_enabled') : (bool) ($job?->notifications_enabled ?? true),
-            'next_run_at' => $this->scheduleCalculator->nextRunAt($scheduleType, $scheduleConfig),
+            'next_run_at' => $this->scheduleCalculator->nextRunAt($scheduleType, $scheduleConfig, null, $timezone),
             'retention_days' => $request->input('retention_days'),
             'retention_count' => $request->input('retention_count'),
             'backup_exclude_regexp' => $backupExcludeRegexp !== '' ? $backupExcludeRegexp : null,

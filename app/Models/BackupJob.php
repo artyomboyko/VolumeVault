@@ -42,6 +42,7 @@ class BackupJob extends Model
         'schedule_type',
         'schedule_config',
         'cron_expression',
+        'timezone',
         'status',
         'notifications_enabled',
         'use_custom_alert_settings',

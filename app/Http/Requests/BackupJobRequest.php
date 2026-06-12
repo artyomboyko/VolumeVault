@@ -54,6 +54,7 @@ class BackupJobRequest extends FormRequest
                 BackupJob::SCHEDULE_CRON,
             ])],
             'schedule_config' => ['nullable', 'array'],
+            'timezone' => ['nullable', 'string', Rule::in(\DateTimeZone::listIdentifiers())],
             'retention_days' => ['nullable', 'integer', 'min:1'],
             'retention_count' => ['nullable', 'integer', 'min:1'],
             'backup_exclude_regexp' => ['nullable', 'string', 'max:1000'],

@@ -1,6 +1,26 @@
 <?php
 
 return [
+    'reliable_run_logs' => [
+        'title' => 'More reliable run logs',
+        'description' => 'Backup and restore run logs are now appended atomically, so concurrent writers (for example a failed-job handler firing while a run finishes) can no longer overwrite each other\'s output. Log truncation is also UTF-8 aware, so trimmed logs stay valid and no longer break the run details view.',
+    ],
+    'stale_run_liveness_reconcile' => [
+        'title' => 'Faster recovery of interrupted backups',
+        'description' => 'Runs left stuck after a worker crash, timeout or restart are now recovered much faster. The reconciler checks whether the backup container is still alive instead of waiting a fixed delay, so dead runs are failed within minutes while genuinely long backups are left untouched. Recovery also runs automatically on container startup, restarting any application containers left stopped by an interrupted backup.',
+    ],
+    'local_destination_listing_cap' => [
+        'title' => 'Bounded local destination listings',
+        'description' => 'Listing backups on a local filesystem destination is now capped at 1000 entries, matching the other storage providers, so a destination with a very large archive directory no longer loads its whole tree into a single response.',
+    ],
+    'per_job_schedule_timezone' => [
+        'title' => 'Per-job schedule timezone',
+        'description' => 'Each backup job can now define its own timezone, so a schedule like "daily at 02:00" runs at 02:00 local time instead of in the global application timezone. Leave it on "Application default" to keep the previous behaviour.',
+    ],
+    'http_security_headers' => [
+        'title' => 'HTTP security headers',
+        'description' => 'Responses now include defense-in-depth security headers (X-Frame-Options, X-Content-Type-Options and Referrer-Policy), plus HSTS when served over HTTPS. Plain-HTTP and LAN deployments are unaffected — no request is ever forced from HTTP to HTTPS.',
+    ],
     'local_destination_path_error_feedback' => [
         'title' => 'Clearer local destination path errors',
         'description' => 'Creating a local filesystem destination now surfaces path validation errors directly in the form — such as a path blocked by the host path allowlist — instead of silently returning to the create page.',

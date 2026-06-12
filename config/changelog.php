@@ -3,8 +3,28 @@
 return [
     'unreleased' => [
         [
+            'type' => 'feature',
+            'key' => 'per_job_schedule_timezone',
+        ],
+        [
             'type' => 'change',
             'key' => 'local_destination_path_error_feedback',
+        ],
+        [
+            'type' => 'change',
+            'key' => 'reliable_run_logs',
+        ],
+        [
+            'type' => 'change',
+            'key' => 'stale_run_liveness_reconcile',
+        ],
+        [
+            'type' => 'change',
+            'key' => 'local_destination_listing_cap',
+        ],
+        [
+            'type' => 'change',
+            'key' => 'http_security_headers',
         ],
     ],
     'releases' => [

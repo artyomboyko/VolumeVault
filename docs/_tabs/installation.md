@@ -102,6 +102,8 @@ This applies to any HTTPS-terminating proxy (HAProxy/OPNsense, Pangolin, Caddy, 
 Client -> HTTPS -> reverse proxy -> HTTP -> VolumeVault (port 8080)
 ```
 
+Once HTTPS is in place, set `SESSION_SECURE_COOKIE=true` so the session cookie is only sent over HTTPS. With `TRUSTED_PROXIES` set and `X-Forwarded-Proto: https` forwarded, VolumeVault sees the request as secure, so this works behind the proxy. Keep it off for plain-HTTP or LAN-only access, otherwise the `Secure` cookie is never sent and login fails.
+
 ## Large Installation Compose
 
 For larger installations, you can split the migration, web app, queue worker, and scheduler into separate services while keeping the same image and storage volume:
@@ -181,6 +183,7 @@ When `APP_VERSION` is a tagged release, VolumeVault can also check GitHub for a 
 - `QUEUE_CONNECTION`: defaults to `database`.
 - `CACHE_STORE`: defaults to `database`.
 - `SESSION_DRIVER`: defaults to `database`.
+- `SESSION_SECURE_COOKIE`: defaults to off. Set to `true` when serving over HTTPS so the session cookie carries the `Secure` flag and is only sent over HTTPS. Leave it off for plain-HTTP or LAN-only access — a `Secure` cookie is never sent over plain HTTP, so enabling it without TLS prevents login.
 - `VOLUMEVAULT_MIGRATIONS_ENABLED`: set to `false` only when running migrations in a separate container.
 - `VOLUMEVAULT_QUEUE_ENABLED`: set to `false` only when splitting queue workers into separate containers.
 - `VOLUMEVAULT_SCHEDULER_ENABLED`: set to `false` only when splitting the scheduler into a separate container.

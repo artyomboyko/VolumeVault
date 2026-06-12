@@ -42,6 +42,36 @@ class BackupScheduleCalculatorTest extends TestCase
         $this->assertSame('2026-05-01 02:00:00', $next->format('Y-m-d H:i:s'));
     }
 
+    public function test_per_job_timezone_overrides_the_application_timezone(): void
+    {
+        Config::set('app.timezone', 'UTC');
+
+        $calculator = app(BackupScheduleCalculator::class);
+        $from = CarbonImmutable::parse('2026-05-01 00:10:00', 'UTC');
+
+        // "Daily at 02:00" in Europe/Paris (UTC+2 in May) is 00:00 UTC, so the
+        // next occurrence after 00:10 UTC is the following day's slot. The result
+        // is returned in the app timezone (UTC) so it stores the correct instant.
+        $next = $calculator->nextRunAt(BackupJob::SCHEDULE_DAILY, ['time' => '02:00'], $from, 'Europe/Paris');
+
+        $this->assertSame('UTC', $next->timezoneName);
+        $this->assertSame('2026-05-02 00:00:00', $next->format('Y-m-d H:i:s'));
+        // Expressed back in Paris it is the configured 02:00 local slot.
+        $this->assertSame('2026-05-02 02:00:00', $next->copy()->setTimezone('Europe/Paris')->format('Y-m-d H:i:s'));
+    }
+
+    public function test_null_job_timezone_falls_back_to_application_timezone(): void
+    {
+        Config::set('app.timezone', 'Europe/Paris');
+
+        $calculator = app(BackupScheduleCalculator::class);
+        $from = CarbonImmutable::parse('2026-05-01 01:10:00', 'Europe/Paris');
+        $next = $calculator->nextRunAt(BackupJob::SCHEDULE_DAILY, ['time' => '02:00'], $from, null);
+
+        $this->assertSame('Europe/Paris', $next->timezoneName);
+        $this->assertSame('2026-05-01 02:00:00', $next->format('Y-m-d H:i:s'));
+    }
+
     public function test_next_run_anchored_on_serviced_slot_does_not_drift(): void
     {
         $calculator = app(BackupScheduleCalculator::class);

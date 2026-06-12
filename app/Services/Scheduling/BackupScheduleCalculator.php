@@ -45,14 +45,24 @@ class BackupScheduleCalculator
         };
     }
 
-    public function nextRunAt(string $type, array $config, ?CarbonInterface $from = null): CarbonInterface
+    public function nextRunAt(string $type, array $config, ?CarbonInterface $from = null, ?string $timezone = null): CarbonInterface
     {
-        $timezone = config('app.timezone');
+        // Evaluate the cron in the job's timezone (falling back to the app
+        // timezone) so "daily at 02:00" means 02:00 local time rather than 02:00
+        // in the global app timezone (UTC by default).
+        $scheduleTimezone = $timezone ?: config('app.timezone');
         $expression = new CronExpression($this->cronExpression($type, $config));
-        $current = ($from ?: now($timezone))->setTimezone($timezone)->toDateTimeImmutable();
-        $next = $expression->getNextRunDate($current, 0, false, $timezone);
+        $current = ($from ?: now($scheduleTimezone))->setTimezone($scheduleTimezone)->toDateTimeImmutable();
+        $next = $expression->getNextRunDate($current, 0, false, $scheduleTimezone);
 
-        return now($timezone)->setTimestamp($next->getTimestamp())->setTimezone($timezone);
+        // Return the instant in the application timezone so it is stored as the
+        // correct absolute instant: Eloquent serializes a datetime by formatting
+        // the Carbon in its current timezone *without* converting to UTC, so a
+        // job-timezone Carbon (e.g. 02:00 Europe/Zurich) would otherwise be
+        // written as "02:00" and read back as 02:00 in the app timezone.
+        $appTimezone = config('app.timezone');
+
+        return now($appTimezone)->setTimestamp($next->getTimestamp())->setTimezone($appTimezone);
     }
 
     public function summary(string $type, array $config): string

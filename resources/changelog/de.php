@@ -1,6 +1,26 @@
 <?php
 
 return [
+    'reliable_run_logs' => [
+        'title' => 'Zuverlässigere Ausführungsprotokolle',
+        'description' => 'Sicherungs- und Wiederherstellungsprotokolle werden jetzt atomar angehängt, sodass gleichzeitige Schreibvorgänge (etwa der Fehler-Handler eines Jobs, der auslöst, während eine Ausführung endet) sich nicht mehr gegenseitig überschreiben. Das Kürzen der Protokolle ist außerdem UTF-8-fähig, sodass gekürzte Protokolle gültig bleiben und die Detailansicht nicht mehr beschädigen.',
+    ],
+    'stale_run_liveness_reconcile' => [
+        'title' => 'Schnellere Wiederherstellung unterbrochener Sicherungen',
+        'description' => 'Nach einem Worker-Absturz, Timeout oder Neustart hängengebliebene Ausführungen werden nun viel schneller wiederhergestellt. Der Abgleich prüft, ob der Sicherungs-Container noch aktiv ist, statt eine feste Wartezeit abzuwarten: tote Ausführungen schlagen innerhalb von Minuten fehl, während wirklich lange Sicherungen unangetastet bleiben. Die Wiederherstellung läuft außerdem automatisch beim Start des Containers und startet gestoppte Anwendungs-Container neu.',
+    ],
+    'local_destination_listing_cap' => [
+        'title' => 'Begrenzte Auflistung lokaler Ziele',
+        'description' => 'Die Auflistung der Sicherungen eines lokalen Dateisystemziels ist nun auf 1000 Einträge begrenzt, wie bei den anderen Speicheranbietern, sodass ein Ziel mit einem sehr großen Archivverzeichnis nicht mehr den gesamten Baum in einer einzigen Antwort lädt.',
+    ],
+    'per_job_schedule_timezone' => [
+        'title' => 'Zeitzone pro Auftrag',
+        'description' => 'Jeder Sicherungsauftrag kann nun eine eigene Zeitzone festlegen, sodass ein Zeitplan wie „täglich um 02:00“ um 02:00 Ortszeit statt in der globalen Anwendungszeitzone läuft. Belassen Sie es auf „Anwendungsstandard“, um das bisherige Verhalten beizubehalten.',
+    ],
+    'http_security_headers' => [
+        'title' => 'HTTP-Sicherheitsheader',
+        'description' => 'Antworten enthalten nun Sicherheitsheader zur Verteidigung in der Tiefe (X-Frame-Options, X-Content-Type-Options und Referrer-Policy) sowie HSTS bei Auslieferung über HTTPS. Reine HTTP- und LAN-Bereitstellungen sind nicht betroffen — keine Anfrage wird jemals von HTTP auf HTTPS gezwungen.',
+    ],
     'local_destination_path_error_feedback' => [
         'title' => 'Klarere Pfadfehler für lokale Ziele',
         'description' => 'Beim Anlegen eines lokalen Dateisystem-Ziels werden Pfad-Validierungsfehler — etwa ein durch die Host-Pfad-Allowlist blockierter Pfad — jetzt direkt im Formular angezeigt, statt unbemerkt zur Erstellungsseite zurückzukehren.',

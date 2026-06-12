@@ -155,7 +155,7 @@ class DestinationStorage
             BackupDestination::PROVIDER_AZURE_BLOB => $this->listAzure($destination, PHP_INT_MAX),
             BackupDestination::PROVIDER_DROPBOX => $this->listDropbox($destination, PHP_INT_MAX),
             BackupDestination::PROVIDER_GOOGLE_DRIVE => $this->listGoogleDrive($destination, PHP_INT_MAX),
-            BackupDestination::PROVIDER_LOCAL => $this->listLocal($destination),
+            BackupDestination::PROVIDER_LOCAL => $this->listLocal($destination, PHP_INT_MAX),
             default => throw new RuntimeException('Unsupported backup destination provider.'),
         };
     }
@@ -1004,20 +1004,41 @@ class DestinationStorage
         }
     }
 
-    private function listLocal(BackupDestination $destination): array
+    private function listLocal(BackupDestination $destination, int $limit = 1000): array
     {
         $this->testLocal($destination);
         $base = rtrim((string) $destination->setting('archive_path'), '/');
 
-        return collect(File::allFiles($base))
-            ->map(fn (\SplFileInfo $file) => [
-                'key' => ltrim(Str::after($file->getPathname(), $base), '/'),
-                'display_name' => ltrim(Str::after($file->getPathname(), $base), '/'),
+        // Stream the directory tree and stop at the cap instead of materializing
+        // every file (File::allFiles) into a single JSON response, matching the
+        // 1000-item cap the other providers already enforce.
+        $iterator = new \RecursiveIteratorIterator(
+            new \RecursiveDirectoryIterator($base, \FilesystemIterator::SKIP_DOTS),
+            \RecursiveIteratorIterator::LEAVES_ONLY,
+        );
+
+        $objects = [];
+
+        foreach ($iterator as $file) {
+            if (! $file->isFile()) {
+                continue;
+            }
+
+            if (count($objects) >= $limit) {
+                break;
+            }
+
+            $relative = ltrim(Str::after($file->getPathname(), $base), '/');
+
+            $objects[] = [
+                'key' => $relative,
+                'display_name' => $relative,
                 'size' => $file->getSize(),
                 'last_modified' => date(DATE_ATOM, $file->getMTime()),
-            ])
-            ->values()
-            ->all();
+            ];
+        }
+
+        return $objects;
     }
 
     private function uploadLocal(BackupDestination $destination, string $sourcePath, string $filename, ?string $directory): string
