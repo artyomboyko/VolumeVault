@@ -1,6 +1,26 @@
 <?php
 
 return [
+    'reliable_run_logs' => [
+        'title' => 'Log di esecuzione più affidabili',
+        'description' => 'I log dei backup e dei ripristini ora vengono aggiunti in modo atomico, quindi le scritture simultanee (ad esempio il gestore di fallimento di un job che si attiva mentre un\'esecuzione termina) non possono più sovrascriversi a vicenda. Il troncamento dei log rispetta anche UTF-8, mantenendo validi i log accorciati ed evitando che compromettano la vista dei dettagli dell\'esecuzione.',
+    ],
+    'stale_run_liveness_reconcile' => [
+        'title' => 'Recupero più rapido dei backup interrotti',
+        'description' => 'Le esecuzioni bloccate dopo un crash, un timeout o un riavvio del worker ora vengono recuperate molto più rapidamente. Il riconciliatore verifica se il container di backup è ancora attivo invece di attendere un ritardo fisso: le esecuzioni morte falliscono in pochi minuti, mentre i backup realmente lunghi restano intatti. Il recupero viene eseguito anche automaticamente all\'avvio del container e riavvia i container applicativi rimasti fermi.',
+    ],
+    'local_destination_listing_cap' => [
+        'title' => 'Elenchi limitati delle destinazioni locali',
+        'description' => 'L\'elenco dei backup di una destinazione su filesystem locale è ora limitato a 1000 voci, come gli altri provider di archiviazione, così una destinazione con una directory di archivi molto grande non carica più l\'intero albero in un\'unica risposta.',
+    ],
+    'per_job_schedule_timezone' => [
+        'title' => 'Fuso orario per processo',
+        'description' => 'Ogni processo di backup può ora definire il proprio fuso orario, così una pianificazione come «ogni giorno alle 02:00» viene eseguita alle 02:00 ora locale invece che nel fuso orario globale dell\'applicazione. Lascialo su «Predefinito dell\'applicazione» per mantenere il comportamento precedente.',
+    ],
+    'http_security_headers' => [
+        'title' => 'Intestazioni HTTP di sicurezza',
+        'description' => 'Le risposte ora includono intestazioni di sicurezza di difesa in profondità (X-Frame-Options, X-Content-Type-Options e Referrer-Policy), oltre a HSTS quando servite tramite HTTPS. Le installazioni in HTTP semplice e su rete locale non sono interessate: nessuna richiesta viene mai forzata da HTTP a HTTPS.',
+    ],
     'local_destination_path_error_feedback' => [
         'title' => 'Errori di percorso più chiari per le destinazioni locali',
         'description' => 'Durante la creazione di una destinazione su filesystem locale, gli errori di convalida del percorso — ad esempio un percorso bloccato dalla allowlist dei percorsi host — vengono ora mostrati direttamente nel modulo, invece di tornare silenziosamente alla pagina di creazione.',

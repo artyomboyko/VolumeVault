@@ -147,7 +147,7 @@ class BackupJobController extends Controller
             'pause_reason' => null,
             'last_error' => null,
             'last_error_at' => null,
-            'next_run_at' => $this->scheduleCalculator->nextRunAt($backupJob->schedule_type, $backupJob->schedule_config ?? []),
+            'next_run_at' => $this->scheduleCalculator->nextRunAt($backupJob->schedule_type, $backupJob->schedule_config ?? [], null, $backupJob->timezone),
         ])->save();
 
         return back()->with('success', 'Backup job resumed.');
@@ -168,6 +168,8 @@ class BackupJobController extends Controller
                 ->orderBy('id')
                 ->get()
                 ->map(fn (AlertRule $rule): array => $this->serializeAlertRule($rule)),
+            'timezones' => \DateTimeZone::listIdentifiers(),
+            'appTimezone' => config('app.timezone'),
         ];
     }
 
@@ -189,6 +191,7 @@ class BackupJobController extends Controller
     {
         $scheduleType = $request->input('schedule_type');
         $scheduleConfig = $request->normalizedScheduleConfig();
+        $timezone = $request->filled('timezone') ? $request->input('timezone') : null;
         $backupExcludeRegexp = trim((string) $request->input('backup_exclude_regexp', ''));
         $sourceType = $request->input('source_type', BackupJob::SOURCE_TYPE_DOCKER_VOLUME);
         $isHostPath = $sourceType === BackupJob::SOURCE_TYPE_HOST_PATH;
@@ -202,11 +205,12 @@ class BackupJobController extends Controller
             'schedule_type' => $scheduleType,
             'schedule_config' => $scheduleConfig,
             'cron_expression' => $this->scheduleCalculator->cronExpression($scheduleType, $scheduleConfig),
+            'timezone' => $timezone,
             'status' => $status ?: BackupJob::STATUS_ACTIVE,
             'notifications_enabled' => $request->has('notifications_enabled') ? $request->boolean('notifications_enabled') : (bool) ($job?->notifications_enabled ?? true),
             'use_custom_alert_settings' => $request->has('use_custom_alert_settings') ? $request->boolean('use_custom_alert_settings') : (bool) ($job?->use_custom_alert_settings ?? false),
             'alert_notifications_enabled' => $request->has('alert_notifications_enabled') ? $request->boolean('alert_notifications_enabled') : (bool) ($job?->alert_notifications_enabled ?? true),
-            'next_run_at' => $this->scheduleCalculator->nextRunAt($scheduleType, $scheduleConfig),
+            'next_run_at' => $this->scheduleCalculator->nextRunAt($scheduleType, $scheduleConfig, null, $timezone),
             'retention_days' => $request->input('retention_days'),
             'retention_count' => $request->input('retention_count'),
             'backup_exclude_regexp' => $backupExcludeRegexp !== '' ? $backupExcludeRegexp : null,

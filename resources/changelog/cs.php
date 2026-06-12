@@ -1,6 +1,26 @@
 <?php
 
 return [
+    'reliable_run_logs' => [
+        'title' => 'Spolehlivější protokoly běhů',
+        'description' => 'Záznamy do protokolů záloh a obnov se nyní přidávají atomicky, takže souběžné zápisy (například obslužná rutina selhání úlohy, která se spustí během dokončování běhu) se již nemohou navzájem přepsat. Zkracování protokolů respektuje UTF-8, takže zkrácené protokoly zůstávají platné a nerozbíjejí zobrazení detailů běhu.',
+    ],
+    'stale_run_liveness_reconcile' => [
+        'title' => 'Rychlejší obnova přerušených záloh',
+        'description' => 'Běhy, které uvíznou po pádu, vypršení časového limitu nebo restartu workeru, se nyní obnovují mnohem rychleji. Sesouhlasení kontroluje, zda je zálohovací kontejner stále aktivní, místo čekání na pevné zpoždění: mrtvé běhy selžou během několika minut, zatímco skutečně dlouhé zálohy zůstanou nedotčené. Obnova také probíhá automaticky při startu kontejneru a restartuje aplikační kontejnery ponechané zastavené.',
+    ],
+    'local_destination_listing_cap' => [
+        'title' => 'Omezené výpisy místních cílů',
+        'description' => 'Výpis záloh u cíle na místním souborovém systému je nyní omezen na 1000 položek, stejně jako u ostatních úložných poskytovatelů, takže cíl s velmi velkým adresářem archivů již nenačítá celý strom do jediné odpovědi.',
+    ],
+    'per_job_schedule_timezone' => [
+        'title' => 'Časové pásmo pro každou úlohu',
+        'description' => 'Každá zálohovací úloha může nyní definovat vlastní časové pásmo, takže plán jako „denně ve 02:00“ běží ve 02:00 místního času namísto globálního časového pásma aplikace. Ponechte „Výchozí nastavení aplikace“ pro zachování předchozího chování.',
+    ],
+    'http_security_headers' => [
+        'title' => 'Bezpečnostní hlavičky HTTP',
+        'description' => 'Odpovědi nyní obsahují bezpečnostní hlavičky pro vícevrstvou ochranu (X-Frame-Options, X-Content-Type-Options a Referrer-Policy) a také HSTS při servírování přes HTTPS. Nasazení na prostém HTTP a v místní síti nejsou ovlivněna — žádný požadavek není nikdy nucen z HTTP na HTTPS.',
+    ],
     'local_destination_path_error_feedback' => [
         'title' => 'Jasnější chyby cest u místních cílů',
         'description' => 'Při vytváření cíle v místním souborovém systému se chyby ověření cesty — například cesta blokovaná seznamem povolených cest hostitele — nyní zobrazují přímo ve formuláři, místo tichého návratu na stránku vytvoření.',

@@ -12,6 +12,14 @@ VolumeVault can start privileged Docker operations through the Docker socket. Tr
 
 On first launch, VolumeVault requires onboarding and creates the first account as an administrator. Admins can manage users, encrypted destinations, notification channels, restores, and active Docker operations such as volume sync and manual backup runs. Regular users have read-only access to operational screens.
 
+## HTTPS And Session Cookie
+
+When VolumeVault is served over HTTPS (directly or behind a TLS-terminating reverse proxy), set `SESSION_SECURE_COOKIE=true`. This marks the session cookie with the `Secure` flag so the browser only ever sends it over HTTPS, which protects it from being leaked over an accidental plain-HTTP request.
+
+Keep it **off** for plain-HTTP or LAN-only deployments: a `Secure` cookie is never sent over plain HTTP, so enabling it without TLS means the browser drops the session cookie and login fails. Behind a reverse proxy, the request is recognised as secure once `TRUSTED_PROXIES` is set and the proxy forwards `X-Forwarded-Proto: https` (see [Installation]({{ '/installation/' | relative_url }})).
+
+VolumeVault also sends defense-in-depth response headers (`X-Frame-Options`, `X-Content-Type-Options`, `Referrer-Policy`), and adds `Strict-Transport-Security` (HSTS) automatically when a request is served over HTTPS. No request is ever redirected from HTTP to HTTPS, so plain-HTTP deployments are unaffected.
+
 ## Password Recovery
 
 If outbound mail is configured, the login screen shows a password reset link. Configure the container with a real mail transport, for example SMTP:

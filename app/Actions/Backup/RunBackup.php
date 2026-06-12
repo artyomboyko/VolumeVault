@@ -267,6 +267,7 @@ class RunBackup
                     $job->schedule_type,
                     $job->schedule_config ?? [],
                     $job->next_run_at && $job->next_run_at->isPast() ? $job->next_run_at : null,
+                    $job->timezone,
                 ),
             ])->save();
         }

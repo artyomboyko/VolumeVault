@@ -92,6 +92,10 @@ VOLUMEVAULT_SSRF_ALLOWED_IPS=192.168.1.0/24
 
 The host is resolved just before connecting, so a determined attacker controlling DNS could still rebind it afterwards — accepted here because every guarded action is admin-gated. Notification channels (Gotify, Ntfy, SMTP, …) are **not** guarded: they are blind, admin-configured, and commonly self-hosted on the LAN.
 
+### Serving over HTTPS
+
+When you serve VolumeVault over HTTPS (directly or behind a TLS-terminating reverse proxy), set `SESSION_SECURE_COOKIE=true` so the session cookie is only sent over HTTPS. **Leave it off for plain-HTTP or LAN-only access** — a `Secure` cookie is never sent over plain HTTP, so enabling it without TLS breaks login. Behind a reverse proxy, this works once `TRUSTED_PROXIES` is set and the proxy forwards `X-Forwarded-Proto: https` (see the docs for the full reverse-proxy setup).
+
 Keep your `APP_KEY` safe: it is required to decrypt destinations, notifications, and installation saves.
 
 ## Documentation

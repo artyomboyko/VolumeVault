@@ -1,6 +1,26 @@
 <?php
 
 return [
+    'reliable_run_logs' => [
+        'title' => 'Betrouwbaardere uitvoeringslogboeken',
+        'description' => 'Logboeken van back-ups en herstelacties worden nu atomair toegevoegd, zodat gelijktijdige schrijfacties (bijvoorbeeld de mislukt-handler van een taak die afgaat terwijl een uitvoering eindigt) elkaar niet meer kunnen overschrijven. Het inkorten van logboeken is bovendien UTF-8-bewust, zodat ingekorte logboeken geldig blijven en de detailweergave van de uitvoering niet meer breken.',
+    ],
+    'stale_run_liveness_reconcile' => [
+        'title' => 'Sneller herstel van onderbroken back-ups',
+        'description' => 'Uitvoeringen die vastlopen na een crash, time-out of herstart van de worker worden nu veel sneller hersteld. De reconciler controleert of de back-upcontainer nog actief is in plaats van een vaste vertraging af te wachten: dode uitvoeringen mislukken binnen minuten, terwijl echt lange back-ups ongemoeid blijven. Het herstel draait ook automatisch bij het opstarten van de container en herstart applicatiecontainers die gestopt zijn achtergelaten.',
+    ],
+    'local_destination_listing_cap' => [
+        'title' => 'Begrensde lijsten van lokale bestemmingen',
+        'description' => 'Het opsommen van back-ups op een lokale bestandssysteembestemming is nu beperkt tot 1000 items, net als bij de andere opslagproviders, zodat een bestemming met een zeer grote archiefmap niet langer de hele boom in één antwoord laadt.',
+    ],
+    'per_job_schedule_timezone' => [
+        'title' => 'Tijdzone per taak',
+        'description' => 'Elke back-uptaak kan nu een eigen tijdzone instellen, zodat een schema als "dagelijks om 02:00" om 02:00 lokale tijd draait in plaats van in de globale applicatietijdzone. Laat het op "Standaard van applicatie" staan om het vorige gedrag te behouden.',
+    ],
+    'http_security_headers' => [
+        'title' => 'HTTP-beveiligingsheaders',
+        'description' => 'Antwoorden bevatten nu beveiligingsheaders voor verdediging in de diepte (X-Frame-Options, X-Content-Type-Options en Referrer-Policy), plus HSTS bij levering via HTTPS. Implementaties met gewone HTTP en op een LAN worden niet beïnvloed — geen enkel verzoek wordt ooit van HTTP naar HTTPS gedwongen.',
+    ],
     'local_destination_path_error_feedback' => [
         'title' => 'Duidelijkere padfouten voor lokale bestemmingen',
         'description' => 'Bij het aanmaken van een lokale bestandssysteembestemming worden padvalidatiefouten — zoals een pad dat door de host-pad-allowlist wordt geblokkeerd — nu rechtstreeks in het formulier getoond, in plaats van stilletjes terug te keren naar de aanmaakpagina.',

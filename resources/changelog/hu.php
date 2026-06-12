@@ -1,6 +1,26 @@
 <?php
 
 return [
+    'reliable_run_logs' => [
+        'title' => 'Megbízhatóbb futtatási naplók',
+        'description' => 'A biztonsági mentések és visszaállítások naplóbejegyzései mostantól atomi módon kerülnek hozzáfűzésre, így az egyidejű írások (például egy feladat hibakezelője, amely egy futtatás befejeződésekor indul el) nem írják felül egymást. A naplók csonkolása UTF-8-tudatos, így a rövidített naplók érvényesek maradnak, és nem törik el a futtatás részleteinek nézetét.',
+    ],
+    'stale_run_liveness_reconcile' => [
+        'title' => 'Megszakadt biztonsági mentések gyorsabb helyreállítása',
+        'description' => 'A worker összeomlása, időtúllépése vagy újraindulása után elakadt futtatások mostantól sokkal gyorsabban helyreállnak. Az egyeztető azt ellenőrzi, hogy a biztonsági mentés tárolója még aktív-e, ahelyett, hogy fix késleltetést várna: a halott futtatások perceken belül meghiúsulnak, míg a valóban hosszú mentések érintetlenek maradnak. A helyreállítás a tároló indításakor is automatikusan lefut, és újraindítja a leállítva hagyott alkalmazástárolókat.',
+    ],
+    'local_destination_listing_cap' => [
+        'title' => 'Korlátozott helyi célok listázása',
+        'description' => 'A helyi fájlrendszeren lévő cél biztonsági mentéseinek listázása mostantól 1000 bejegyzésre van korlátozva, akárcsak a többi tárolószolgáltatónál, így egy nagyon nagy archívumkönyvtárral rendelkező cél már nem tölti be a teljes fát egyetlen válaszba.',
+    ],
+    'per_job_schedule_timezone' => [
+        'title' => 'Feladatonkénti időzóna',
+        'description' => 'Minden biztonsági mentési feladat mostantól megadhatja saját időzónáját, így egy olyan ütemezés, mint a „naponta 02:00-kor”, helyi idő szerint 02:00-kor fut, nem pedig a globális alkalmazás-időzónában. Hagyja „Alkalmazás alapértelmezett” értéken a korábbi viselkedés megtartásához.',
+    ],
+    'http_security_headers' => [
+        'title' => 'HTTP biztonsági fejlécek',
+        'description' => 'A válaszok mostantól mélységi védelmet biztosító biztonsági fejléceket tartalmaznak (X-Frame-Options, X-Content-Type-Options és Referrer-Policy), valamint HSTS-t, ha HTTPS-en keresztül szolgálják ki. A sima HTTP és a helyi hálózati telepítéseket ez nem érinti — egyetlen kérés sem kényszerül soha HTTP-ről HTTPS-re.',
+    ],
     'local_destination_path_error_feedback' => [
         'title' => 'Érthetőbb útvonalhibák a helyi céloknál',
         'description' => 'Helyi fájlrendszer-cél létrehozásakor az útvonal-ellenőrzési hibák — például a gazdagép útvonal-engedélylistája által letiltott útvonal — mostantól közvetlenül az űrlapon jelennek meg, ahelyett, hogy némán visszatérnének a létrehozási oldalra.',

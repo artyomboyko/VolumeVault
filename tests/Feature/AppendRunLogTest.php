@@ -78,6 +78,37 @@ class AppendRunLogTest extends TestCase
         $this->assertStringContainsString('truncated', $logs);
     }
 
+    public function test_capped_logs_stay_valid_utf8(): void
+    {
+        // Odd budget so a byte-based cut would land in the middle of a 2-byte
+        // 'é' sequence; mb_strcut must keep the result valid UTF-8.
+        config(['volumevault.run_logs.max_bytes' => 65]);
+        $run = $this->backupRun();
+
+        $append = app(AppendRunLog::class);
+        $append->handle($run, str_repeat('é', 200));
+        $append->handle($run, 'most recent line');
+
+        $logs = $run->fresh()->logs;
+        $this->assertLessThanOrEqual(65, strlen($logs));
+        $this->assertTrue(mb_check_encoding($logs, 'UTF-8'));
+        // The stored value must round-trip through json_encode (the API path).
+        $this->assertNotFalse(json_encode(['logs' => $logs]));
+        $this->assertStringContainsString('most recent line', $logs);
+    }
+
+    public function test_cap_smaller_than_the_marker_is_still_respected(): void
+    {
+        config(['volumevault.run_logs.max_bytes' => 10]);
+        $run = $this->backupRun();
+
+        app(AppendRunLog::class)->handle($run, str_repeat('é', 50));
+
+        $logs = $run->fresh()->logs;
+        $this->assertLessThanOrEqual(10, strlen($logs));
+        $this->assertTrue(mb_check_encoding($logs, 'UTF-8'));
+    }
+
     private function backupRun(): BackupRun
     {
         $destination = BackupDestination::create([

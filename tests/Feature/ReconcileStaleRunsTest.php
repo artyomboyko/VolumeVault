@@ -209,10 +209,89 @@ class ReconcileStaleRunsTest extends TestCase
         $this->assertSame([], $docker->commands);
     }
 
-    public function test_default_threshold_matches_overlap_lock_expiry(): void
+    public function test_default_threshold_is_short_now_that_liveness_guards_running_runs(): void
     {
-        // 86400s expireAfter on the queue jobs == 1440 minutes.
-        $this->assertSame(86400, ReconcileStaleRuns::DEFAULT_THRESHOLD_MINUTES * 60);
+        // Liveness checking (not the age threshold) protects genuinely long
+        // running backups, so the threshold can stay short — it only gates
+        // queued runs a worker never picked up.
+        $this->assertSame(15, ReconcileStaleRuns::DEFAULT_THRESHOLD_MINUTES);
+    }
+
+    public function test_running_run_with_a_live_container_is_never_reconciled(): void
+    {
+        $this->app->instance(DockerProcess::class, $this->inspectDockerProcess(alive: true));
+
+        $job = $this->backupJob(BackupJob::STATUS_RUNNING);
+        $run = BackupRun::create([
+            'backup_job_id' => $job->id,
+            'status' => BackupRun::STATUS_RUNNING,
+            'trigger' => BackupRun::TRIGGER_SCHEDULED,
+            // Older than any threshold: only liveness should keep it alive.
+            'started_at' => now()->subDays(2),
+            'docker_container_id' => 'volumevault-backup-1-abcd1234',
+        ]);
+
+        $this->artisan('volumevault:reconcile-stale-runs')->assertSuccessful();
+
+        $this->assertSame(BackupRun::STATUS_RUNNING, $run->refresh()->status);
+    }
+
+    public function test_running_run_with_a_dead_container_is_reconciled_regardless_of_age(): void
+    {
+        $this->app->instance(DockerProcess::class, $this->inspectDockerProcess(alive: false));
+
+        $job = $this->backupJob(BackupJob::STATUS_RUNNING);
+        $run = BackupRun::create([
+            'backup_job_id' => $job->id,
+            'status' => BackupRun::STATUS_RUNNING,
+            'trigger' => BackupRun::TRIGGER_SCHEDULED,
+            // Recent, yet its container is gone: liveness overrides the age gate.
+            'started_at' => now()->subMinute(),
+            'docker_container_id' => 'volumevault-backup-1-abcd1234',
+        ]);
+
+        $this->artisan('volumevault:reconcile-stale-runs')->assertSuccessful();
+
+        $this->assertSame(BackupRun::STATUS_FAILED, $run->refresh()->status);
+    }
+
+    public function test_unreachable_docker_does_not_fail_a_recent_running_run(): void
+    {
+        $this->app->instance(DockerProcess::class, $this->unreachableDockerProcess());
+
+        $job = $this->backupJob(BackupJob::STATUS_RUNNING);
+        $run = BackupRun::create([
+            'backup_job_id' => $job->id,
+            'status' => BackupRun::STATUS_RUNNING,
+            'trigger' => BackupRun::TRIGGER_SCHEDULED,
+            // Recent: liveness is indeterminate, so the age gate must protect it.
+            'started_at' => now()->subMinute(),
+            'docker_container_id' => 'volumevault-backup-1-abcd1234',
+        ]);
+
+        $this->artisan('volumevault:reconcile-stale-runs')->assertSuccessful();
+
+        $this->assertSame(BackupRun::STATUS_RUNNING, $run->refresh()->status);
+    }
+
+    public function test_unreachable_docker_still_reconciles_an_old_running_run_via_age(): void
+    {
+        $this->app->instance(DockerProcess::class, $this->unreachableDockerProcess());
+
+        $job = $this->backupJob(BackupJob::STATUS_RUNNING);
+        $run = BackupRun::create([
+            'backup_job_id' => $job->id,
+            'status' => BackupRun::STATUS_RUNNING,
+            'trigger' => BackupRun::TRIGGER_SCHEDULED,
+            // Older than the threshold: even with indeterminate liveness, the age
+            // gate reconciles it.
+            'started_at' => now()->subDays(2),
+            'docker_container_id' => 'volumevault-backup-1-abcd1234',
+        ]);
+
+        $this->artisan('volumevault:reconcile-stale-runs')->assertSuccessful();
+
+        $this->assertSame(BackupRun::STATUS_FAILED, $run->refresh()->status);
     }
 
     private function recordingDockerProcess(bool $successful = true): DockerProcess
@@ -229,6 +308,53 @@ class ReconcileStaleRunsTest extends TestCase
                 $this->commands[] = $command;
 
                 return new DockerProcessResult($command, $this->successful ? 0 : 1, '', $this->successful ? '' : 'boom');
+            }
+        };
+    }
+
+    private function inspectDockerProcess(bool $alive): DockerProcess
+    {
+        return new class($alive) extends DockerProcess
+        {
+            /** @var array<int, array<int, string>> */
+            public array $commands = [];
+
+            public function __construct(private readonly bool $alive) {}
+
+            public function run(array $command, int $timeout = 300, array $environment = []): DockerProcessResult
+            {
+                $this->commands[] = $command;
+
+                if (($command[1] ?? null) === 'inspect') {
+                    return new DockerProcessResult(
+                        $command,
+                        $this->alive ? 0 : 1,
+                        $this->alive ? "true\n" : '',
+                        $this->alive ? '' : 'Error: No such object: '.($command[4] ?? ''),
+                    );
+                }
+
+                return new DockerProcessResult($command, 0, '', '');
+            }
+        };
+    }
+
+    private function unreachableDockerProcess(): DockerProcess
+    {
+        return new class extends DockerProcess
+        {
+            public function run(array $command, int $timeout = 300, array $environment = []): DockerProcessResult
+            {
+                if (($command[1] ?? null) === 'inspect') {
+                    return new DockerProcessResult(
+                        $command,
+                        1,
+                        '',
+                        'Cannot connect to the Docker daemon at unix:///var/run/docker.sock. Is the docker daemon running?',
+                    );
+                }
+
+                return new DockerProcessResult($command, 0, '', '');
             }
         };
     }

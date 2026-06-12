@@ -48,4 +48,12 @@ if [ "${VOLUMEVAULT_MIGRATIONS_ENABLED:-true}" = "true" ]; then
     /command/s6-setuidgid www-data php artisan migrate --force
 fi
 
+# Recover runs orphaned by a crash/restart on every boot, regardless of the
+# scheduler's health. The command checks container liveness, so a backup whose
+# container is still running (only the VolumeVault container restarted) is left
+# untouched, while genuinely dead runs are failed and their stopped application
+# containers restarted. Never block boot if Docker or the database is briefly
+# unavailable.
+/command/s6-setuidgid www-data php artisan volumevault:reconcile-stale-runs || true
+
 exec /init

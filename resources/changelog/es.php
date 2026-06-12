@@ -1,6 +1,26 @@
 <?php
 
 return [
+    'reliable_run_logs' => [
+        'title' => 'Registros de ejecución más fiables',
+        'description' => 'Los registros de copia de seguridad y restauración ahora se añaden de forma atómica, por lo que las escrituras simultáneas (por ejemplo, el manejador de fallos de un trabajo que se activa mientras termina una ejecución) ya no pueden sobrescribirse entre sí. El truncado de registros también respeta UTF-8, manteniendo válidos los registros recortados y evitando que rompan la vista de detalles de la ejecución.',
+    ],
+    'stale_run_liveness_reconcile' => [
+        'title' => 'Recuperación más rápida de copias interrumpidas',
+        'description' => 'Las ejecuciones bloqueadas tras un fallo, tiempo de espera o reinicio del worker ahora se recuperan mucho más rápido. El reconciliador comprueba si el contenedor de copia sigue activo en lugar de esperar un retardo fijo: las ejecuciones muertas fallan en minutos, mientras que las copias realmente largas se mantienen intactas. La recuperación también se ejecuta automáticamente al iniciar el contenedor y reinicia los contenedores de aplicación que quedaron detenidos.',
+    ],
+    'local_destination_listing_cap' => [
+        'title' => 'Listados acotados de destinos locales',
+        'description' => 'El listado de copias de un destino de sistema de archivos local ahora está limitado a 1000 entradas, igual que los demás proveedores de almacenamiento, de modo que un destino con un directorio de archivos muy grande ya no carga todo su árbol en una sola respuesta.',
+    ],
+    'per_job_schedule_timezone' => [
+        'title' => 'Zona horaria por tarea',
+        'description' => 'Cada tarea de copia de seguridad ahora puede definir su propia zona horaria, de modo que una programación como «cada día a las 02:00» se ejecuta a las 02:00 hora local en lugar de en la zona horaria global de la aplicación. Déjelo en «Predeterminado de la aplicación» para mantener el comportamiento anterior.',
+    ],
+    'http_security_headers' => [
+        'title' => 'Cabeceras HTTP de seguridad',
+        'description' => 'Las respuestas ahora incluyen cabeceras de seguridad de defensa en profundidad (X-Frame-Options, X-Content-Type-Options y Referrer-Policy), además de HSTS cuando se sirve por HTTPS. Las implementaciones en HTTP simple y en red local no se ven afectadas: ninguna petición se fuerza nunca de HTTP a HTTPS.',
+    ],
     'local_destination_path_error_feedback' => [
         'title' => 'Errores de ruta más claros para destinos locales',
         'description' => 'Al crear un destino de sistema de archivos local, los errores de validación de la ruta —como una ruta bloqueada por la lista de permitidos de rutas del host— ahora se muestran directamente en el formulario, en lugar de volver silenciosamente a la página de creación.',

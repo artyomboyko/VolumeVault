@@ -14,6 +14,8 @@ const props = defineProps<{
     notificationChannels: any[];
     defaultNotificationChannelIds: number[];
     alertRules: any[];
+    timezones: string[];
+    appTimezone: string;
 }>();
 
 const page = usePage();
@@ -56,6 +58,7 @@ const form = useForm({
     backup_destination_id: props.job?.backup_destination_id || props.destinations[0]?.id || '',
     schedule_type: props.job?.schedule_type || 'daily',
     schedule_config: props.job?.schedule_config || { time: '02:00', everyHours: 6, dayOfWeek: 'sunday', expression: '0 2 * * *' },
+    timezone: props.job?.timezone || '',
     retention_days: props.job?.retention_days || '',
     retention_count: props.job?.retention_count || '',
     backup_exclude_regexp: props.job?.backup_exclude_regexp || '',
@@ -311,9 +314,18 @@ const submit = () => {
                         <span class="label">{{ t('Cron expression') }}</span>
                         <input v-model="form.schedule_config.expression" class="input" placeholder="0 2 * * *">
                     </label>
+                    <label class="space-y-2 sm:col-span-2">
+                        <span class="label">{{ t('Timezone') }}</span>
+                        <select v-model="form.timezone" class="input">
+                            <option value="">{{ t('Application default ({timezone})', { timezone: appTimezone }) }}</option>
+                            <option v-for="tz in timezones" :key="tz" :value="tz">{{ tz }}</option>
+                        </select>
+                        <span class="block text-xs text-slate-400">{{ t('The schedule above is evaluated in this timezone.') }}</span>
+                    </label>
                 </div>
                 <p class="mt-4 break-words rounded-xl border border-sky-200 bg-sky-50 p-3 text-sm text-sky-900 dark:border-sky-300/20 dark:bg-sky-400/10 dark:text-sky-100">{{ t('Schedule summary: {summary}', { summary }) }}</p>
                 <span v-if="form.errors.schedule_config" class="mt-2 block text-sm text-rose-300">{{ form.errors.schedule_config }}</span>
+                <span v-if="form.errors.timezone" class="mt-2 block text-sm text-rose-300">{{ form.errors.timezone }}</span>
             </section>
 
             <div class="grid gap-4 sm:grid-cols-3">
