@@ -1,4 +1,11 @@
 {
+  "Local archive paths cannot contain a colon.": "A helyi archivum-utvonalak nem tartalmazhatnak kettospontot.",
+  "Host path must be an absolute path.": "A gazdagep utvonalanak abszolut utvonalnak kell lennie.",
+  "Host path cannot be the filesystem root.": "A gazdagep utvonala nem lehet a fajlrendszer gyokere.",
+  "Host paths containing commas are not supported.": "A vesszot tartalmazo gazdagep-utvonalak nem tamogatottak.",
+  "Host path cannot contain . or .. segments.": "A gazdagep utvonala nem tartalmazhat . vagy .. szegmenseket.",
+  "Host path access is disabled. Configure at least one allowed prefix in VOLUMEVAULT_HOST_PATH_ALLOWLIST.": "A gazdagep-utvonalakhoz valo hozzaferes le van tiltva. Allitson be legalabb egy engedelyezett prefixet a VOLUMEVAULT_HOST_PATH_ALLOWLIST valtozoban.",
+  "Host path is outside VOLUMEVAULT_HOST_PATH_ALLOWLIST. Allowed prefixes: {prefixes}.": "A gazdagep utvonala kivul esik a VOLUMEVAULT_HOST_PATH_ALLOWLIST hatokoren. Engedelyezett prefixek: {prefixes}.",
   "Customize": "Testreszabas",
   "Reset to defaults": "Alapertekek visszaallitasa",
   "Done": "Kesz",

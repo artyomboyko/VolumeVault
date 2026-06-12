@@ -20,12 +20,15 @@ Each destination can be tested from the UI. Destination testing, listing, upload
 
 Local destinations require special care in Docker deployments. The configured archive path must be readable by VolumeVault for listing/restores and mounted into the temporary Offen backup container for writes.
 
-## Cloudflare R2
+### Host path allowlist
 
-Use provider `cloudflare_r2` and endpoint:
+The **archive path** (and the optional **Docker mount source**) are held to the same fail-closed host path allowlist as host-path backup sources. They must sit under a prefix listed in the `VOLUMEVAULT_HOST_PATH_ALLOWLIST` environment variable (comma-separated), and they cannot contain a colon (`:`), commas, or `.`/`..` segments.
 
-```text
-https://<account_id>.r2.cloudflarestorage.com
+The allowlist is empty by default, so **no local path is accepted out of the box**. If you try to create a local destination without configuring it, the form rejects the path with an error such as *"Host path access is disabled…"* or *"Host path is outside VOLUMEVAULT_HOST_PATH_ALLOWLIST…"* and stays on the create page. Set the variable, then clear the config cache:
+
+```bash
+# .env
+VOLUMEVAULT_HOST_PATH_ALLOWLIST=/archive,/mnt/backups
+
+php artisan config:clear
 ```
-
-Use your R2 bucket name, access key ID, and secret access key. Region can usually remain `auto` or `us-east-1` depending on your R2 credentials. If testing fails, verify the endpoint and credentials in Cloudflare.

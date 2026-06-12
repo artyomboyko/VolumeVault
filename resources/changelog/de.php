@@ -1,6 +1,10 @@
 <?php
 
 return [
+    'local_destination_path_error_feedback' => [
+        'title' => 'Klarere Pfadfehler für lokale Ziele',
+        'description' => 'Beim Anlegen eines lokalen Dateisystem-Ziels werden Pfad-Validierungsfehler — etwa ein durch die Host-Pfad-Allowlist blockierter Pfad — jetzt direkt im Formular angezeigt, statt unbemerkt zur Erstellungsseite zurückzukehren.',
+    ],
     'russian_translation_consistency' => [
         'title' => 'Überarbeitete russische Übersetzungen',
         'description' => 'Die russischen Oberflächentexte wurden für mehr Einheitlichkeit überarbeitet, und das Glossar für russische Übersetzer wurde aus den mitgelieferten Sprachdateien in eine eigene Projektdokumentation verschoben. So bleiben die gebündelten Sprachressourcen sauberer, während das Glossar für Mitwirkende erhalten bleibt.',

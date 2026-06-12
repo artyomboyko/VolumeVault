@@ -1,6 +1,10 @@
 <?php
 
 return [
+    'local_destination_path_error_feedback' => [
+        'title' => 'Errores de ruta más claros para destinos locales',
+        'description' => 'Al crear un destino de sistema de archivos local, los errores de validación de la ruta —como una ruta bloqueada por la lista de permitidos de rutas del host— ahora se muestran directamente en el formulario, en lugar de volver silenciosamente a la página de creación.',
+    ],
     'russian_translation_consistency' => [
         'title' => 'Traducciones al ruso refinadas',
         'description' => 'El texto de la interfaz en ruso se actualizó para mejorar la coherencia, y el glosario para traductores de ruso se movió fuera de los archivos de idioma incluidos hacia una documentación dedicada del proyecto. Esto mantiene más limpios los recursos de idioma incluidos sin perder el glosario para quienes contribuyen.',

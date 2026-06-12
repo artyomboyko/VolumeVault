@@ -1,4 +1,11 @@
 {
+  "Local archive paths cannot contain a colon.": "Las rutas de archivo locales no pueden contener dos puntos.",
+  "Host path must be an absolute path.": "La ruta del host debe ser una ruta absoluta.",
+  "Host path cannot be the filesystem root.": "La ruta del host no puede ser la raiz del sistema de archivos.",
+  "Host paths containing commas are not supported.": "No se admiten rutas del host que contengan comas.",
+  "Host path cannot contain . or .. segments.": "La ruta del host no puede contener segmentos . o ..",
+  "Host path access is disabled. Configure at least one allowed prefix in VOLUMEVAULT_HOST_PATH_ALLOWLIST.": "El acceso a las rutas del host esta deshabilitado. Configure al menos un prefijo permitido en VOLUMEVAULT_HOST_PATH_ALLOWLIST.",
+  "Host path is outside VOLUMEVAULT_HOST_PATH_ALLOWLIST. Allowed prefixes: {prefixes}.": "La ruta del host esta fuera de VOLUMEVAULT_HOST_PATH_ALLOWLIST. Prefijos permitidos: {prefixes}.",
   "Customize": "Personalizar",
   "Reset to defaults": "Restablecer valores predeterminados",
   "Done": "Listo",

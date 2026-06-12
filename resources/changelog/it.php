@@ -1,6 +1,10 @@
 <?php
 
 return [
+    'local_destination_path_error_feedback' => [
+        'title' => 'Errori di percorso più chiari per le destinazioni locali',
+        'description' => 'Durante la creazione di una destinazione su filesystem locale, gli errori di convalida del percorso — ad esempio un percorso bloccato dalla allowlist dei percorsi host — vengono ora mostrati direttamente nel modulo, invece di tornare silenziosamente alla pagina di creazione.',
+    ],
     'russian_translation_consistency' => [
         'title' => 'Traduzioni russe rifinite',
         'description' => 'I testi dell\'interfaccia in russo sono stati aggiornati per maggiore coerenza e il glossario per i traduttori russi è stato spostato fuori dai file di lingua distribuiti, in una documentazione dedicata del progetto. In questo modo le risorse linguistiche incluse restano più pulite, mantenendo comunque il glossario per chi contribuisce.',

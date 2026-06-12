@@ -1,4 +1,11 @@
 {
+  "Local archive paths cannot contain a colon.": "Lokale Archivpfade duerfen keinen Doppelpunkt enthalten.",
+  "Host path must be an absolute path.": "Der Host-Pfad muss ein absoluter Pfad sein.",
+  "Host path cannot be the filesystem root.": "Der Host-Pfad darf nicht das Wurzelverzeichnis des Dateisystems sein.",
+  "Host paths containing commas are not supported.": "Host-Pfade mit Kommas werden nicht unterstuetzt.",
+  "Host path cannot contain . or .. segments.": "Der Host-Pfad darf keine Segmente . oder .. enthalten.",
+  "Host path access is disabled. Configure at least one allowed prefix in VOLUMEVAULT_HOST_PATH_ALLOWLIST.": "Der Zugriff auf Host-Pfade ist deaktiviert. Konfigurieren Sie mindestens ein erlaubtes Praefix in VOLUMEVAULT_HOST_PATH_ALLOWLIST.",
+  "Host path is outside VOLUMEVAULT_HOST_PATH_ALLOWLIST. Allowed prefixes: {prefixes}.": "Der Host-Pfad liegt ausserhalb von VOLUMEVAULT_HOST_PATH_ALLOWLIST. Erlaubte Praefixe: {prefixes}.",
   "Customize": "Anpassen",
   "Reset to defaults": "Auf Standard zurucksetzen",
   "Done": "Fertig",

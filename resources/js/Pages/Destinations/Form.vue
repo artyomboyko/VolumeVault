@@ -18,7 +18,7 @@ const props = defineProps<{
 }>();
 
 const editing = computed(() => Boolean(props.destination));
-const { t } = useI18n();
+const { t, translateError } = useI18n();
 const settings = props.destination?.settings || {};
 const hasSecret = (field: string) => Boolean(props.destination?.has_secrets?.[field]);
 const storageLimitUnitSelections = ref<Record<string, SizeUnit>>({});
@@ -351,11 +351,13 @@ const fetchHostKey = async () => {
                     <span class="label">Archive path</span>
                     <input v-model="form.settings.archive_path" class="input" required placeholder="/archive">
                     <span class="text-xs text-slate-400">Path used inside the Offen backup container and readable by VolumeVault for listing/restores.</span>
+                    <span v-if="error('settings.archive_path')" class="block text-sm text-rose-300">{{ translateError(error('settings.archive_path') as string) }}</span>
                 </label>
                 <label class="space-y-2 sm:col-span-2">
                     <span class="label">Docker mount source</span>
                     <input v-model="form.settings.archive_mount_source" class="input" placeholder="/host/backups">
                     <span class="text-xs text-slate-400">Optional host path to mount to the archive path. Leave empty when both paths are identical.</span>
+                    <span v-if="error('settings.archive_mount_source')" class="block text-sm text-rose-300">{{ translateError(error('settings.archive_mount_source') as string) }}</span>
                 </label>
                 <div class="rounded-xl border border-amber-300/30 bg-amber-300/10 p-4 text-sm text-amber-100 sm:col-span-2">
                     Local destinations need a path shared between VolumeVault and the temporary Offen container. Test the destination before trusting scheduled backups.

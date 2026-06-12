@@ -51,6 +51,23 @@ export function useI18n() {
         return interpolate(text, replacements);
     };
 
+    // Backend validation messages arrive as plain English strings. Most map
+    // directly onto a catalog key; the host-path allowlist message embeds the
+    // configured prefixes, so we extract them and translate the template.
+    const translateError = (message?: string | null): string => {
+        if (!message) {
+            return '';
+        }
+
+        const allowlist = message.match(/^Host path is outside VOLUMEVAULT_HOST_PATH_ALLOWLIST\. Allowed prefixes: (.+)\.$/);
+
+        if (allowlist) {
+            return t('Host path is outside VOLUMEVAULT_HOST_PATH_ALLOWLIST. Allowed prefixes: {prefixes}.', { prefixes: allowlist[1] });
+        }
+
+        return t(message);
+    };
+
     const formatDate = (value?: string | null, fallback = 'Never') => value
         ? new Date(value).toLocaleString(locale.value, {
             day: '2-digit',
@@ -65,5 +82,5 @@ export function useI18n() {
         })
         : t(fallback);
 
-    return { t, locale, locales, languageNames, formatDate, timezone };
+    return { t, translateError, locale, locales, languageNames, formatDate, timezone };
 }

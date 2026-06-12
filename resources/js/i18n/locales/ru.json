@@ -1,4 +1,11 @@
 {
+  "Local archive paths cannot contain a colon.": "Локальные пути архива не могут содержать двоеточие.",
+  "Host path must be an absolute path.": "Путь хоста должен быть абсолютным.",
+  "Host path cannot be the filesystem root.": "Путь хоста не может быть корнем файловой системы.",
+  "Host paths containing commas are not supported.": "Пути хоста, содержащие запятые, не поддерживаются.",
+  "Host path cannot contain . or .. segments.": "Путь хоста не может содержать сегменты . или ..",
+  "Host path access is disabled. Configure at least one allowed prefix in VOLUMEVAULT_HOST_PATH_ALLOWLIST.": "Доступ к путям хоста отключён. Настройте хотя бы один разрешённый префикс в VOLUMEVAULT_HOST_PATH_ALLOWLIST.",
+  "Host path is outside VOLUMEVAULT_HOST_PATH_ALLOWLIST. Allowed prefixes: {prefixes}.": "Путь хоста находится вне VOLUMEVAULT_HOST_PATH_ALLOWLIST. Разрешённые префиксы: {prefixes}.",
   "Customize": "Настроить",
   "Reset to defaults": "Сбросить к значениям по умолчанию",
   "Done": "Готово",

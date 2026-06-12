@@ -1,4 +1,11 @@
 {
+  "Local archive paths cannot contain a colon.": "Les chemins d'archive locaux ne peuvent pas contenir de deux-points.",
+  "Host path must be an absolute path.": "Le chemin hote doit etre un chemin absolu.",
+  "Host path cannot be the filesystem root.": "Le chemin hote ne peut pas etre la racine du systeme de fichiers.",
+  "Host paths containing commas are not supported.": "Les chemins hotes contenant des virgules ne sont pas pris en charge.",
+  "Host path cannot contain . or .. segments.": "Le chemin hote ne peut pas contenir de segments . ou ..",
+  "Host path access is disabled. Configure at least one allowed prefix in VOLUMEVAULT_HOST_PATH_ALLOWLIST.": "L'acces aux chemins hotes est desactive. Configurez au moins un prefixe autorise dans VOLUMEVAULT_HOST_PATH_ALLOWLIST.",
+  "Host path is outside VOLUMEVAULT_HOST_PATH_ALLOWLIST. Allowed prefixes: {prefixes}.": "Le chemin hote est en dehors de VOLUMEVAULT_HOST_PATH_ALLOWLIST. Prefixes autorises : {prefixes}.",
   "Customize": "Personnaliser",
   "Reset to defaults": "Reinitialiser",
   "Done": "Terminer",

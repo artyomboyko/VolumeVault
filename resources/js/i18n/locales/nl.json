@@ -1,4 +1,11 @@
 {
+  "Local archive paths cannot contain a colon.": "Lokale archiefpaden mogen geen dubbele punt bevatten.",
+  "Host path must be an absolute path.": "Het host-pad moet een absoluut pad zijn.",
+  "Host path cannot be the filesystem root.": "Het host-pad mag niet de hoofdmap van het bestandssysteem zijn.",
+  "Host paths containing commas are not supported.": "Host-paden met komma's worden niet ondersteund.",
+  "Host path cannot contain . or .. segments.": "Het host-pad mag geen . of .. segmenten bevatten.",
+  "Host path access is disabled. Configure at least one allowed prefix in VOLUMEVAULT_HOST_PATH_ALLOWLIST.": "Toegang tot host-paden is uitgeschakeld. Configureer ten minste een toegestaan voorvoegsel in VOLUMEVAULT_HOST_PATH_ALLOWLIST.",
+  "Host path is outside VOLUMEVAULT_HOST_PATH_ALLOWLIST. Allowed prefixes: {prefixes}.": "Het host-pad valt buiten VOLUMEVAULT_HOST_PATH_ALLOWLIST. Toegestane voorvoegsels: {prefixes}.",
   "Customize": "Aanpassen",
   "Reset to defaults": "Standaardwaarden herstellen",
   "Done": "Klaar",

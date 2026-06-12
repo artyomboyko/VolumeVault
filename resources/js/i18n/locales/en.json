@@ -1,4 +1,11 @@
 {
+  "Local archive paths cannot contain a colon.": "Local archive paths cannot contain a colon.",
+  "Host path must be an absolute path.": "Host path must be an absolute path.",
+  "Host path cannot be the filesystem root.": "Host path cannot be the filesystem root.",
+  "Host paths containing commas are not supported.": "Host paths containing commas are not supported.",
+  "Host path cannot contain . or .. segments.": "Host path cannot contain . or .. segments.",
+  "Host path access is disabled. Configure at least one allowed prefix in VOLUMEVAULT_HOST_PATH_ALLOWLIST.": "Host path access is disabled. Configure at least one allowed prefix in VOLUMEVAULT_HOST_PATH_ALLOWLIST.",
+  "Host path is outside VOLUMEVAULT_HOST_PATH_ALLOWLIST. Allowed prefixes: {prefixes}.": "Host path is outside VOLUMEVAULT_HOST_PATH_ALLOWLIST. Allowed prefixes: {prefixes}.",
   "Dashboard": "Dashboard",
   "Customize": "Customize",
   "Reset to defaults": "Reset to defaults",

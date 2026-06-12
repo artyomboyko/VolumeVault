@@ -1,6 +1,10 @@
 <?php
 
 return [
+    'local_destination_path_error_feedback' => [
+        'title' => 'Jasnější chyby cest u místních cílů',
+        'description' => 'Při vytváření cíle v místním souborovém systému se chyby ověření cesty — například cesta blokovaná seznamem povolených cest hostitele — nyní zobrazují přímo ve formuláři, místo tichého návratu na stránku vytvoření.',
+    ],
     'russian_translation_consistency' => [
         'title' => 'Vyladěné ruské překlady',
         'description' => 'Ruské texty rozhraní byly upraveny pro větší konzistenci a glosář pro ruské překladatele byl přesunut z dodávaných jazykových souborů do samostatné projektové dokumentace. Přibalené jazykové prostředky tak zůstávají čistší a glosář je stále k dispozici přispěvatelům.',

@@ -1,6 +1,10 @@
 <?php
 
 return [
+    'local_destination_path_error_feedback' => [
+        'title' => 'Erreurs de chemin plus claires pour les destinations locales',
+        'description' => 'La création d\'une destination de type système de fichiers local affiche désormais les erreurs de validation du chemin directement dans le formulaire — par exemple un chemin bloqué par la liste d\'autorisation des chemins hôtes — au lieu de revenir silencieusement sur la page de création.',
+    ],
     'russian_translation_consistency' => [
         'title' => 'Traductions russes harmonisées',
         'description' => 'Les textes russes de l\'interface ont été mis à jour pour plus de cohérence, et le glossaire des traducteurs russes a été déplacé hors des fichiers de langue fournis vers une documentation dédiée du projet. Les ressources de langue embarquées restent ainsi plus propres tout en conservant le glossaire pour les contributeurs.',

@@ -17,7 +17,7 @@ const props = defineProps<{
 }>();
 
 const page = usePage();
-const { t } = useI18n();
+const { t, translateError } = useI18n();
 const alertSizeUnitSelections = ref<Record<string, SizeUnit>>({});
 const params = new URLSearchParams(page.url.split('?')[1] || '');
 const editing = computed(() => Boolean(props.job));
@@ -272,7 +272,7 @@ const submit = () => {
                     <span class="label">{{ t('Host path') }}</span>
                     <input v-model="form.host_path" class="input font-mono" required placeholder="/srv/app-data">
                     <p class="text-sm text-slate-300">{{ t('The path must be an existing directory on the Docker host. If VOLUMEVAULT_HOST_PATH_ALLOWLIST is set, it must match one of the allowed prefixes.') }}</p>
-                    <span v-if="form.errors.host_path" class="text-sm text-rose-300">{{ form.errors.host_path }}</span>
+                    <span v-if="form.errors.host_path" class="text-sm text-rose-300">{{ translateError(form.errors.host_path) }}</span>
                 </label>
 
                 <label class="space-y-2" :class="{ 'sm:col-span-2': !isDockerVolumeSource }">

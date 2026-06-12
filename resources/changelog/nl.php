@@ -1,6 +1,10 @@
 <?php
 
 return [
+    'local_destination_path_error_feedback' => [
+        'title' => 'Duidelijkere padfouten voor lokale bestemmingen',
+        'description' => 'Bij het aanmaken van een lokale bestandssysteembestemming worden padvalidatiefouten — zoals een pad dat door de host-pad-allowlist wordt geblokkeerd — nu rechtstreeks in het formulier getoond, in plaats van stilletjes terug te keren naar de aanmaakpagina.',
+    ],
     'russian_translation_consistency' => [
         'title' => 'Bijgewerkte Russische vertalingen',
         'description' => 'De Russische interface-teksten zijn bijgewerkt voor meer consistentie, en de Russische vertalerswoordenlijst is uit de meegeleverde taalbestanden verplaatst naar aparte projectdocumentatie. Daardoor blijven de meegeleverde taalresources schoner, terwijl de woordenlijst beschikbaar blijft voor bijdragers.',

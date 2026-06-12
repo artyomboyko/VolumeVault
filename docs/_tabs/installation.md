@@ -76,6 +76,32 @@ docker network inspect proxy_network
 
 `TRUSTED_PROXIES="*"` is also supported for simple homelab setups where proxy IPs change, but using the proxy IP or network CIDR is stricter. If `TRUSTED_PROXIES` is empty, VolumeVault does not trust forwarded proxy headers.
 
+### Forwarded headers
+
+Trusting the proxy is only half of the setup: the proxy must also send the forwarded headers VolumeVault reads. The important one is the scheme:
+
+```text
+X-Forwarded-Proto: https
+```
+
+Without it, Laravel still generates `http://` URLs. The visible symptom is that the login page loads over HTTPS, authentication succeeds, but the app stays on `/login` (or you see a mixed-content / network error in the browser console) — manually removing `login` from the URL then loads the dashboard. Setting `X-Forwarded-Proto: https` on the proxy resolves this.
+
+Optionally also forward:
+
+```text
+X-Forwarded-Host: <the original Host header>
+X-Forwarded-Port: 443
+X-Forwarded-For: <client-ip>
+```
+
+For `X-Forwarded-Host`, pass through the original request host rather than a hardcoded value (for example, HAProxy `http-request set-header X-Forwarded-Host %[req.hdr(Host)]`). A hardcoded or mismatched host can break asset and redirect URLs.
+
+This applies to any HTTPS-terminating proxy (HAProxy/OPNsense, Pangolin, Caddy, Traefik, nginx). The recommended path keeps HTTPS at the proxy and plain HTTP to the container on port `8080`:
+
+```text
+Client -> HTTPS -> reverse proxy -> HTTP -> VolumeVault (port 8080)
+```
+
 ## Large Installation Compose
 
 For larger installations, you can split the migration, web app, queue worker, and scheduler into separate services while keeping the same image and storage volume:

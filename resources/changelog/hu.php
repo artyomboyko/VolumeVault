@@ -1,6 +1,10 @@
 <?php
 
 return [
+    'local_destination_path_error_feedback' => [
+        'title' => 'Érthetőbb útvonalhibák a helyi céloknál',
+        'description' => 'Helyi fájlrendszer-cél létrehozásakor az útvonal-ellenőrzési hibák — például a gazdagép útvonal-engedélylistája által letiltott útvonal — mostantól közvetlenül az űrlapon jelennek meg, ahelyett, hogy némán visszatérnének a létrehozási oldalra.',
+    ],
     'russian_translation_consistency' => [
         'title' => 'Finomított orosz fordítások',
         'description' => 'Az orosz felületi szövegek egységesebbek lettek, az orosz fordítói glosszárium pedig kikerült a szállított nyelvi fájlokból a projekt külön dokumentációjába. Így a csomagolt nyelvi erőforrások tisztábbak maradnak, miközben a glosszárium továbbra is elérhető a közreműködőknek.',

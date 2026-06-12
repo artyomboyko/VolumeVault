@@ -1,7 +1,12 @@
 <?php
 
 return [
-    'unreleased' => [],
+    'unreleased' => [
+        [
+            'type' => 'change',
+            'key' => 'local_destination_path_error_feedback',
+        ],
+    ],
     'releases' => [
         'v1.10.1' => [
             'date' => '2026-06-11',

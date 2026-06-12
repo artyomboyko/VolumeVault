@@ -1,6 +1,10 @@
 <?php
 
 return [
+    'local_destination_path_error_feedback' => [
+        'title' => 'Clearer local destination path errors',
+        'description' => 'Creating a local filesystem destination now surfaces path validation errors directly in the form — such as a path blocked by the host path allowlist — instead of silently returning to the create page.',
+    ],
     'russian_translation_consistency' => [
         'title' => 'Refined Russian translations',
         'description' => 'Russian interface text was updated for better consistency, and the Russian translator glossary was moved out of the shipped locale files into dedicated project documentation. This keeps the bundled language resources cleaner while preserving the glossary for contributors.',
