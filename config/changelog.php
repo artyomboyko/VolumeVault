@@ -1,7 +1,12 @@
 <?php
 
 return [
-    'unreleased' => [],
+    'unreleased' => [
+        [
+            'type' => 'change',
+            'key' => 'complete_i18n_coverage',
+        ],
+    ],
     'releases' => [
         'v1.11.0' => [
             'date' => '2026-06-12',

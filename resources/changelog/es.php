@@ -1,6 +1,10 @@
 <?php
 
 return [
+    'complete_i18n_coverage' => [
+        'title' => 'Traducciones de la interfaz más completas',
+        'description' => 'Muchos textos de la interfaz que aún aparecían en inglés —incluidas las páginas de tokens de API y de guardado de la instalación— ahora están totalmente traducidos. Los nueve idiomas se sincronizaron y se completaron las traducciones que faltaban, de modo que los usuarios que no hablan inglés ya no ven etiquetas, botones ni mensajes sin traducir.',
+    ],
     'reliable_run_logs' => [
         'title' => 'Registros de ejecución más fiables',
         'description' => 'Los registros de copia de seguridad y restauración ahora se añaden de forma atómica, por lo que las escrituras simultáneas (por ejemplo, el manejador de fallos de un trabajo que se activa mientras termina una ejecución) ya no pueden sobrescribirse entre sí. El truncado de registros también respeta UTF-8, manteniendo válidos los registros recortados y evitando que rompan la vista de detalles de la ejecución.',

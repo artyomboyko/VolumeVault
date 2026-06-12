@@ -1,6 +1,10 @@
 <?php
 
 return [
+    'complete_i18n_coverage' => [
+        'title' => 'Vollediger vertaalde interface',
+        'description' => 'Veel interfaceteksten die nog in het Engels werden weergegeven – waaronder de pagina\'s voor API-tokens en installatieback-ups – zijn nu volledig vertaald. Alle negen talen zijn gesynchroniseerd en ontbrekende vertalingen aangevuld, zodat niet-Engelstalige gebruikers geen onvertaalde labels, knoppen en berichten meer zien.',
+    ],
     'reliable_run_logs' => [
         'title' => 'Betrouwbaardere uitvoeringslogboeken',
         'description' => 'Logboeken van back-ups en herstelacties worden nu atomair toegevoegd, zodat gelijktijdige schrijfacties (bijvoorbeeld de mislukt-handler van een taak die afgaat terwijl een uitvoering eindigt) elkaar niet meer kunnen overschrijven. Het inkorten van logboeken is bovendien UTF-8-bewust, zodat ingekorte logboeken geldig blijven en de detailweergave van de uitvoering niet meer breken.',

@@ -1,6 +1,10 @@
 <?php
 
 return [
+    'complete_i18n_coverage' => [
+        'title' => 'More complete interface translations',
+        'description' => 'Many interface texts that were still shown in English — including the API tokens and installation-save pages — are now fully translated. All nine languages were synchronized and the missing translations filled in, so non-English users no longer see untranslated labels, buttons, and messages.',
+    ],
     'reliable_run_logs' => [
         'title' => 'More reliable run logs',
         'description' => 'Backup and restore run logs are now appended atomically, so concurrent writers (for example a failed-job handler firing while a run finishes) can no longer overwrite each other\'s output. Log truncation is also UTF-8 aware, so trimmed logs stay valid and no longer break the run details view.',

@@ -1,6 +1,10 @@
 <?php
 
 return [
+    'complete_i18n_coverage' => [
+        'title' => 'Traductions de l\'interface plus complètes',
+        'description' => 'De nombreux textes de l\'interface encore affichés en anglais — notamment les pages des jetons API et de sauvegarde de l\'installation — sont désormais entièrement traduits. Les neuf langues ont été synchronisées et les traductions manquantes complétées, afin que les utilisateurs non anglophones ne voient plus de libellés, boutons et messages non traduits.',
+    ],
     'reliable_run_logs' => [
         'title' => 'Journaux d\'exécution plus fiables',
         'description' => 'Les journaux des sauvegardes et des restaurations sont désormais ajoutés de manière atomique : deux écritures simultanées (par exemple le gestionnaire d\'échec d\'un job qui se déclenche pendant qu\'une exécution se termine) ne peuvent plus s\'écraser mutuellement. La troncature des journaux respecte aussi l\'UTF-8, évitant des journaux corrompus dans l\'affichage des détails d\'exécution.',

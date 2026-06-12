@@ -1,6 +1,10 @@
 <?php
 
 return [
+    'complete_i18n_coverage' => [
+        'title' => 'Teljesebb felületi fordítások',
+        'description' => 'Számos felületi szöveg, amely még angolul jelent meg – köztük az API-tokenek és a telepítésmentések oldalai –, mostantól teljesen le van fordítva. Mind a kilenc nyelv szinkronizálva lett, és a hiányzó fordítások pótlásra kerültek, így a nem angol nyelvű felhasználók többé nem látnak lefordítatlan címkéket, gombokat és üzeneteket.',
+    ],
     'reliable_run_logs' => [
         'title' => 'Megbízhatóbb futtatási naplók',
         'description' => 'A biztonsági mentések és visszaállítások naplóbejegyzései mostantól atomi módon kerülnek hozzáfűzésre, így az egyidejű írások (például egy feladat hibakezelője, amely egy futtatás befejeződésekor indul el) nem írják felül egymást. A naplók csonkolása UTF-8-tudatos, így a rövidített naplók érvényesek maradnak, és nem törik el a futtatás részleteinek nézetét.',
