@@ -1,6 +1,10 @@
 <?php
 
 return [
+    'complete_i18n_coverage' => [
+        'title' => 'Vollständigere Übersetzungen der Oberfläche',
+        'description' => 'Viele Oberflächentexte, die noch auf Englisch angezeigt wurden – darunter die Seiten für API-Tokens und Installationssicherungen –, sind jetzt vollständig übersetzt. Alle neun Sprachen wurden synchronisiert und fehlende Übersetzungen ergänzt, sodass nicht englischsprachige Nutzer keine unübersetzten Beschriftungen, Schaltflächen und Meldungen mehr sehen.',
+    ],
     'reliable_run_logs' => [
         'title' => 'Zuverlässigere Ausführungsprotokolle',
         'description' => 'Sicherungs- und Wiederherstellungsprotokolle werden jetzt atomar angehängt, sodass gleichzeitige Schreibvorgänge (etwa der Fehler-Handler eines Jobs, der auslöst, während eine Ausführung endet) sich nicht mehr gegenseitig überschreiben. Das Kürzen der Protokolle ist außerdem UTF-8-fähig, sodass gekürzte Protokolle gültig bleiben und die Detailansicht nicht mehr beschädigen.',

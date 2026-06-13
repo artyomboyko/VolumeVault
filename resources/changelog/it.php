@@ -1,6 +1,10 @@
 <?php
 
 return [
+    'complete_i18n_coverage' => [
+        'title' => 'Traduzioni dell\'interfaccia più complete',
+        'description' => 'Molti testi dell\'interfaccia ancora visualizzati in inglese — comprese le pagine dei token API e dei salvataggi dell\'installazione — sono ora completamente tradotti. Le nove lingue sono state sincronizzate e le traduzioni mancanti completate, così gli utenti non anglofoni non vedono più etichette, pulsanti e messaggi non tradotti.',
+    ],
     'reliable_run_logs' => [
         'title' => 'Log di esecuzione più affidabili',
         'description' => 'I log dei backup e dei ripristini ora vengono aggiunti in modo atomico, quindi le scritture simultanee (ad esempio il gestore di fallimento di un job che si attiva mentre un\'esecuzione termina) non possono più sovrascriversi a vicenda. Il troncamento dei log rispetta anche UTF-8, mantenendo validi i log accorciati ed evitando che compromettano la vista dei dettagli dell\'esecuzione.',

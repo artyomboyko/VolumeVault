@@ -1,6 +1,10 @@
 <?php
 
 return [
+    'complete_i18n_coverage' => [
+        'title' => 'Úplnější překlady rozhraní',
+        'description' => 'Mnoho textů rozhraní, které se stále zobrazovaly anglicky – včetně stránek s API tokeny a uloženími instalace –, je nyní plně přeloženo. Všech devět jazyků bylo sjednoceno a chybějící překlady doplněny, takže neanglicky mluvící uživatelé již nevidí nepřeložené popisky, tlačítka a zprávy.',
+    ],
     'reliable_run_logs' => [
         'title' => 'Spolehlivější protokoly běhů',
         'description' => 'Záznamy do protokolů záloh a obnov se nyní přidávají atomicky, takže souběžné zápisy (například obslužná rutina selhání úlohy, která se spustí během dokončování běhu) se již nemohou navzájem přepsat. Zkracování protokolů respektuje UTF-8, takže zkrácené protokoly zůstávají platné a nerozbíjejí zobrazení detailů běhu.',

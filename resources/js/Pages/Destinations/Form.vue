@@ -74,7 +74,7 @@ const form = useForm({
 const selectedProvider = computed(() => props.providers.find((provider) => provider.value === form.provider));
 const isS3 = computed(() => ['aws_s3', 'cloudflare_r2', 'custom_s3'].includes(form.provider));
 const error = (key: string) => form.errors[key as keyof typeof form.errors];
-const secretHint = (field: string) => editing.value && hasSecret(field) ? 'Already saved. Leave blank to keep existing value.' : '';
+const secretHint = (field: string) => editing.value && hasSecret(field) ? t('Already saved. Leave blank to keep existing value.') : '';
 const settingValue = (key: string) => (form.settings as Record<string, any>)[key];
 const selectedStorageLimitUnit = (key: string): SizeUnit => storageLimitUnitSelections.value[key] || bestSizeUnit(settingValue(key));
 const sizeInputValue = (key: string, unit: SizeUnit) => bytesToUnitValue(settingValue(key), unit);
@@ -154,104 +154,104 @@ const fetchHostKey = async () => {
 
             <section v-if="isS3" class="grid gap-4 sm:grid-cols-2">
                 <label class="space-y-2 sm:col-span-2">
-                    <span class="label">Endpoint</span>
+                    <span class="label">{{ t('Endpoint') }}</span>
                     <input v-model="form.endpoint" class="input" placeholder="https://<account_id>.r2.cloudflarestorage.com">
-                    <span class="text-xs text-slate-400">Required for Cloudflare R2 and custom S3. AWS S3 can usually stay empty.</span>
+                    <span class="text-xs text-slate-400">{{ t('Required for Cloudflare R2 and custom S3. AWS S3 can usually stay empty.') }}</span>
                     <span v-if="form.errors.endpoint" class="block text-sm text-rose-300">{{ form.errors.endpoint }}</span>
                 </label>
 
                 <label class="space-y-2">
-                    <span class="label">Region</span>
+                    <span class="label">{{ t('Region') }}</span>
                     <input v-model="form.region" class="input" placeholder="us-east-1">
                 </label>
 
                 <label class="space-y-2">
-                    <span class="label">Bucket</span>
+                    <span class="label">{{ t('Bucket') }}</span>
                     <input v-model="form.bucket" class="input" required>
                     <span v-if="form.errors.bucket" class="text-sm text-rose-300">{{ form.errors.bucket }}</span>
                 </label>
 
                 <label class="space-y-2 sm:col-span-2">
-                    <span class="label">Path prefix</span>
+                    <span class="label">{{ t('Path prefix') }}</span>
                     <input v-model="form.path_prefix" class="input" placeholder="volumevault/backups">
                 </label>
 
                 <label class="space-y-2">
-                    <span class="label">Access key ID</span>
+                    <span class="label">{{ t('Access key ID') }}</span>
                     <input v-model="form.access_key_id" class="input" :required="!editing" autocomplete="off">
-                    <span v-if="editing" class="text-xs text-slate-400">Credentials are already saved. Leave blank to keep existing values.</span>
+                    <span v-if="editing" class="text-xs text-slate-400">{{ t('Credentials are already saved. Leave blank to keep existing values.') }}</span>
                 </label>
 
                 <label class="space-y-2">
-                    <span class="label">Secret access key</span>
+                    <span class="label">{{ t('Secret access key') }}</span>
                     <PasswordInput v-model="form.secret_access_key" :required="!editing" autocomplete="new-password" />
-                    <span v-if="editing" class="text-xs text-slate-400">Leave empty to keep the saved secret.</span>
+                    <span v-if="editing" class="text-xs text-slate-400">{{ t('Leave empty to keep the saved secret.') }}</span>
                 </label>
             </section>
 
             <section v-else-if="form.provider === 'webdav'" class="grid gap-4 sm:grid-cols-2">
                 <label class="space-y-2 sm:col-span-2">
-                    <span class="label">WebDAV URL</span>
+                    <span class="label">{{ t('WebDAV URL') }}</span>
                     <input v-model="form.settings.url" class="input" required placeholder="https://webdav.example.com">
                     <span v-if="error('settings.url')" class="text-sm text-rose-300">{{ error('settings.url') }}</span>
                 </label>
                 <label class="space-y-2 sm:col-span-2">
-                    <span class="label">Remote path</span>
+                    <span class="label">{{ t('Remote path') }}</span>
                     <input v-model="form.settings.path" class="input" placeholder="/backups/volumevault">
                 </label>
                 <label class="space-y-2">
-                    <span class="label">Username</span>
+                    <span class="label">{{ t('Username') }}</span>
                     <input v-model="form.secrets.username" class="input" autocomplete="off">
                     <span class="text-xs text-slate-400">{{ secretHint('username') }}</span>
                 </label>
                 <label class="space-y-2">
-                    <span class="label">Password</span>
+                    <span class="label">{{ t('Password') }}</span>
                     <PasswordInput v-model="form.secrets.password" autocomplete="new-password" />
                     <span class="text-xs text-slate-400">{{ secretHint('password') }}</span>
                 </label>
                 <label class="flex items-center gap-3 rounded-xl border border-white/10 bg-white/5 p-4 text-sm">
                     <input v-model="form.settings.insecure" type="checkbox" class="rounded border-slate-600 bg-slate-950 text-sky-400">
-                    Disable TLS certificate verification
+                    {{ t('Disable TLS certificate verification') }}
                 </label>
             </section>
 
             <section v-else-if="form.provider === 'ssh'" class="grid gap-4 sm:grid-cols-2">
                 <label class="space-y-2">
-                    <span class="label">SSH host</span>
+                    <span class="label">{{ t('SSH host') }}</span>
                     <input v-model="form.settings.host" class="input" required placeholder="server.local">
                 </label>
                 <label class="space-y-2">
-                    <span class="label">Port</span>
+                    <span class="label">{{ t('Port') }}</span>
                     <input v-model="form.settings.port" class="input" type="number" min="1" max="65535">
                 </label>
                 <label class="space-y-2 sm:col-span-2">
-                    <span class="label">Remote path</span>
+                    <span class="label">{{ t('Remote path') }}</span>
                     <input v-model="form.settings.remote_path" class="input" required placeholder="/home/user/backups">
                 </label>
                 <label class="space-y-2">
-                    <span class="label">Username</span>
+                    <span class="label">{{ t('Username') }}</span>
                     <input v-model="form.secrets.user" class="input" :required="!editing || !hasSecret('user')" autocomplete="off">
                     <span class="text-xs text-slate-400">{{ secretHint('user') }}</span>
                 </label>
                 <label class="space-y-2">
-                    <span class="label">Password</span>
+                    <span class="label">{{ t('Password') }}</span>
                     <PasswordInput v-model="form.secrets.password" autocomplete="new-password" />
                     <span class="text-xs text-slate-400">{{ secretHint('password') }}</span>
                 </label>
                 <label class="space-y-2 sm:col-span-2">
-                    <span class="label">Private key</span>
+                    <span class="label">{{ t('Private key') }}</span>
                     <textarea v-model="form.secrets.private_key" class="input min-h-32" placeholder="-----BEGIN OPENSSH PRIVATE KEY-----"></textarea>
-                    <span class="text-xs text-slate-400">{{ secretHint('private_key') || 'If provided, VolumeVault mounts it into the Offen container for backup runs.' }}</span>
+                    <span class="text-xs text-slate-400">{{ secretHint('private_key') || t('If provided, VolumeVault mounts it into the Offen container for backup runs.') }}</span>
                 </label>
                 <label class="space-y-2">
-                    <span class="label">Private key passphrase</span>
+                    <span class="label">{{ t('Private key passphrase') }}</span>
                     <PasswordInput v-model="form.secrets.private_key_passphrase" autocomplete="new-password" />
                     <span class="text-xs text-slate-400">{{ secretHint('private_key_passphrase') }}</span>
                 </label>
                 <label class="space-y-2">
-                    <span class="label">Identity file path</span>
+                    <span class="label">{{ t('Identity file path') }}</span>
                     <input v-model="form.settings.identity_file" class="input" placeholder="/root/.ssh/id_rsa">
-                    <span class="text-xs text-slate-400">Advanced: path already available inside the Offen container.</span>
+                    <span class="text-xs text-slate-400">{{ t('Advanced: path already available inside the Offen container.') }}</span>
                 </label>
                 <div class="space-y-2 sm:col-span-2">
                     <div class="flex items-center justify-between gap-2">
@@ -269,98 +269,98 @@ const fetchHostKey = async () => {
 
             <section v-else-if="form.provider === 'azure_blob'" class="grid gap-4 sm:grid-cols-2">
                 <label class="space-y-2">
-                    <span class="label">Account name</span>
+                    <span class="label">{{ t('Account name') }}</span>
                     <input v-model="form.settings.account_name" class="input" placeholder="account-name">
                 </label>
                 <label class="space-y-2">
-                    <span class="label">Container</span>
+                    <span class="label">{{ t('Container') }}</span>
                     <input v-model="form.settings.container" class="input" required placeholder="container-name">
                 </label>
                 <label class="space-y-2 sm:col-span-2">
-                    <span class="label">Service endpoint</span>
+                    <span class="label">{{ t('Service endpoint') }}</span>
                     <input v-model="form.settings.endpoint" class="input" placeholder="https://account.blob.core.windows.net">
                 </label>
                 <label class="space-y-2">
-                    <span class="label">Account key</span>
+                    <span class="label">{{ t('Account key') }}</span>
                     <PasswordInput v-model="form.secrets.account_key" autocomplete="new-password" />
                     <span class="text-xs text-slate-400">{{ secretHint('account_key') }}</span>
                 </label>
                 <label class="space-y-2">
-                    <span class="label">Access tier</span>
+                    <span class="label">{{ t('Access tier') }}</span>
                     <input v-model="form.settings.access_tier" class="input" placeholder="Cool">
                 </label>
                 <label class="space-y-2 sm:col-span-2">
-                    <span class="label">Connection string</span>
+                    <span class="label">{{ t('Connection string') }}</span>
                     <textarea v-model="form.secrets.connection_string" class="input min-h-24" autocomplete="off"></textarea>
-                    <span class="text-xs text-slate-400">{{ secretHint('connection_string') || 'Alternative to account name/key. Required for SAS-only setups.' }}</span>
+                    <span class="text-xs text-slate-400">{{ secretHint('connection_string') || t('Alternative to account name/key. Required for SAS-only setups.') }}</span>
                 </label>
             </section>
 
             <section v-else-if="form.provider === 'dropbox'" class="grid gap-4 sm:grid-cols-2">
                 <label class="space-y-2 sm:col-span-2">
-                    <span class="label">Remote path</span>
+                    <span class="label">{{ t('Remote path') }}</span>
                     <input v-model="form.settings.remote_path" class="input" placeholder="/backups/volumevault">
                 </label>
                 <label class="space-y-2">
-                    <span class="label">App key</span>
+                    <span class="label">{{ t('App key') }}</span>
                     <input v-model="form.secrets.app_key" class="input" :required="!editing || !hasSecret('app_key')" autocomplete="off">
                     <span class="text-xs text-slate-400">{{ secretHint('app_key') }}</span>
                 </label>
                 <label class="space-y-2">
-                    <span class="label">App secret</span>
+                    <span class="label">{{ t('App secret') }}</span>
                     <PasswordInput v-model="form.secrets.app_secret" :required="!editing || !hasSecret('app_secret')" autocomplete="new-password" />
                     <span class="text-xs text-slate-400">{{ secretHint('app_secret') }}</span>
                 </label>
                 <label class="space-y-2">
-                    <span class="label">Refresh token</span>
+                    <span class="label">{{ t('Refresh token') }}</span>
                     <PasswordInput v-model="form.secrets.refresh_token" :required="!editing || !hasSecret('refresh_token')" autocomplete="new-password" />
                     <span class="text-xs text-slate-400">{{ secretHint('refresh_token') }}</span>
                 </label>
                 <label class="space-y-2">
-                    <span class="label">Concurrency level</span>
+                    <span class="label">{{ t('Concurrency level') }}</span>
                     <input v-model="form.settings.concurrency_level" class="input" type="number" min="1" max="32">
                 </label>
             </section>
 
             <section v-else-if="form.provider === 'google_drive'" class="grid gap-4 sm:grid-cols-2">
                 <label class="space-y-2 sm:col-span-2">
-                    <span class="label">Folder ID</span>
+                    <span class="label">{{ t('Folder ID') }}</span>
                     <input v-model="form.settings.folder_id" class="input" required>
                 </label>
                 <label class="space-y-2 sm:col-span-2">
-                    <span class="label">Service account JSON</span>
+                    <span class="label">{{ t('Service account JSON') }}</span>
                     <textarea v-model="form.secrets.credentials_json" class="input min-h-40" :required="!editing || !hasSecret('credentials_json')" autocomplete="off"></textarea>
-                    <span class="text-xs text-slate-400">{{ secretHint('credentials_json') || 'The service account must have access to the folder.' }}</span>
+                    <span class="text-xs text-slate-400">{{ secretHint('credentials_json') || t('The service account must have access to the folder.') }}</span>
                 </label>
                 <label class="space-y-2">
-                    <span class="label">Impersonate subject</span>
+                    <span class="label">{{ t('Impersonate subject') }}</span>
                     <input v-model="form.settings.impersonate_subject" class="input" placeholder="user@example.com">
                 </label>
                 <label class="space-y-2">
-                    <span class="label">Token URL</span>
+                    <span class="label">{{ t('Token URL') }}</span>
                     <input v-model="form.settings.token_url" class="input" placeholder="https://oauth2.googleapis.com/token">
                 </label>
                 <label class="space-y-2 sm:col-span-2">
-                    <span class="label">Drive API endpoint</span>
+                    <span class="label">{{ t('Drive API endpoint') }}</span>
                     <input v-model="form.settings.endpoint" class="input" placeholder="https://www.googleapis.com/drive/v3">
                 </label>
             </section>
 
             <section v-else-if="form.provider === 'local'" class="grid gap-4 sm:grid-cols-2">
                 <label class="space-y-2 sm:col-span-2">
-                    <span class="label">Archive path</span>
+                    <span class="label">{{ t('Archive path') }}</span>
                     <input v-model="form.settings.archive_path" class="input" required placeholder="/archive">
-                    <span class="text-xs text-slate-400">Path used inside the Offen backup container and readable by VolumeVault for listing/restores.</span>
+                    <span class="text-xs text-slate-400">{{ t('Path used inside the Offen backup container and readable by VolumeVault for listing/restores.') }}</span>
                     <span v-if="error('settings.archive_path')" class="block text-sm text-rose-300">{{ translateError(error('settings.archive_path') as string) }}</span>
                 </label>
                 <label class="space-y-2 sm:col-span-2">
-                    <span class="label">Docker mount source</span>
+                    <span class="label">{{ t('Docker mount source') }}</span>
                     <input v-model="form.settings.archive_mount_source" class="input" placeholder="/host/backups">
-                    <span class="text-xs text-slate-400">Optional host path to mount to the archive path. Leave empty when both paths are identical.</span>
+                    <span class="text-xs text-slate-400">{{ t('Optional host path to mount to the archive path. Leave empty when both paths are identical.') }}</span>
                     <span v-if="error('settings.archive_mount_source')" class="block text-sm text-rose-300">{{ translateError(error('settings.archive_mount_source') as string) }}</span>
                 </label>
                 <div class="rounded-xl border border-amber-300/30 bg-amber-300/10 p-4 text-sm text-amber-100 sm:col-span-2">
-                    Local destinations need a path shared between VolumeVault and the temporary Offen container. Test the destination before trusting scheduled backups.
+                    {{ t('Local destinations need a path shared between VolumeVault and the temporary Offen container. Test the destination before trusting scheduled backups.') }}
                 </div>
             </section>
 
@@ -409,7 +409,7 @@ const fetchHostKey = async () => {
             <div class="grid gap-3 sm:grid-cols-2">
                 <label v-if="isS3" class="flex items-center gap-3 rounded-xl border border-white/10 bg-white/5 p-4 text-sm">
                     <input v-model="form.use_path_style_endpoint" type="checkbox" class="rounded border-slate-600 bg-slate-950 text-sky-400">
-                    Use path-style endpoint
+                    {{ t('Use path-style endpoint') }}
                 </label>
                 <div class="flex items-start justify-between gap-4 rounded-xl border border-white/10 bg-white/5 p-4 text-sm">
                     <div>
@@ -431,7 +431,7 @@ const fetchHostKey = async () => {
             </div>
 
             <div class="rounded-xl border border-amber-300/30 bg-amber-300/10 p-4 text-sm text-amber-100">
-                Losing APP_KEY means encrypted destination secrets can no longer be decrypted. Keep it backed up securely.
+                {{ t('Losing APP_KEY means encrypted destination secrets can no longer be decrypted. Keep it backed up securely.') }}
             </div>
 
             <div class="flex flex-wrap gap-3">
