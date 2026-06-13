@@ -1,13 +1,18 @@
 <?php
 
 return [
-    'unreleased' => [
-        [
-            'type' => 'change',
-            'key' => 'complete_i18n_coverage',
-        ],
-    ],
+    'unreleased' => [],
     'releases' => [
+        'v1.11.1' => [
+            'date' => '2026-06-13',
+            'url' => 'https://github.com/Darkdragon14/VolumeVault/releases/tag/v1.11.1',
+            'items' => [
+                [
+                    'type' => 'change',
+                    'key' => 'complete_i18n_coverage',
+                ],
+            ],
+        ],
         'v1.11.0' => [
             'date' => '2026-06-12',
             'url' => 'https://github.com/Darkdragon14/VolumeVault/releases/tag/v1.11.0',
